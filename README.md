@@ -208,9 +208,7 @@ src/
 
 A documentação das entidades do banco de dados, seus campos, relacionamentos e regras está disponível em:
 
-``` bash
-docs/banco-de-dados.md
-```
+- [Banco de Dados](docs/DATABASE.md)
 
 -----
 ## ▶️ Como Executar o Projeto

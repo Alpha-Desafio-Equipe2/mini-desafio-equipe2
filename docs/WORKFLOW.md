@@ -71,8 +71,9 @@ Milestone: *Vendas & Receita Médica*
 ### Branch principal
 - **`main`** → branch estável, apenas merges via Pull Request
 
-### Branch integradora (opcional)
-- **`develop`** → integração de features antes do merge final
+### Branches integradora
+- **`develop`** → integração de features dp back antes do merge final
+- **`frontend`** → integração de features do front antes do merge final
 
 ### Branches de Feature
 
@@ -84,8 +85,8 @@ Milestone: *Vendas & Receita Médica*
 - `feature/medicines/create`
 - `feature/stock/transfer`
 - `feature/sales/register-sale`
-- `feature/frontend/medicines-list`
-- `feature/frontend/sales-flow`
+- `feature/medicines-list`
+- `feature/sales-flow`
 
 ---
 
@@ -98,7 +99,7 @@ Milestone: *Vendas & Receita Médica*
 - `bugfix/auth/token-expiration`
 - `bugfix/stock/negative-quantity`
 - `bugfix/sales/price-calculation`
-- `bugfix/frontend/login-error`
+- `bugfix/login-error`
 
 ---
 

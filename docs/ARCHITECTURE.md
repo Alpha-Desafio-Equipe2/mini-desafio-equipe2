@@ -53,6 +53,16 @@ No código, entidades e módulos utilizam nomenclatura em inglês.
 
 ---
 
+## 📌 Decisões Técnicas
+- TypeScript para tipagem forte e segurança
+- Arquitetura modular para escalabilidade
+- MVC para separação de responsabilidades
+- JWT via cookie para maior segurança no frontend
+- Swagger para documentação profissional da API
+- SSQLite foi escolhido por simplicidade de setup e consistência relacional, sendo adequado para prototipação e mini-projetos. A arquitetura permite migração futura para PostgreSQL ou MySQL sem impacto nas regras de negócio.
+
+---
+
 ## 📚 Documentação da API
 A API é documentada utilizando **Swagger (OpenAPI)**, permitindo:
 
@@ -217,15 +227,7 @@ A arquitetura foi planejada para permitir:
 - implementação de cache
 - mensageria (ex: RabbitMQ)
 
----
 
-## 📌 Decisões Técnicas
-- TypeScript para tipagem forte e segurança
-- Arquitetura modular para escalabilidade
-- MVC para separação de responsabilidades
-- JWT via cookie para maior segurança no frontend
-- Swagger para documentação profissional da API
-- SSQLite foi escolhido por simplicidade de setup e consistência relacional, sendo adequado para prototipação e mini-projetos. A arquitetura permite migração futura para PostgreSQL ou MySQL sem impacto nas regras de negócio.
 
 ---
 

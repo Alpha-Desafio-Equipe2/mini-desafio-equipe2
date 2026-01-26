@@ -63,6 +63,25 @@ No código, entidades e módulos utilizam nomenclatura em inglês.
 
 ---
 
+### Modelagem de Filiais e Administração
+
+Todas as lojas são modeladas como filiais operacionais, com as mesmas regras de negócio e capacidades.
+Não existe uma entidade separada de “matriz” ou “filial principal” no modelo de domínio.
+
+As responsabilidades de administração central são tratadas por meio de usuários com perfis administrativos, o que permite a gestão global do sistema sem a necessidade de introduzir lógicas especiais ou exceções.
+
+Essa abordagem reduz regras condicionais, evita duplicação de lógica e mantém o modelo de domínio mais consistente, simples e fácil de manter.
+
+-------
+
+### Transferência de Estoque entre Filiais
+
+As transferências de estoque entre filiais são tratadas como uma entidade própria do domínio, distinta das vendas. Isso garante uma separação clara entre operações comerciais e processos logísticos internos.
+
+Cada transferência registra a filial de origem, a filial de destino, os itens transferidos e os respectivos registros de data e hora, assegurando total rastreabilidade e preservando a integridade do estoque em todo o sistema.
+
+------
+
 ## 📚 Documentação da API
 A API é documentada utilizando **Swagger (OpenAPI)**, permitindo:
 

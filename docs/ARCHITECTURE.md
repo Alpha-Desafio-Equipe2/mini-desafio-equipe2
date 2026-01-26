@@ -234,3 +234,5 @@ A arquitetura foi planejada para permitir:
 - migração futura para microsserviços
 - implementação de cache
 - mensageria (ex: RabbitMQ)
+---
+

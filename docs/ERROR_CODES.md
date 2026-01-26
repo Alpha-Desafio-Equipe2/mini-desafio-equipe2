@@ -69,3 +69,25 @@ Os códigos internos são documentados aqui e tratados centralmente por um `Erro
 
 ```
 5. Fácil de **documentar no Swagger/OpenAPI**, permitindo que o frontend saiba exatamente o que cada código significa.
+
+```ts
+// errorHandler.ts
+app.use((err, req, res, next) => {
+  res.status(err.httpStatus || 500).json({
+    status: err.httpStatus || 500,
+    code: err.code || 0,
+    message: err.message || "Internal Server Error",
+  });
+});
+
+```
+Saída para o frontend:
+
+```json
+{
+  "status": 400,
+  "code": 1001,
+  "message": "CPF inválido"
+}
+
+```

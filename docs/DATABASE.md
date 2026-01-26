@@ -139,6 +139,13 @@ Endereços de filiais, clientes ou médicos.
 | created_at  | DATETIME   | Data de criação                        | Default CURRENT_TIMESTAMP     |
 | updated_at  | DATETIME   | Data de atualização                    | Atualizado via trigger        |
 
+O endereço foi modelado como uma entidade independente para evitar duplicação de dados e permitir reutilização por diferentes entidades do sistema, mantendo o banco normalizado.
+* Campos atômicos (cada informação no seu lugar)
+* Facilita busca, filtro e validação
+* Evita campo genérico tipo endereco_completo
+
+A API de CEP é usada apenas como apoio ao cadastro. Cidade e estado são dados essenciais para consultas, relatórios e integridade histórica, por isso são persistidos no banco de dados
+
 ---
 
 ## **audit_log**

@@ -53,7 +53,6 @@ No código, entidades e módulos utilizam nomenclatura em inglês.
 
 ---
 
-<<<<<<< HEAD
 ## 📌 Decisões Técnicas
 - TypeScript para tipagem forte e segurança
 - Arquitetura modular para escalabilidade
@@ -83,8 +82,6 @@ Cada transferência registra a filial de origem, a filial de destino, os itens t
 
 ------
 
-=======
->>>>>>> 9401447 (docs: document modular architecture and core business rules)
 ## 📚 Documentação da API
 A API é documentada utilizando **Swagger (OpenAPI)**, permitindo:
 
@@ -97,20 +94,6 @@ Endpoint de acesso:
 /swagger
 ```
 ---
-<<<<<<< HEAD
-## 🔐 Tratamento de Erros
-
-A API utiliza códigos HTTP padrão em conjunto com **códigos internos de erro**, permitindo
-identificação precisa de falhas de validação, regras de negócio e problemas de autenticação.
-
-Essa abordagem garante padronização das respostas e facilita a comunicação entre backend
-e frontend.
-
-📄 Documentação completa disponível em: [`ERROR_CODES.md`](./ERROR_CODES.md)
-
------
-=======
->>>>>>> 9401447 (docs: document modular architecture and core business rules)
 
 ## 🔐 Segurança e Autenticação
 
@@ -251,20 +234,3 @@ A arquitetura foi planejada para permitir:
 - migração futura para microsserviços
 - implementação de cache
 - mensageria (ex: RabbitMQ)
-
-<<<<<<< HEAD
-
-=======
----
-
-## 📌 Decisões Técnicas
-- TypeScript para tipagem forte e segurança
-- Arquitetura modular para escalabilidade
-- MVC para separação de responsabilidades
-- JWT via cookie para maior segurança no frontend
-- Swagger para documentação profissional da API
-- SSQLite foi escolhido por simplicidade de setup e consistência relacional, sendo adequado para prototipação e mini-projetos. A arquitetura permite migração futura para PostgreSQL ou MySQL sem impacto nas regras de negócio.
->>>>>>> 9401447 (docs: document modular architecture and core business rules)
-
----
-

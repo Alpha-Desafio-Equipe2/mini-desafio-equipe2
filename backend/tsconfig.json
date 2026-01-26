@@ -3,8 +3,8 @@
     "target": "ES2020",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "rootDir": "./src",
-    "outDir": "./dist",
+    "rootDir": "backend/src",
+    "outDir": "backend/dist",
     "isolatedModules": true,
     "strict": true,
     "esModuleInterop": true,
@@ -13,12 +13,12 @@
     "skipLibCheck": true
   },
   "include": [
-    "src",
-    "tests"
+    "backend/src",
+    "backend/tests"
   ],
   "exclude": [
     "node_modules",
-    "tests"
+    "backend/tests"
   ],
   "ts-node": {
     "esm": true

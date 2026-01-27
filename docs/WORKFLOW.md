@@ -2,7 +2,7 @@
 
 **Período do projeto:**  
 📅 Início: 24/01/2026  
-📅 Entrega final: 04/02/2026  
+📅 Entrega final: 03/02/2026  
 
 Este documento define o fluxo de trabalho do time, organização de **milestones, branches, commits, issues e PRs**, considerando **frontend e backend**.
 
@@ -12,7 +12,7 @@ Este documento define o fluxo de trabalho do time, organização de **milestones
 
 | Milestone                     | Backend                                                               | Frontend                                                     | Data final |
 | ----------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------ | ---------- |
-| Infra & Setup                 | Configuração do repositório, banco SQLite, ORM, CI/CD inicial          | Setup do frontend (TypeScript/React ou Angular), roteamento, integração inicial com backend | 26/01/26   |
+| Infra & Setup                 | Configuração do repositório, banco SQLite, ORM, CI/CD inicial          | Setup do frontend (TypeScript), roteamento, integração inicial com backend | 26/01/26   |
 | Autenticação & Usuários       | Login, JWT, roles (ADMIN, FARMACEUTICO, ATENDENTE)                    | Telas de login e cadastro, fluxo de JWT, validação de sessão | 27/01/26   |
 | Gestão de Medicamentos        | CRUD de medicamentos, regras de receita, preços, controle de estoque  | Telas de cadastro e listagem de medicamentos                | 29/01/26   |
 | Clientes & Médicos            | CRUD de clientes e médicos                                            | Telas de cadastro e consulta                                  | 30/01/26   |
@@ -72,7 +72,7 @@ Milestone: *Vendas & Receita Médica*
 - **`main`** → branch estável, apenas merges via Pull Request
 
 ### Branches integradora
-- **`develop`** → integração de features dp back antes do merge final
+- **`backend`** → integração de features do back antes do merge final
 - **`frontend`** → integração de features do front antes do merge final
 
 ### Branches de Feature
@@ -156,7 +156,7 @@ feat(frontend/sales): implement sales flow page
 ```
 git push origin feature/medicines/create
 ```
-5. Abrir **Pull Request** contra `main` ou `develop`
+5. Abrir **Pull Request** contra `frontend` ou `backend`
 6. Preencher **PULL_REQUEST_TEMPLATE.md**
 7. Revisão obrigatória por pelo menos 1 colega
 8. Merge aprovado → deletar branch
@@ -195,7 +195,7 @@ git push origin feature/medicines/create
 
 ## 9️⃣ Proteção de Branch
 
-**Branch protegida:** `main`, `develop`
+**Branch protegida:** `main`, `frontend`, `backend`
 
 ### Regras:
 

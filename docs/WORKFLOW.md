@@ -12,7 +12,7 @@ Este documento define o fluxo de trabalho do time, organização de **milestones
 
 | Milestone                     | Backend                                                               | Frontend                                                     | Data final |
 | ----------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------ | ---------- |
-| Infra & Setup                 | Configuração do repositório, banco SQLite, ORM, CI/CD inicial          | Setup do frontend (TypeScript/React ou Angular), roteamento, integração inicial com backend | 26/01/26   |
+| Infra & Setup                 | Configuração do repositório, banco SQLite, ORM, CI/CD inicial          | Setup do frontend (TypeScript), roteamento, integração inicial com backend | 26/01/26   |
 | Autenticação & Usuários       | Login, JWT, roles (ADMIN, FARMACEUTICO, ATENDENTE)                    | Telas de login e cadastro, fluxo de JWT, validação de sessão | 27/01/26   |
 | Gestão de Medicamentos        | CRUD de medicamentos, regras de receita, preços, controle de estoque  | Telas de cadastro e listagem de medicamentos                | 29/01/26   |
 | Clientes & Médicos            | CRUD de clientes e médicos                                            | Telas de cadastro e consulta                                  | 30/01/26   |
@@ -71,8 +71,9 @@ Milestone: *Vendas & Receita Médica*
 ### Branch principal
 - **`main`** → branch estável, apenas merges via Pull Request
 
-### Branch integradora (opcional)
-- **`develop`** → integração de features antes do merge final
+### Branches integradora
+- **`backend`** → integração de features do back antes do merge final
+- **`frontend`** → integração de features do front antes do merge final
 
 ### Branches de Feature
 
@@ -186,7 +187,7 @@ git push origin feature/medicines/create
 
 ## 9️⃣ Proteção de Branch
 
-**Branch protegida:** `frontend`, `backend`
+**Branch protegida:** `main`, `frontend`, `backend`
 
 ### Regras:
 

@@ -9,7 +9,7 @@ export const db = new Database(dbPath);
 
 db.pragma('journal_mode = WAL');
 
-import '../database/schema.ts';
+import '../database/schema';
 
 export function initDatabase() {
   console.log('Database connected (SQLite)');

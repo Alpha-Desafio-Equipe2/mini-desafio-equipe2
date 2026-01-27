@@ -3,12 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sistema Farmácia Popular</title>
+    <title>Sistema Farmácia Popular | Professional</title>
+    <!-- CSS Externo -->
+    <link href="styles/global.css" rel="stylesheet" />
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles/global.css" />
   </head>
   <body>
     <div
@@ -16,43 +17,13 @@
       class="mobile-overlay"
       onclick="toggleSidebar()"
     ></div>
-
-    <!-- 1. TELA DE LOGIN -->
-    <section id="login-screen">
-      <div class="login-box">
-        <h1><i class="fas fa-prescription-bottle-alt"></i> FarmaPopular</h1>
-        <p style="margin-bottom: 20px; color: #666">
-          Sistema Profissional de Gestão
-        </p>
-        <form onsubmit="realizarLogin(event)">
-          <input
-            type="email"
-            placeholder="E-mail"
-            required
-            value="admin@farma.com"
-          />
-          <input type="password" placeholder="Senha" required value="123456" />
-          <button
-            type="submit"
-            class="btn btn-primary"
-            style="width: 100%; justify-content: center"
-          >
-            Acessar Sistema
-          </button>
-        </form>
-        <p style="margin-top: 15px; font-size: 0.8rem; color: #999">
-          Ambiente Seguro | Versão 2.0
-        </p>
-      </div>
-    </section>
-
-    <!-- 2. LAYOUT PRINCIPAL -->
+    <!-- LAYOUT PRINCIPAL -->
     <section id="app-layout" class="hidden">
+      <!-- SIDEBAR -->
       <nav class="sidebar" id="sidebar">
         <div class="brand">
           <i class="fas fa-plus-square"></i>
           <span>FarmaPro</span>
-          <!-- Botão de fechar no mobile -->
           <button
             class="btn btn-outline"
             onclick="toggleSidebar()"
@@ -62,38 +33,33 @@
             <i class="fas fa-times"></i>
           </button>
         </div>
-
-        <a
-          href="#"
-          class="nav-item active"
-          onclick="navegar('dashboard', this)"
+        <a href="#" class="nav-item active" onclick="navegar('dashboard', this)"
+          ><i class="fas fa-chart-line" style="width: 25px"></i
+          ><span>Dashboard</span></a
         >
-          <i class="fas fa-chart-line" style="width: 25px"></i>
-          <span>Dashboard</span>
-        </a>
-        <a href="#" class="nav-item" onclick="navegar('vendas', this)">
-          <i class="fas fa-cash-register" style="width: 25px"></i>
-          <span>PDV (Caixa)</span>
-        </a>
-        <a href="#" class="nav-item" onclick="navegar('medicamentos', this)">
-          <i class="fas fa-pills" style="width: 25px"></i>
-          <span>Medicamentos</span>
-        </a>
-        <a href="#" class="nav-item" onclick="navegar('historico', this)">
-          <i class="fas fa-history" style="width: 25px"></i>
-          <span>Histórico</span>
-        </a>
-        <a href="#" class="nav-item" onclick="navegar('cadastros', this)">
-          <i class="fas fa-users" style="width: 25px"></i>
-          <span>Cadastros</span>
-        </a>
-
-        <a href="#" class="nav-item logout" onclick="logout()">
-          <i class="fas fa-sign-out-alt" style="width: 25px"></i>
-          <span>Sair</span>
-        </a>
+        <a href="#" class="nav-item" onclick="navegar('vendas', this)"
+          ><i class="fas fa-cash-register" style="width: 25px"></i
+          ><span>PDV (Caixa)</span></a
+        >
+        <a href="#" class="nav-item" onclick="navegar('medicamentos', this)"
+          ><i class="fas fa-pills" style="width: 25px"></i
+          ><span>Medicamentos</span></a
+        >
+        <a href="#" class="nav-item" onclick="navegar('historico', this)"
+          ><i class="fas fa-history" style="width: 25px"></i
+          ><span>Histórico</span></a
+        >
+        <a href="#" class="nav-item" onclick="navegar('cadastros', this)"
+          ><i class="fas fa-users" style="width: 25px"></i
+          ><span>Cadastros</span></a
+        >
+        <a href="#" class="nav-item logout" onclick="logout()"
+          ><i class="fas fa-sign-out-alt" style="width: 25px"></i
+          ><span>Sair</span></a
+        >
       </nav>
 
+      <!-- CONTEÚDO -->
       <main class="main-content">
         <!-- DASHBOARD -->
         <div id="screen-dashboard" class="screen">
@@ -112,7 +78,6 @@
               <i class="fas fa-user-circle"></i> Olá, <b>Farmacêutico(a)</b>
             </div>
           </header>
-
           <div class="dashboard-grid">
             <div
               class="table-container"
@@ -173,7 +138,6 @@
               </p>
             </div>
           </div>
-
           <div class="table-container">
             <h3><i class="fas fa-bullhorn"></i> Avisos do Sistema</h3>
             <div
@@ -208,7 +172,6 @@
               <i class="fas fa-plus"></i> Novo
             </button>
           </header>
-
           <div class="table-container">
             <div style="margin-bottom: 15px">
               <input
@@ -233,6 +196,7 @@
           </div>
         </div>
 
+        <!-- PDV -->
         <div id="screen-vendas" class="screen hidden">
           <header>
             <div class="header-title-group">
@@ -249,7 +213,6 @@
               ><i class="fas fa-check-circle"></i> Operacional</span
             >
           </header>
-
           <div class="pdv-grid">
             <div class="pdv-left">
               <div class="table-container">
@@ -267,7 +230,6 @@
                   </option>
                 </select>
               </div>
-
               <div class="table-container" style="position: relative">
                 <label
                   ><i class="fas fa-search"></i> Buscar Produto (Código ou
@@ -282,13 +244,12 @@
                 />
                 <div id="resultado-busca" class="product-search-result"></div>
               </div>
-
               <div id="area-receita" class="hidden">
                 <div class="receita-alert">
                   <i class="fas fa-file-medical-alt fa-2x"></i>
                   <div>
-                    <strong>Retenção de Receita Obrigatória</strong><br />
-                    Item controlado detectado. Informe os dados abaixo conforme
+                    <strong>Retenção de Receita Obrigatória</strong><br />Item
+                    controlado detectado. Informe os dados abaixo conforme
                     RDC/Anvisa.
                   </div>
                 </div>
@@ -296,26 +257,25 @@
                   <h3>Dados da Prescrição</h3>
                   <div class="form-grid">
                     <div>
-                      <label>CRM Médico *</label>
-                      <input
+                      <label>CRM Médico *</label
+                      ><input
                         type="text"
                         id="venda-crm"
                         placeholder="Ex: 12345/UF"
                       />
                     </div>
                     <div>
-                      <label>Nome Médico</label>
-                      <input type="text" id="venda-medico-nome" />
+                      <label>Nome Médico</label
+                      ><input type="text" id="venda-medico-nome" />
                     </div>
                     <div>
-                      <label>Data Prescrição</label>
-                      <input type="date" id="venda-data-receita" />
+                      <label>Data Prescrição</label
+                      ><input type="date" id="venda-data-receita" />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-
             <div class="pdv-right">
               <h3
                 style="
@@ -331,7 +291,6 @@
                   Aguardando itens...
                 </p>
               </div>
-
               <div style="margin-top: auto">
                 <div
                   style="
@@ -340,8 +299,8 @@
                     font-size: 1.1rem;
                   "
                 >
-                  <span>Subtotal:</span>
-                  <span>R$ <span id="valor-total">0,00</span></span>
+                  <span>Subtotal:</span
+                  ><span>R$ <span id="valor-total">0,00</span></span>
                 </div>
                 <div class="total-box">
                   R$ <span id="valor-final">0,00</span>
@@ -363,6 +322,7 @@
           </div>
         </div>
 
+        <!-- HISTORICO -->
         <div id="screen-historico" class="screen hidden">
           <header>
             <div class="header-title-group">
@@ -388,9 +348,7 @@
                   <th>Status</th>
                 </tr>
               </thead>
-              <tbody id="lista-historico">
-                <!-- Preenchido via JS -->
-              </tbody>
+              <tbody id="lista-historico"></tbody>
             </table>
           </div>
         </div>
@@ -418,12 +376,11 @@
                   return false;
                 "
               >
-                <label>Nome Completo</label>
-                <input type="text" required />
-                <label>CRM / UF</label>
-                <input type="text" required placeholder="12345/SP" />
-                <label>Especialidade</label>
-                <input type="text" />
+                <label>Nome Completo</label><input type="text" required /><label
+                  >CRM / UF</label
+                ><input type="text" required placeholder="12345/SP" /><label
+                  >Especialidade</label
+                ><input type="text" />
                 <button class="btn btn-primary" style="margin-top: 10px">
                   Cadastrar
                 </button>
@@ -437,12 +394,10 @@
                   return false;
                 "
               >
-                <label>Nome Completo</label>
-                <input type="text" required />
-                <label>CPF</label>
-                <input type="text" required />
-                <label>Endereço</label>
-                <input type="text" />
+                <label>Nome Completo</label><input type="text" required /><label
+                  >CPF</label
+                ><input type="text" required /><label>Endereço</label
+                ><input type="text" />
                 <button class="btn btn-primary" style="margin-top: 10px">
                   Cadastrar
                 </button>
@@ -453,7 +408,7 @@
       </main>
     </section>
 
-    <!-- MODAL MEDICAMENTO -->
+    <!-- MODAIS -->
     <div id="modal-medicamento" class="modal-overlay hidden">
       <div class="modal">
         <div class="modal-header">
@@ -463,36 +418,33 @@
           </button>
         </div>
         <form onsubmit="salvarMedicamento(event)">
-          <label>Nome Comercial</label>
-          <input
+          <label>Nome Comercial</label
+          ><input
             type="text"
             id="med-nome"
             required
             placeholder="Ex: Losartana"
           />
-
           <div class="form-grid">
             <div>
-              <label>Fabricante</label>
-              <input type="text" id="med-fabricante" required />
+              <label>Fabricante</label
+              ><input type="text" id="med-fabricante" required />
             </div>
             <div>
-              <label>Princípio Ativo</label>
-              <input type="text" id="med-ativo" required />
+              <label>Princípio Ativo</label
+              ><input type="text" id="med-ativo" required />
             </div>
           </div>
-
           <div class="form-grid">
             <div>
-              <label>Preço Venda (R$)</label>
-              <input type="number" id="med-preco" step="0.01" required />
+              <label>Preço Venda (R$)</label
+              ><input type="number" id="med-preco" step="0.01" required />
             </div>
             <div>
-              <label>Estoque Inicial</label>
-              <input type="number" id="med-estoque" required />
+              <label>Estoque Inicial</label
+              ><input type="number" id="med-estoque" required />
             </div>
           </div>
-
           <div
             style="
               margin: 15px 0;
@@ -508,16 +460,13 @@
                 gap: 10px;
                 cursor: pointer;
               "
-            >
-              <input
+              ><input
                 type="checkbox"
                 id="med-receita"
                 style="width: auto; margin: 0"
-              />
-              <b>Controlado:</b> Exige retenção de receita?
-            </label>
+              /><b>Controlado:</b> Exige retenção de receita?</label
+            >
           </div>
-
           <button type="submit" class="btn btn-primary" style="width: 100%">
             Salvar no Sistema
           </button>
@@ -529,17 +478,15 @@
       <div class="receipt-paper">
         <div style="text-align: center; margin-bottom: 20px">
           <h3 style="margin: 0">FARMÁCIA POPULAR</h3>
-          <small>CNPJ: 00.000.000/0001-99</small><br />
-          <small>Rua das Flores, 123 - Centro</small>
+          <small>CNPJ: 00.000.000/0001-99</small><br /><small
+            >Rua das Flores, 123 - Centro</small
+          >
         </div>
         <div class="receipt-line"></div>
-        <div id="recibo-itens">
-          <!-- Itens -->
-        </div>
+        <div id="recibo-itens"></div>
         <div class="receipt-line"></div>
         <div class="receipt-item" style="font-weight: bold; font-size: 1.1rem">
-          <span>TOTAL</span>
-          <span id="recibo-total">R$ 0,00</span>
+          <span>TOTAL</span><span id="recibo-total">R$ 0,00</span>
         </div>
         <div style="margin-top: 20px; text-align: center; font-size: 0.8rem">
           <p>Cliente: <span id="recibo-cliente">Consumidor</span></p>
@@ -558,6 +505,7 @@
         </button>
       </div>
     </div>
+
     <script type="module" src="../dist/app/main.js"></script>
   </body>
 </html>

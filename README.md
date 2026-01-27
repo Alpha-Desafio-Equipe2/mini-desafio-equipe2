@@ -123,7 +123,8 @@ No Swagger é possível:
 <details>
 <summary><strong>Backend</strong></summary>
 
-```
+```txt
+
 src/
 ├── modules/
 │   ├── auth/
@@ -231,7 +232,8 @@ src/
 </details>
 
 <details>
-<summary><strong>Frontend </strong></summary>
+<summary><strong>Frontend </strong><summary>
+
 ```
 src/
 ├── app/

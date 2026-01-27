@@ -29,7 +29,6 @@ body {
 .hidden {
   display: none !important;
 }
-
 .btn {
   padding: 10px 15px;
   border: none;
@@ -41,21 +40,17 @@ body {
   align-items: center;
   gap: 8px;
 }
-
 .btn-primary {
   background: var(--primary);
   color: white;
 }
-
 .btn-primary:hover {
   background: var(--primary-dark);
 }
-
 .btn-danger {
   background: var(--danger);
   color: white;
 }
-
 .btn-outline {
   border: 1px solid #ccc;
   background: white;
@@ -70,12 +65,34 @@ select {
   width: 100%;
   margin-bottom: 10px;
 }
-
 label {
   display: block;
   margin-bottom: 5px;
   font-weight: 600;
   font-size: 0.9rem;
+}
+
+/* Login */
+#login-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  padding: 20px;
+}
+.login-box {
+  background: white;
+  padding: 40px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+.login-box h1 {
+  color: var(--primary);
+  margin-bottom: 20px;
 }
 
 /* Layout */
@@ -112,7 +129,6 @@ label {
   gap: 10px;
   color: var(--primary);
 }
-
 .brand span {
   color: white;
 }
@@ -127,15 +143,13 @@ label {
   align-items: center;
   gap: 10px;
   transition: 0.3s;
-  white-space: nowrap;
+  white-space: nowrap; /* Evita quebra de texto na transição */
 }
-
 .nav-item:hover,
 .nav-item.active {
   background: rgba(255, 255, 255, 0.1);
   color: white;
 }
-
 .logout {
   margin-top: auto;
   color: var(--danger);
@@ -164,7 +178,6 @@ header {
   align-items: center;
   gap: 15px;
 }
-
 #menu-toggle-btn {
   background: transparent;
   color: #333;
@@ -182,39 +195,33 @@ header {
   margin-bottom: 20px;
   overflow-x: auto;
 }
-
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 15px;
-  min-width: 600px;
+  min-width: 600px; /* Garante scroll horizontal em mobile */
 }
-
 th,
 td {
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid #eee;
 }
-
 th {
   background: #f8f9fa;
   color: #555;
   font-weight: 600;
 }
-
 .badge {
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: bold;
 }
-
 .badge-yes {
   background: #ffeeba;
   color: #856404;
 }
-
 .badge-no {
   background: #d4edda;
   color: #155724;
@@ -235,14 +242,12 @@ th {
   gap: 20px;
   height: calc(100vh - 150px);
 }
-
 .pdv-left {
   display: flex;
   flex-direction: column;
   gap: 20px;
   overflow-y: auto;
 }
-
 .pdv-right {
   background: white;
   padding: 20px;
@@ -263,7 +268,6 @@ th {
   z-index: 10;
   display: none;
 }
-
 .search-item {
   padding: 10px;
   cursor: pointer;
@@ -271,7 +275,6 @@ th {
   display: flex;
   justify-content: space-between;
 }
-
 .search-item:hover {
   background: #f9f9f9;
 }
@@ -283,7 +286,6 @@ th {
   border-top: 1px solid #eee;
   min-height: 150px;
 }
-
 .cart-item {
   display: flex;
   justify-content: space-between;
@@ -325,7 +327,6 @@ th {
   align-items: center;
   z-index: 1000;
 }
-
 .modal {
   background: white;
   padding: 30px;
@@ -335,13 +336,11 @@ th {
   max-height: 90vh;
   overflow-y: auto;
 }
-
 .modal-header {
   display: flex;
   justify-content: space-between;
   margin-bottom: 20px;
 }
-
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -357,12 +356,10 @@ th {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
   border-top: 10px solid var(--primary);
 }
-
 .receipt-line {
   border-bottom: 1px dashed #333;
   margin: 10px 0;
 }
-
 .receipt-item {
   display: flex;
   justify-content: space-between;
@@ -389,19 +386,20 @@ th {
 }
 
 @media (max-width: 768px) {
+  /* Sidebar vira gaveta no mobile */
   .sidebar {
     position: fixed;
     top: 0;
     left: 0;
     height: 100%;
-    margin-left: -260px;
+    margin-left: -260px; /* Escondido por padrão no mobile */
   }
   .sidebar.mobile-open {
     margin-left: 0;
   }
   .sidebar.closed {
     margin-left: -260px;
-  }
+  } /* Garante que fechado é escondido */
 
   .mobile-overlay.active {
     display: block;
@@ -411,6 +409,7 @@ th {
     padding: 15px;
   }
 
+  /* Grids viram colunas únicas */
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
@@ -426,11 +425,12 @@ th {
   .pdv-right {
     order: 2;
     height: auto;
-  }
+  } /* Carrinho vai para baixo */
   .form-grid {
     grid-template-columns: 1fr;
   }
 
+  /* Ajustes de Texto e Header */
   header {
     flex-direction: column;
     align-items: flex-start;
@@ -448,6 +448,7 @@ th {
     font-size: 1.5rem;
   }
 
+  /* Ajuste modal */
   .modal {
     width: 95%;
     padding: 20px;

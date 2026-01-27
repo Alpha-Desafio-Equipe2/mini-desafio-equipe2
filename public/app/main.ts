@@ -1,8 +1,5 @@
-// --- VERIFICAÇÃO DE SEGURANÇA ---
-// Descomente a linha abaixo quando tiver a tela de login pronta
-// if (!localStorage.getItem('token')) window.location.href = 'login.html';
-
-// Interfaces
+// --- ESTADO DA APLICAÇÃO ---
+// Interfaces para tipagem
 interface Medicamento {
   id: number;
   nome: string;
@@ -22,8 +19,8 @@ interface Venda {
   crm: string;
 }
 
-// Dados simulados
-const medicamentos: Medicamento[] = [
+// Dados Mockados (Simulação de Banco de Dados Local)
+let medicamentos: Medicamento[] = [
   {
     id: 1,
     nome: "Losartana Potássica 50mg",
@@ -66,26 +63,41 @@ let carrinho: Medicamento[] = [];
 let vendasRealizadas: Venda[] = [];
 let totalVendasDia = 0;
 
-// --- FUNÇÕES ---
+// --- FUNÇÕES DE AUTENTICAÇÃO E NAVEGAÇÃO ---
+
+function realizarLogin(e: Event) {
+  e.preventDefault();
+  const loginScreen = document.getElementById("login-screen");
+  const appLayout = document.getElementById("app-layout");
+
+  if (loginScreen) loginScreen.classList.add("hidden");
+  if (appLayout) appLayout.classList.remove("hidden");
+
+  renderizarMedicamentos();
+  atualizarDashboard();
+}
 
 function logout() {
-  if (confirm("Encerrar sessão?")) {
-    localStorage.removeItem("token"); // Limpa o token simulado
-    window.location.href = "login.html"; // Redireciona para o login
-  }
+  if (confirm("Encerrar sessão?")) location.reload();
 }
 
 function navegar(tela: string, element: HTMLElement) {
   document
     .querySelectorAll(".screen")
     .forEach((s) => s.classList.add("hidden"));
-  document.getElementById("screen-" + tela)?.classList.remove("hidden");
+  const screen = document.getElementById("screen-" + tela);
+  if (screen) screen.classList.remove("hidden");
+
   document
     .querySelectorAll(".nav-item")
     .forEach((n) => n.classList.remove("active"));
   element.classList.add("active");
 
-  if (window.innerWidth <= 768) toggleSidebar();
+  // Fecha menu no mobile ao clicar
+  if (window.innerWidth <= 768) {
+    toggleSidebar();
+  }
+
   if (tela === "medicamentos") renderizarMedicamentos();
   if (tela === "historico") renderizarHistorico();
 }
@@ -95,22 +107,28 @@ function toggleSidebar() {
   const overlay = document.getElementById("mobile-overlay");
   const closeBtn = document.getElementById("mobile-close-btn");
 
+  if (!sidebar || !overlay || !closeBtn) return;
+
   if (window.innerWidth <= 768) {
-    sidebar?.classList.toggle("mobile-open");
-    overlay?.classList.toggle("active");
-    if (sidebar?.classList.contains("mobile-open")) {
-      if (closeBtn) closeBtn.style.display = "block";
+    sidebar.classList.toggle("mobile-open");
+    overlay.classList.toggle("active");
+
+    if (sidebar.classList.contains("mobile-open")) {
+      closeBtn.style.display = "block";
     } else {
-      if (closeBtn) closeBtn.style.display = "none";
+      closeBtn.style.display = "none";
     }
   } else {
-    sidebar?.classList.toggle("closed");
+    sidebar.classList.toggle("closed");
   }
 }
+
+// --- GESTÃO DE MEDICAMENTOS ---
 
 function renderizarMedicamentos() {
   const tbody = document.getElementById("lista-medicamentos");
   if (!tbody) return;
+
   tbody.innerHTML = "";
 
   medicamentos.forEach((med) => {
@@ -143,29 +161,42 @@ function filtrarTabela(termo: string) {
 }
 
 function abrirModalMedicamento() {
-  document.getElementById("modal-medicamento")?.classList.remove("hidden");
+  const modal = document.getElementById("modal-medicamento");
+  if (modal) modal.classList.remove("hidden");
 }
+
 function fecharModalMedicamento() {
-  document.getElementById("modal-medicamento")?.classList.add("hidden");
+  const modal = document.getElementById("modal-medicamento");
+  if (modal) modal.classList.add("hidden");
 }
 
 function salvarMedicamento(e: Event) {
   e.preventDefault();
+  const nome = (document.getElementById("med-nome") as HTMLInputElement).value;
+  const fabricante = (
+    document.getElementById("med-fabricante") as HTMLInputElement
+  ).value;
+  const ativo = (document.getElementById("med-ativo") as HTMLInputElement)
+    .value;
+  const preco = parseFloat(
+    (document.getElementById("med-preco") as HTMLInputElement).value,
+  );
+  const estoque = parseInt(
+    (document.getElementById("med-estoque") as HTMLInputElement).value,
+  );
+  const receita = (document.getElementById("med-receita") as HTMLInputElement)
+    .checked;
+
   const novo: Medicamento = {
     id: Date.now(),
-    nome: (document.getElementById("med-nome") as HTMLInputElement).value,
-    fabricante: (document.getElementById("med-fabricante") as HTMLInputElement)
-      .value,
-    ativo: (document.getElementById("med-ativo") as HTMLInputElement).value,
-    receita: (document.getElementById("med-receita") as HTMLInputElement)
-      .checked,
-    preco: parseFloat(
-      (document.getElementById("med-preco") as HTMLInputElement).value,
-    ),
-    estoque: parseInt(
-      (document.getElementById("med-estoque") as HTMLInputElement).value,
-    ),
+    nome,
+    fabricante,
+    ativo,
+    receita,
+    preco,
+    estoque,
   };
+
   medicamentos.push(novo);
   renderizarMedicamentos();
   fecharModalMedicamento();
@@ -173,18 +204,23 @@ function salvarMedicamento(e: Event) {
   (e.target as HTMLFormElement).reset();
 }
 
+// --- PDV E VENDAS ---
+
 function buscarProduto(termo: string) {
   const resultadosDiv = document.getElementById("resultado-busca");
   if (!resultadosDiv) return;
+
   if (termo.length < 2) {
     resultadosDiv.style.display = "none";
     return;
   }
+
   const filtrados = medicamentos.filter(
     (m) =>
       m.nome.toLowerCase().includes(termo.toLowerCase()) ||
       m.ativo.toLowerCase().includes(termo.toLowerCase()),
   );
+
   resultadosDiv.innerHTML = "";
   if (filtrados.length > 0) {
     resultadosDiv.style.display = "block";
@@ -201,7 +237,11 @@ function buscarProduto(termo: string) {
 }
 
 function adicionarAoCarrinho(med: Medicamento) {
-  if (med.estoque <= 0) return alert("Produto sem estoque!");
+  if (med.estoque <= 0) {
+    alert("Produto sem estoque!");
+    return;
+  }
+
   carrinho.push(med);
   (document.getElementById("input-busca-pdv") as HTMLInputElement).value = "";
   const resultadosDiv = document.getElementById("resultado-busca");
@@ -218,6 +258,7 @@ function atualizarCarrinho() {
   const lista = document.getElementById("lista-carrinho");
   const areaReceita = document.getElementById("area-receita");
   const crmInput = document.getElementById("venda-crm");
+
   if (!lista || !areaReceita || !crmInput) return;
 
   lista.innerHTML = "";
@@ -231,14 +272,19 @@ function atualizarCarrinho() {
   carrinho.forEach((item, index) => {
     total += item.preco;
     if (item.receita) exigeReceita = true;
+
     lista.innerHTML += `
       <div class="cart-item">
-          <div><strong>${item.nome}</strong><br><small>${item.receita ? '<span style="color:red; font-weight:bold">CONTROLADO</span>' : "Livre"}</small></div>
+          <div>
+              <strong>${item.nome}</strong><br>
+              <small>${item.receita ? '<span style="color:red; font-weight:bold">CONTROLADO</span>' : "Livre"}</small>
+          </div>
           <div style="display:flex; align-items:center; gap:10px;">
               <span>R$ ${item.preco.toFixed(2)}</span>
               <button class="btn btn-danger" style="padding: 5px 10px;" onclick="removerDoCarrinho(${index})">X</button>
           </div>
-      </div>`;
+      </div>
+    `;
   });
 
   const totalEl = document.getElementById("valor-total");
@@ -257,6 +303,7 @@ function atualizarCarrinho() {
 
 function finalizarVenda() {
   if (carrinho.length === 0) return alert("Carrinho vazio!");
+
   const temReceita = carrinho.some((i) => i.receita);
   let crm = "";
   if (temReceita) {
@@ -264,27 +311,31 @@ function finalizarVenda() {
     if (!crm)
       return alert("ERRO: Informe o CRM para medicamentos controlados!");
   }
+
   const cliente = (document.getElementById("venda-cliente") as HTMLInputElement)
     .value;
-  const total = parseFloat(
-    document.getElementById("valor-final")?.innerText || "0",
-  );
+  const valorFinalEl = document.getElementById("valor-final");
+  let total = valorFinalEl ? parseFloat(valorFinalEl.innerText) : 0;
 
-  carrinho.forEach((item) => {
-    const prod = medicamentos.find((m) => m.id === item.id);
-    if (prod) prod.estoque--;
+  carrinho.forEach((itemCarrinho) => {
+    const produtoReal = medicamentos.find((m) => m.id === itemCarrinho.id);
+    if (produtoReal) produtoReal.estoque--;
   });
 
-  vendasRealizadas.push({
+  const venda: Venda = {
     id: Date.now(),
     data: new Date().toLocaleString(),
-    cliente,
+    cliente: cliente,
     itens: carrinho.length,
-    total,
+    total: total,
     crm: crm || "-",
-  });
+  };
+
+  vendasRealizadas.push(venda);
   totalVendasDia += total;
+
   mostrarRecibo(cliente, total, crm);
+
   carrinho = [];
   (document.getElementById("venda-crm") as HTMLInputElement).value = "";
   (document.getElementById("venda-medico-nome") as HTMLInputElement).value = "";
@@ -294,29 +345,43 @@ function finalizarVenda() {
 
 function mostrarRecibo(cliente: string, total: number, crm: string) {
   const divItens = document.getElementById("recibo-itens");
-  if (!divItens) return;
+  const modalRecibo = document.getElementById("modal-recibo");
+
+  if (!divItens || !modalRecibo) return;
+
   divItens.innerHTML = "";
+
   carrinho.forEach((item) => {
-    divItens.innerHTML += `<div class="receipt-item"><span>${item.nome.substring(0, 20)}</span><span>R$ ${item.preco.toFixed(2)}</span></div>`;
+    divItens.innerHTML += `
+      <div class="receipt-item">
+          <span>${item.nome.substring(0, 20)}</span>
+          <span>R$ ${item.preco.toFixed(2)}</span>
+      </div>
+    `;
   });
+
   const totalEl = document.getElementById("recibo-total");
   const clienteEl = document.getElementById("recibo-cliente");
+
   if (totalEl) totalEl.innerText = "R$ " + total.toFixed(2);
   if (clienteEl) clienteEl.innerText = cliente;
 
   const crmEl = document.getElementById("recibo-crm");
-  if (crm && crmEl) {
+  const crmValEl = document.getElementById("recibo-crm-valor");
+
+  if (crm && crmEl && crmValEl) {
     crmEl.classList.remove("hidden");
-    const valEl = document.getElementById("recibo-crm-valor");
-    if (valEl) valEl.innerText = crm;
+    crmValEl.innerText = crm;
   } else if (crmEl) {
     crmEl.classList.add("hidden");
   }
-  document.getElementById("modal-recibo")?.classList.remove("hidden");
+
+  modalRecibo.classList.remove("hidden");
 }
 
 function fecharRecibo() {
-  document.getElementById("modal-recibo")?.classList.add("hidden");
+  const modal = document.getElementById("modal-recibo");
+  if (modal) modal.classList.add("hidden");
 }
 
 function atualizarDashboard() {
@@ -328,32 +393,40 @@ function atualizarDashboard() {
   if (totalEl) totalEl.innerText = "R$ " + totalVendasDia.toFixed(2);
   if (atendimentosEl)
     atendimentosEl.innerText = vendasRealizadas.length.toString();
-  if (criticoEl)
-    criticoEl.innerText = medicamentos
-      .filter((m) => m.estoque < 10)
-      .length.toString();
-  if (controladosEl)
-    controladosEl.innerText = vendasRealizadas
-      .filter((v) => v.crm !== "-")
-      .length.toString();
+
+  const criticos = medicamentos.filter((m) => m.estoque < 10).length;
+  if (criticoEl) criticoEl.innerText = criticos.toString();
+
+  const controladosVendidos = vendasRealizadas.filter(
+    (v) => v.crm !== "-",
+  ).length;
+  if (controladosEl) controladosEl.innerText = controladosVendidos.toString();
 }
 
 function renderizarHistorico() {
   const tbody = document.getElementById("lista-historico");
   if (!tbody) return;
+
   tbody.innerHTML = "";
   vendasRealizadas.forEach((v) => {
-    tbody.innerHTML += `<tr><td>#${v.id.toString().slice(-4)}</td><td>${v.data}</td><td>${v.cliente}</td><td>${v.itens} itens</td><td>R$ ${v.total.toFixed(2)}</td><td><span class="badge badge-no">Concluído</span></td></tr>`;
+    tbody.innerHTML += `
+      <tr>
+          <td>#${v.id.toString().slice(-4)}</td>
+          <td>${v.data}</td>
+          <td>${v.cliente}</td>
+          <td>${v.itens} itens</td>
+          <td>R$ ${v.total.toFixed(2)}</td>
+          <td><span class="badge badge-no">Concluído</span></td>
+      </tr>
+    `;
   });
 }
 
-// INICIALIZAÇÃO
-// Carrega dados iniciais se estiver na tela
-if (document.getElementById("screen-dashboard")) {
-  atualizarDashboard();
-}
+// --- EXPORTAR FUNÇÕES PARA O HTML (NECESSÁRIO POR CAUSA DO MODULE SYSTEM) ---
+// Como estamos usando módulos/TS, as funções não ficam no escopo global automaticamente.
+// Precisamos anexá-las ao objeto window explicitamente para o onclick="..." funcionar.
 
-// EXPONDO FUNÇÕES GLOBAIS PARA O HTML
+(window as any).realizarLogin = realizarLogin;
 (window as any).logout = logout;
 (window as any).navegar = navegar;
 (window as any).toggleSidebar = toggleSidebar;

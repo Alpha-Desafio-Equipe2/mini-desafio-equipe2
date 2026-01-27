@@ -17,6 +17,36 @@
       class="mobile-overlay"
       onclick="toggleSidebar()"
     ></div>
+
+    <!-- TELA DE LOGIN -->
+    <section id="login-screen">
+      <div class="login-box">
+        <h1><i class="fas fa-prescription-bottle-alt"></i> FarmaPopular</h1>
+        <p style="margin-bottom: 20px; color: #666">
+          Sistema Profissional de Gestão
+        </p>
+        <form onsubmit="realizarLogin(event)">
+          <input
+            type="email"
+            placeholder="E-mail"
+            required
+            value="admin@farma.com"
+          />
+          <input type="password" placeholder="Senha" required value="123456" />
+          <button
+            type="submit"
+            class="btn btn-primary"
+            style="width: 100%; justify-content: center"
+          >
+            Acessar Sistema
+          </button>
+        </form>
+        <p style="margin-top: 15px; font-size: 0.8rem; color: #999">
+          Ambiente Seguro | Versão 2.0
+        </p>
+      </div>
+    </section>
+
     <!-- LAYOUT PRINCIPAL -->
     <section id="app-layout" class="hidden">
       <!-- SIDEBAR -->

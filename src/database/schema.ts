@@ -1,0 +1,73 @@
+import { db } from '../config/database.js';
+
+// =======================
+// MEDICINES
+// =======================
+db.exec(`
+CREATE TABLE IF NOT EXISTS medicines (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  manufacturer TEXT,
+  active_principle TEXT NOT NULL,
+  requires_prescription INTEGER NOT NULL CHECK(requires_prescription IN (0,1)),
+  price REAL NOT NULL,
+  stock INTEGER NOT NULL CHECK (stock >= 0),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+`);
+
+// =======================
+// CUSTOMERS
+// =======================
+db.exec(`
+CREATE TABLE IF NOT EXISTS customers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  cpf TEXT UNIQUE NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+);
+`);
+
+// =======================
+// DOCTORS
+// =======================
+db.exec(`
+CREATE TABLE IF NOT EXISTS doctors (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  crm TEXT UNIQUE NOT NULL,
+  specialty TEXT, 
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+);
+`);
+
+// =======================
+// SALES
+// =======================
+db.exec(`
+CREATE TABLE IF NOT EXISTS sales (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id INTEGER,
+  branch_id INTEGER NOT NULL,
+  total_value REAL NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, 
+  FOREIGN KEY (customer_id) REFERENCES customers(id)
+);
+`);
+
+// =======================
+// BRANCHES
+// =======================
+db.exec(`
+CREATE TABLE IF NOT EXISTS branches (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  cnpj TEXT UNIQUE NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+);
+`);

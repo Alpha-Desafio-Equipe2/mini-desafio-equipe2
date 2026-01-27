@@ -1,9 +1,17 @@
-import { DataSource } from 'typeorm';
+import Database from 'better-sqlite3';
+import path from 'path';
 
-export const AppDataSource = new DataSource({
-  type: 'sqlite',
-  database: 'database.sqlite',
-  entities: ['src/modules/**/(*Entity).ts'],
-  // migrations: ['src/shared/database/migrations/*.ts'],
-  synchronize: true
-});
+const DATABASE_PATH = process.env.DATABASE_PATH || 'src/database/farmacia.sqlite';
+
+const dbPath = path.resolve(DATABASE_PATH);
+
+export const db = new Database(dbPath);
+
+db.pragma('journal_mode = WAL');
+
+import '../database/schema.ts';
+
+export function initDatabase() {
+  console.log('Database connected (SQLite)');
+}
+

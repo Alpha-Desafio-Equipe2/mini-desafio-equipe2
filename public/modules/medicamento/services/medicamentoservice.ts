@@ -1,4 +1,4 @@
-import { Medicamento } from "../../shared/types.js";
+import { Medicamento } from "../../../shared/types.js";
 
 export const medicamentos: Medicamento[] = [
   {

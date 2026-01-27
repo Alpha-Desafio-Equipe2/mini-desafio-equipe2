@@ -2,7 +2,7 @@ import {
   adicionarMedicamento,
   getMedicamentos,
 } from "../services/medicamentoservice.js";
-import { Medicamento } from "../../shared/types.js";
+import { Medicamento } from "../../../shared/types.js";
 import { renderizarMedicamentos } from "./list.page.js";
 
 export function abrirModalMedicamento() {

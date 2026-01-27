@@ -121,86 +121,159 @@ No Swagger é possível:
 ---
 ## 📂 Estrutura do Projeto
 <details>
-<summary><strong>ver estrutura completa </strong></summary>
+<summary><strong>Backend</strong></summary>
 
 ```
 src/
- ├── modules/
- │   ├── auth/
- │   │   ├── AuthController.ts
- │   │   ├── AuthService.ts
- │   │   ├── AuthRoutes.ts
- │   │   └── dtos/
- │   │        └── LoginDTO.ts
- │   │
- │   ├── usuario/
- │   │   ├── UsuarioController.ts
- │   │   ├── UsuarioService.ts
- │   │   ├── UsuarioRepository.ts
- │   │   ├── UsuarioEntity.ts
- │   │   ├── UsuarioRoutes.ts
- │   │   └── dtos/
- |   │
- │   ├── medicamento/
- │   │   ├── MedicamentoController.ts
- │   │   ├── MedicamentoService.ts
- │   │   ├── MedicamentoRepository.ts
- │   │   ├── MedicamentoEntity.ts
- │   │   ├── MedicamentoRoutes.ts
- │   │   └── dtos/
- │   │        ├── CreateMedicamentoDTO.ts
- │   │        └── UpdateMedicamentoDTO.ts
- │   │
- │   ├── cliente/
- │   │   ├── ClienteController.ts
- │   │   ├── ClienteService.ts
- │   │   ├── ClienteRepository.ts
- │   │   ├── ClienteEntity.ts
- │   │   ├── ClienteRoutes.ts
- │   │   └── dtos/
- │   │
- │   ├── medico/
- │   │   ├── MedicoController.ts
- │   │   ├── MedicoService.ts
- │   │   ├── MedicoRepository.ts
- │   │   ├── MedicoEntity.ts
- │   │   ├── MedicoRoutes.ts
- │   │   └── dtos/
- │   │
- │   ├── venda/
- │   │   ├── VendaController.ts
- │   │   ├── VendaService.ts
- │   │   ├── VendaRepository.ts
- │   │   ├── VendaEntity.ts
- │   │   ├── ItemVendaEntity.ts
- │   │   ├── VendaRoutes.ts
- │   │   └── dtos/
- │   │
- ├── shared/
- │   ├── middlewares/
- │   │   ├── authMiddleware.ts
- │   │   ├── errorHandler.ts
- │   │   └── validateRequest.ts
- │   │
- │   ├── errors/
- │   │   └── AppError.ts
- │   │
- │   ├── utils/
- │   │   ├── jwt.ts
- │   │   └── password.ts
- │   │
- │   └── constants/
- │
- ├── config/
- │   ├── database.ts
- │   ├── swagger.ts
- │   ├── env.ts
- │   └── app.ts
- │
- ├── routes.ts
- ├── server.ts
- └── index.ts
+├── modules/
+│   ├── auth/
+│   │   ├── AuthController.ts
+│   │   ├── AuthService.ts
+│   │   ├── AuthRoutes.ts
+│   │   └── dtos/
+│   │        └── LoginDTO.ts
+│   │
+│   ├── usuario/
+│   │   ├── UsuarioController.ts
+│   │   ├── UsuarioService.ts
+│   │   ├── UsuarioRepository.ts
+│   │   ├── model/
+│   │   │    └── UsuarioEntity.ts
+│   │   ├── UsuarioRoutes.ts
+│   │   └── dtos/
+│   │
+│   ├── medicamento/
+│   │   ├── MedicamentoController.ts
+│   │   ├── MedicamentoService.ts
+│   │   ├── MedicamentoRepository.ts
+│   │   ├── model/
+│   │   │    └── MedicamentoEntity.ts
+│   │   ├── MedicamentoRoutes.ts
+│   │   └── dtos/
+│   │        ├── CreateMedicamentoDTO.ts
+│   │        └── UpdateMedicamentoDTO.ts
+│   │
+│   ├── cliente/
+│   │   ├── ClienteController.ts
+│   │   ├── ClienteService.ts
+│   │   ├── ClienteRepository.ts
+│   │   ├── model/
+│   │   │    └── ClienteEntity.ts
+│   │   ├── ClienteRoutes.ts
+│   │   └── dtos/
+│   │
+│   ├── medico/
+│   │   ├── MedicoController.ts
+│   │   ├── MedicoService.ts
+│   │   ├── MedicoRepository.ts
+│   │   ├── model/
+│   │   │    └── MedicoEntity.ts
+│   │   ├── MedicoRoutes.ts
+│   │   └── dtos/
+│   │
+│   ├── venda/
+│   │   ├── VendaController.ts
+│   │   ├── VendaService.ts
+│   │   ├── VendaRepository.ts
+│   │   ├── model/
+│   │   │    ├── VendaEntity.ts
+│   │   │    └── ItemVendaEntity.ts
+│   │   ├── VendaRoutes.ts
+│   │   └── dtos/
+│
+├── database/
+│   ├── migrations/
+│   │   ├── usuario/
+│   │   │    └── 20240101_create_usuarios.ts
+│   │   │
+│   │   ├── medicamento/
+│   │   │    └── 20240102_create_medicamentos.ts
+│   │   │
+│   │   ├── cliente/
+│   │   │    └── 20240103_create_clientes.ts
+│   │   │
+│   │   ├── medico/
+│   │   │    └── 20240104_create_medicos.ts
+│   │   │
+│   │   └── venda/
+│   │        ├── 20240105_create_vendas.ts
+│   │        └── 20240106_create_itens_venda.ts
+│   │
+│   └── seeds/               # opcional
+│        └── initial_data.ts
+│
+├── shared/
+│   ├── middlewares/
+│   │   ├── authMiddleware.ts
+│   │   ├── errorHandler.ts
+│   │   └── validateRequest.ts
+│   │
+│   ├── errors/
+│   │   └── AppError.ts
+│   │
+│   ├── utils/
+│   │   ├── jwt.ts
+│   │   └── password.ts
+│   │
+│   └── constants/
+│
+├── config/
+│   ├── database.ts
+│   ├── swagger.ts
+│   ├── env.ts
+│   └── app.ts
+│
+├── routes.ts
+├── server.ts
+└── index.ts
+
  ```
+</details>
+
+<details>
+<summary><strong>Frontend </strong></summary>
+```
+src/
+├── app/
+│   ├── router.ts
+│   ├── app.ts
+│   └── bootstrap.ts
+│
+├── modules/
+│   ├── auth/
+│   │   ├── pages/
+│   │   │   └── login.page.ts
+│   │   ├── services/
+│   │   │   └── auth.service.ts
+│   │   ├── validators/
+│   │   │   └── login.validator.ts
+│   │   └── types.ts
+│   │
+│   ├── medicamento/
+│   │   ├── pages/
+│   │   │   ├── list.page.ts
+│   │   │   └── form.page.ts
+│   │   ├── services/
+│   │   │   └── medicamento.service.ts
+│   │   └── types.ts
+│
+├── shared/
+│   ├── http/
+│   │   └── api.ts
+│   ├── errors/
+│   │   └── error-handler.ts
+│   ├── components/
+│   │   ├── modal.ts
+│   │   └── table.ts
+│   ├── utils/
+│   │   └── dom.ts
+│   └── constants/
+│
+├── styles/
+├── assets/
+└── main.ts
+
+```
 </details>
 
 -----

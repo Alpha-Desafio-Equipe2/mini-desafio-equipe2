@@ -265,14 +265,29 @@
                   ><i class="fas fa-search"></i> Buscar Produto (Código ou
                   Nome)</label
                 >
-                <input
-                  type="text"
-                  id="input-busca-pdv"
-                  placeholder="Digite para buscar..."
-                  onkeyup="buscarProduto(this.value)"
-                  autocomplete="off"
-                />
-                <div id="resultado-busca" class="product-search-result"></div>
+                <div style="display: flex; gap: 10px">
+                  <input
+                    type="number"
+                    id="input-qtd-pdv"
+                    value="1"
+                    min="1"
+                    style="width: 70px"
+                    placeholder="Qtd"
+                  />
+                  <div style="flex-grow: 1; position: relative">
+                    <input
+                      type="text"
+                      id="input-busca-pdv"
+                      placeholder="Digite para buscar..."
+                      onkeyup="buscarProduto(this.value)"
+                      autocomplete="off"
+                    />
+                    <div
+                      id="resultado-busca"
+                      class="product-search-result"
+                    ></div>
+                  </div>
+                </div>
               </div>
               <div id="area-receita" class="hidden">
                 <div class="receita-alert">

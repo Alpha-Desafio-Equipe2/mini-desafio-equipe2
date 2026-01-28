@@ -1,7 +1,5 @@
 import { CartService } from "../services/cart.service.js";
 import { api } from "../../../shared/http/api.js";
-import { SaleService } from "../services/sale.service.js";
-import { CreateSaleDTO, SaleItem } from "../../../shared/types.js";
 
 export const CartPage = (): HTMLElement => {
   const div = document.createElement("div");
@@ -88,7 +86,7 @@ export const CartPage = (): HTMLElement => {
 
       const checkoutForm = div.querySelector("#checkout-form");
       if (checkoutForm) {
-        checkoutForm.addEventListener("submit", async (e: any) => {
+        checkoutForm.addEventListener("submit", async (e) => {
           e.preventDefault();
           const formData = new FormData(e.target as HTMLFormElement);
           const type = formData.get("type") as string;
@@ -100,34 +98,17 @@ export const CartPage = (): HTMLElement => {
           }
 
           try {
-            // Map to CreateSaleDTO structure
-            // Assumes user is customer or we use a logged in customer ID.
-            // The guide used customer_id in CreateSaleDTO.
-            // Ensure we have a customer_id, otherwise we might fail if backend requires it.
-            // For now, I'll use a mocked customer_id or try to get it from auth user if they have one.
-            const userStr = localStorage.getItem("user");
-            const user = userStr ? JSON.parse(userStr) : null;
-            const customerId = user ? user.id : 1; // Fallback to 1 if no user (dev mode)
-
-            const items: SaleItem[] = cart.map((item) => ({
-              medicine_id: item.product.id,
+            const items = cart.map((item) => ({
+              product_id: item.product.id,
               quantity: item.quantity,
             }));
-
-            const saleData: CreateSaleDTO = {
-              customer_id: customerId,
-              items: items,
-            };
-            // Adding branch_id if needed, logic for it is missing in guide but present in type
-
-            await SaleService.createSale(saleData);
+            await api.post("/orders", { type, delivery_address, items });
 
             CartService.clearCart();
             alert("Pedido realizado com sucesso!");
             window.navigate("/profile");
           } catch (error: any) {
-            console.error(error);
-            alert("Erro ao finalizar pedido: " + (error.message || error));
+            alert("Erro ao finalizar pedido: " + error.message);
           }
         });
       }

@@ -5,5 +5,11 @@ const routes = Router();
 
 routes.use('/auth', authRoutes);
 routes.use('/customer', customerRoutes);
+import medicineRoutes from './modules/medicine/MedicineRoutes.js';
+
+const routes = Router();
+
+routes.use('/auth', authRoutes);
+routes.use('/medicines', medicineRoutes);
 
 export default routes;

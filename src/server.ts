@@ -1,3 +1,4 @@
+import express from 'express';
 import app from './app.js';
 import { initDatabase } from './config/database.js';
 import './database/schema.js';

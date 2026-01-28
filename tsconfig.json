@@ -12,12 +12,9 @@
     "experimentalDecorators": true,
     "skipLibCheck": true
   },
-  "include": [
-    "src",
-    "tests"
-  ],
-  "exclude": [
-    "node_modules",
-    "tests"
-  ]
+  "include": ["src", "tests"],
+  "exclude": ["node_modules", "tests"],
+  "ts-node": {
+    "esm": true
+  }
 }

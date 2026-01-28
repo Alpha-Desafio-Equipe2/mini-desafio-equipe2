@@ -1,4 +1,4 @@
-import { db } from '../../config/database';
+import { db } from '../../config/database.js';
 
 export function seedDoctors() {
   const count = db

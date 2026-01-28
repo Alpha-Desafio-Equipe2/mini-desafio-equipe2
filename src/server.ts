@@ -1,6 +1,7 @@
-import app from './app';
-import { initDatabase } from './config/database';
-import { runSeeds } from './database/seeds';
+import app from './app.js';
+import { initDatabase } from './config/database.js';
+import './database/schema.js';
+import { runSeeds } from './database/seeds/index.js';
 
 const PORT = process.env.PORT || 3000;
 

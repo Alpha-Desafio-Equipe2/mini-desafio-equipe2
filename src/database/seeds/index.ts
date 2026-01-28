@@ -1,5 +1,5 @@
-import { seedDoctors } from './seedDoctors';
-import { seedMedicine } from './seedMedicines';
+import { seedDoctors } from './seedDoctors.js';
+import { seedMedicine } from './seedMedicines.js';
 
 export function runSeeds() {
   console.log('Running database seeds...');

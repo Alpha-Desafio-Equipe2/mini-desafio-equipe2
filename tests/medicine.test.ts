@@ -2,17 +2,15 @@ import request from 'supertest';
 import app from '../src/app';
 import { db } from '../src/config/database';
 
-beforeAll(() => {
+beforeEach(() => {
+  db.prepare('DELETE FROM medicines').run();
+
   db.prepare(`
-      INSERT INTO medicines (
-        name,
-        manufacturer,
-        active_principle,
-        requires_prescription,
-        price,
-        stock
-      ) VALUES (?, ?, ?, ?, ?, ?)
-    `).run(
+    INSERT INTO medicines (
+      name, manufacturer, active_principle,
+      requires_prescription, price, stock
+    ) VALUES (?, ?, ?, ?, ?, ?)
+  `).run(
     'Dipirona',
     'Farmácia Teste',
     'Dipirona',
@@ -20,11 +18,6 @@ beforeAll(() => {
     12.5,
     100
   );
-});
-
-afterAll(() => {
-  // limpa tabela após testes
-  db.prepare('DELETE FROM medicines').run();
 });
 
 describe('POST /farma-project/medicine', () => {
@@ -78,6 +71,119 @@ describe('GET /farma-project/medicines', () => {
   it('deve retornar 404 se medicamento não existir', async () => {
     const response = await request(app)
       .get('/farma-project/medicines/999999');
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('error');
+  });
+});
+
+describe('PUT /farma-project/medicines/:id', () => {
+  it('deve atualizar apenas o estoque', async () => {
+    const medicine = db
+      .prepare('SELECT id, stock FROM medicines LIMIT 1')
+      .get() as { id: number; stock: number };
+
+    const response = await request(app)
+      .put(`/farma-project/medicines/${medicine.id}`)
+      .send({
+        stock: medicine.stock + 10
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('stock', medicine.stock + 10);
+  });
+
+  it('deve atualizar apenas o preço', async () => {
+    const medicine = db
+      .prepare('SELECT id FROM medicines LIMIT 1')
+      .get() as { id: number };
+
+    const response = await request(app)
+      .put(`/farma-project/medicines/${medicine.id}`)
+      .send({
+        price: 19.9
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('price', 19.9);
+  });
+
+  it('não deve permitir estoque negativo', async () => {
+    const medicine = db
+      .prepare('SELECT id FROM medicines LIMIT 1')
+      .get() as { id: number };
+
+    const response = await request(app)
+      .put(`/farma-project/medicines/${medicine.id}`)
+      .send({
+        stock: -5
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('error');
+  });
+
+  it('não deve permitir preço menor ou igual a zero', async () => {
+    const medicine = db
+      .prepare('SELECT id FROM medicines LIMIT 1')
+      .get() as { id: number };
+
+    const response = await request(app)
+      .put(`/farma-project/medicines/${medicine.id}`)
+      .send({
+        price: 0
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('error');
+  });
+
+  it('deve retornar 404 se medicamento não existir', async () => {
+    const response = await request(app)
+      .put('/farma-project/medicines/999999')
+      .send({
+        stock: 10
+      });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('error');
+  });
+});
+
+describe('DELETE /farma-project/medicines/:id', () => {
+  it('deve deletar um medicamento existente', async () => {
+    const medicine = db
+      .prepare(`
+        INSERT INTO medicines (
+          name, manufacturer, active_principle,
+          requires_prescription, price, stock
+        ) VALUES (?, ?, ?, ?, ?, ?)
+        RETURNING id
+      `)
+      .get(
+        'Medicamento Delete',
+        'Teste',
+        'Teste',
+        0,
+        10,
+        10
+      ) as { id: number };
+
+    const response = await request(app)
+      .delete(`/farma-project/medicines/${medicine.id}`);
+
+    expect(response.status).toBe(204);
+
+    const deleted = db
+      .prepare('SELECT * FROM medicines WHERE id = ?')
+      .get(medicine.id);
+
+    expect(deleted).toBeUndefined();
+  });
+
+  it('deve retornar 404 ao tentar deletar medicamento inexistente', async () => {
+    const response = await request(app)
+      .delete('/farma-project/medicines/999999');
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('error');

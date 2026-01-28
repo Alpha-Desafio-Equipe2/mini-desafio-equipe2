@@ -1,6 +1,7 @@
 import { db } from '../../config/database.js';
 import { CreateMedicineDTO } from './dtos/CreateMedicineDTO.js';
 import { AppError } from '../../shared/errors/AppError.js';
+import { UpdateMedicineDTO } from './dtos/UpdateMedicineDTO.js';
 
 type MedicineRow = {
   id: number;
@@ -90,32 +91,56 @@ export class MedicineService {
     };
   }
 
-  static update(id: string, data: CreateMedicineDTO) {
-    const stmt = db.prepare(`
-      UPDATE medicines SET
-        name = ?,
-        manufacturer = ?,
-        active_principle = ?,
-        requires_prescription = ?,
-        price = ?,
-        stock = ?
-      WHERE id = ?
-    `);
+  static update(id: string, data: UpdateMedicineDTO) {
+    const medicine = db
+      .prepare('SELECT * FROM medicines WHERE id = ?')
+      .get(id) as MedicineRow | undefined;
 
-    const result = stmt.run(
-      data.name,
-      data.manufacturer ?? null,
-      data.active_principle,
-      data.requires_prescription ? 1 : 0,
-      data.price,
-      data.stock,
+    if (!medicine) {
+      throw new AppError('Medicine not found', 404);
+    }
+
+    if (data.stock !== undefined && data.stock < 0) {
+      throw new AppError('Stock cannot be negative', 400);
+    }
+
+    if (data.price !== undefined && data.price <= 0) {
+      throw new AppError('Price must be greater than zero', 400);
+    }
+
+    const updated = {
+      name: data.name ?? medicine.name,
+      manufacturer: data.manufacturer ?? medicine.manufacturer,
+      active_principle: data.active_principle ?? medicine.active_principle,
+      requires_prescription:
+        data.requires_prescription !== undefined
+          ? (data.requires_prescription ? 1 : 0)
+          : medicine.requires_prescription,
+      price: data.price ?? medicine.price,
+      stock: data.stock ?? medicine.stock,
+    };
+
+    db.prepare(`
+    UPDATE medicines SET
+      name = ?,
+      manufacturer = ?,
+      active_principle = ?,
+      requires_prescription = ?,
+      price = ?,
+      stock = ?,
+      updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `).run(
+      updated.name,
+      updated.manufacturer,
+      updated.active_principle,
+      updated.requires_prescription,
+      updated.price,
+      updated.stock,
       id
     );
 
-    return {
-      id,
-      ...data,
-    };
+    return { id, ...updated };
   }
 
   static delete(id: string) {

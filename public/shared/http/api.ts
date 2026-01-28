@@ -1,9 +1,7 @@
-const API_URL = "http://localhost:3000/api";
-
+const API_URL = "http://localhost:3000/farma-project";
 interface RequestConfig extends RequestInit {
   headers?: HeadersInit;
 }
-
 export const api = {
   async request<T>(
     endpoint: string,
@@ -14,24 +12,30 @@ export const api = {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     };
-
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
-
     const config: RequestConfig = {
       method,
       headers,
     };
-
     if (body) {
       config.body = JSON.stringify(body);
     }
-
     try {
       const response = await fetch(`${API_URL}${endpoint}`, config);
+      // Handle 401 Unauthorized
+      if (response.status === 401 && !endpoint.includes("/auth/login")) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        if (window.navigate) {
+          window.navigate("/login");
+        } else {
+          window.location.href = "/login.html"; // Fallback
+        }
+        throw new Error("Sessão expirada");
+      }
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.error || data.message || "Something went wrong");
       }
@@ -41,7 +45,6 @@ export const api = {
       throw error;
     }
   },
-
   get<T>(endpoint: string) {
     return this.request<T>(endpoint, "GET");
   },

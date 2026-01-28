@@ -2,9 +2,41 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  role: "admin" | "pharmacy" | "customer";
+  role: "admin" | "manager" | "attendant";
   phone?: string;
   address?: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+}
+
+export interface Medicine {
+  id: number;
+  name: string;
+  manufacturer?: string;
+  active_principle: string;
+  price: number;
+  stock: number;
+  requires_prescription: boolean;
+}
+
+export interface Customer {
+  id: number;
+  name: string;
+  cpf: string;
+}
+
+export interface SaleItem {
+  medicine_id: number;
+  quantity: number;
+}
+
+export interface CreateSaleDTO {
+  customer_id: number;
+  branch_id?: number;
+  items: SaleItem[];
 }
 
 export interface Product {
@@ -37,6 +69,7 @@ export interface Order {
   created_at: string;
 }
 
+// Deprecated or Alias if needed
 export interface Medicamento {
   id: number;
   nome: string;

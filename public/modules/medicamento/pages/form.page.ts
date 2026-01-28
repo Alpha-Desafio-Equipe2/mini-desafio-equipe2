@@ -1,8 +1,4 @@
-import {
-  adicionarMedicamento,
-  getMedicamentos,
-} from "../services/medicamentoservice.js";
-import { Medicamento } from "../../../shared/types.js";
+import { MedicineService } from "../services/medicamento.service.js";
 import { renderizarMedicamentos } from "./list.page.js";
 
 export function abrirModalMedicamento() {
@@ -15,7 +11,7 @@ export function fecharModalMedicamento() {
   if (modal) modal.classList.add("hidden");
 }
 
-export function salvarMedicamento(e: Event) {
+export async function salvarMedicamento(e: Event) {
   e.preventDefault();
   const nome = (document.getElementById("med-nome") as HTMLInputElement).value;
   const fabricante = (
@@ -32,19 +28,22 @@ export function salvarMedicamento(e: Event) {
   const receita = (document.getElementById("med-receita") as HTMLInputElement)
     .checked;
 
-  const novo: Medicamento = {
-    id: Date.now(),
-    nome,
-    fabricante,
-    ativo,
-    receita,
-    preco,
-    estoque,
+  const novo: any = {
+    name: nome, // Mapping to new interface
+    manufacturer: fabricante,
+    active_principle: ativo,
+    requires_prescription: receita,
+    price: preco,
+    stock: estoque,
   };
 
-  adicionarMedicamento(novo);
-  renderizarMedicamentos(); // Re-render list
-  fecharModalMedicamento();
-  alert("Medicamento cadastrado com sucesso!");
-  (e.target as HTMLFormElement).reset();
+  try {
+    await MedicineService.create(novo);
+    renderizarMedicamentos(); // Re-render list
+    fecharModalMedicamento();
+    alert("Medicamento cadastrado com sucesso!");
+    (e.target as HTMLFormElement).reset();
+  } catch (error: any) {
+    alert("Erro ao cadastrar: " + (error.message || error));
+  }
 }

@@ -35,4 +35,23 @@ export class MedicineController {
 
     return res.status(201).json(medicine);
   }
+
+  static getAll(req: Request, res: Response) {
+    const medicines = MedicineService.getAll();
+
+    return res.status(200).json(medicines);
+  }
+
+  static getById(req: Request, res: Response) {
+    const { id } = req.params;
+    const medicine = MedicineService.getById(parseInt(id));
+
+    if (!medicine) {
+      return res.status(404).json({
+        message: 'Medicine not found',
+      });
+    }
+
+    return res.status(200).json(medicine);
+  }
 }

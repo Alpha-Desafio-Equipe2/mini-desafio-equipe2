@@ -1,4 +1,4 @@
-import { api } from "../../../shared/http/api.js";
+import { AuthService } from "../services/auth.service.js";
 
 export const LoginPage = (): HTMLElement => {
   const div = document.createElement("div");
@@ -35,12 +35,7 @@ export const LoginPage = (): HTMLElement => {
       const data = Object.fromEntries(formData.entries());
 
       try {
-        const res = await api.post<{ token: string; user: any }>(
-          "/auth/login",
-          data,
-        );
-        localStorage.setItem("token", res.token);
-        localStorage.setItem("user", JSON.stringify(res.user));
+        await AuthService.login(data.email as string, data.password as string);
         window.navigate("/");
       } catch (error: any) {
         errorMsg.textContent = error.message;

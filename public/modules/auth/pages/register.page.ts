@@ -1,4 +1,4 @@
-import { api } from "../../../shared/http/api.js";
+import { AuthService } from "../services/auth.service.js";
 
 export const RegisterPage = (): HTMLElement => {
   const div = document.createElement("div");
@@ -47,12 +47,7 @@ export const RegisterPage = (): HTMLElement => {
       const data = Object.fromEntries(formData.entries());
 
       try {
-        const res = await api.post<{ token: string; user: any }>(
-          "/auth/register",
-          data,
-        );
-        localStorage.setItem("token", res.token);
-        localStorage.setItem("user", JSON.stringify(res.user));
+        await AuthService.register(data);
         alert("Cadastro realizado com sucesso!");
         window.navigate("/");
       } catch (error: any) {

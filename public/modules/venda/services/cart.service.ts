@@ -40,7 +40,17 @@ export const CartService = {
 
   clearCart(): void {
     localStorage.removeItem("cart");
+    localStorage.removeItem("cart_prescription"); // Clear prescription
     window.dispatchEvent(new Event("cart-updated"));
+  },
+
+  setPrescriptionData(data: { crm: string; date: string }): void {
+    localStorage.setItem("cart_prescription", JSON.stringify(data));
+  },
+
+  getPrescriptionData(): { crm: string; date: string } | null {
+    const stored = localStorage.getItem("cart_prescription");
+    return stored ? JSON.parse(stored) : null;
   },
 
   getTotal(): number {

@@ -6,7 +6,7 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
 
   try {
     const user = await api.get<User>("/auth/profile");
-    const orders = await api.get<Order[]>("/orders/myorders");
+    const orders = await api.get<Order[]>("/sales/myorders");
 
     div.innerHTML = `
             <div style="display: grid; gap: 2rem; grid-template-columns: 1fr 2fr;">
@@ -42,34 +42,32 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
                                 <div class="card">
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
                                         <strong>Pedido #${order.id}</strong>
-                                        <span style="color: ${order.status === "cancelled" ? "var(--error)" : "var(--success)"}">${order.status.toUpperCase()}</span>
+                                         <!-- Status implicitly Active if listed here -->
                                     </div>
                                     <p style="color: var(--text-muted); font-size: 0.9rem;">Data: ${new Date(order.created_at).toLocaleString()}</p>
                                     <p style="color: var(--text-muted); font-size: 0.9rem;">Tipo: ${order.type === "delivery" ? "Entrega" : "Retirada"}</p>
                                     
                                     <div style="margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
-                                        ${order.items
-                                          .map(
-                                            (item) => `
+                                        ${
+                                          order.items
+                                            ? order.items
+                                                .map(
+                                                  (item) => `
                                             <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
                                                 <span>Produto #${item.product_id} (x${item.quantity})</span>
                                                 <span>R$ ${(item.price_at_time! * item.quantity).toFixed(2)}</span>
                                             </div>
                                         `,
-                                          )
-                                          .join("")}
+                                                )
+                                                .join("")
+                                            : "<p>Itens não disponíveis</p>"
+                                        }
                                     </div>
                                     
-                                    ${
-                                      order.status !== "cancelled"
-                                        ? `
-                                        <button class="btn btn-secondary" style="margin-top: 1rem; width: 100%; border-color: var(--error); color: var(--error);" 
-                                                onclick="window.cancelOrder(${order.id})">
-                                            Cancelar Pedido
-                                        </button>
-                                    `
-                                        : ""
-                                    }
+                                    <button class="btn btn-secondary" style="margin-top: 1rem; width: 100%; border-color: var(--error); color: var(--error);" 
+                                            onclick="window.cancelOrder(${order.id})">
+                                        Cancelar Pedido
+                                    </button>
                                 </div>
                             `,
                               )
@@ -98,7 +96,7 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
     window.cancelOrder = async (id: number) => {
       if (!confirm("Tem certeza que deseja cancelar este pedido?")) return;
       try {
-        await api.post(`/orders/${id}/cancel`, {});
+        await api.post(`/sales/${id}/cancel`, {});
         alert("Pedido cancelado.");
         window.location.reload();
       } catch (error: any) {

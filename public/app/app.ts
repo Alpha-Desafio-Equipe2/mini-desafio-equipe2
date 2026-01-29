@@ -48,6 +48,7 @@ export class App {
   }
 
   async render() {
+    this.appElement.innerHTML = "";
     this.appElement.appendChild(Navbar());
 
     let PageComponent = routes[this.currentPath];

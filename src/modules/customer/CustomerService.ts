@@ -24,6 +24,8 @@ export class CustomerService {
   }
 
   static execute(data: CreateCustomerDTO): CustomerEntity {
+    this.validateCpf(data.cpf);
+
     // 1. Check if customer exists
     const findQuery = `SELECT * FROM customers WHERE cpf = ?`;
     const customerAlreadyExists = db.prepare(findQuery).get(data.cpf);
@@ -45,6 +47,14 @@ export class CustomerService {
       name: data.name,
       cpf: data.cpf,
     };
+  }
+
+  private static validateCpf(cpf: string): void {
+    const numericCpf = cpf.replace(/\D/g, "");
+
+    if (numericCpf.length !== 11) {
+      throw new AppError("CPF must contain exactly 11 digits", 400);
+    }
   }
 
   static findAll(): CustomerEntity[] {
@@ -70,6 +80,7 @@ export class CustomerService {
 
     // Check if CPF is being updated and if it's unique (excluding current user)
     if (data.cpf && data.cpf !== customer.cpf) {
+        this.validateCpf(data.cpf);
         const existing = db.prepare("SELECT id FROM customers WHERE cpf = ?").get(data.cpf) as { id: number } | undefined;
         if (existing && existing.id !== customer.id) {
             throw new AppError("CPF already currently in use", 409);

@@ -1,6 +1,6 @@
-import { CreateCustomerDTO } from './dtos/CreateCustomerDTO.js';
-import { db } from '../../config/database.js';
-import { AppError } from '../../shared/errors/AppError.js';
+import { CreateCustomerDTO } from "./dtos/CreateCustomerDTO.js";
+import { db } from "../../config/database.js";
+import { AppError } from "../../shared/errors/AppError.js";
 
 // Define the entity shape internally if model folder is removed
 interface CustomerEntity {
@@ -27,7 +27,7 @@ export class CustomerService {
     const customerAlreadyExists = db.prepare(findQuery).get(data.cpf);
 
     if (customerAlreadyExists) {
-      throw new AppError('Customer already exists with this CPF', 409);
+      throw new AppError("Customer already exists with this CPF", 409);
     }
 
     // 2. Create customer
@@ -35,13 +35,17 @@ export class CustomerService {
       INSERT INTO customers (name, cpf)
       VALUES (?, ?)
     `;
-    
+
     const info = db.prepare(insertQuery).run(data.name, data.cpf);
-    
+
     return {
       id: info.lastInsertRowid,
       name: data.name,
       cpf: data.cpf,
     };
+  }
+
+  findAll(): CustomerEntity[] {
+    return db.prepare("SELECT * FROM customers").all() as CustomerEntity[];
   }
 }

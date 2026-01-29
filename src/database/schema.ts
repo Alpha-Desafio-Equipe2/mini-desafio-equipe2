@@ -86,7 +86,10 @@ CREATE TABLE IF NOT EXISTS sale_items (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (sale_id) REFERENCES sales(id),
   FOREIGN KEY (medicine_id) REFERENCES medicines(id)
-=======
+):
+`);
+
+// =======================
 // USERS
 // =======================
 db.exec(`

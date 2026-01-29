@@ -2,7 +2,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  role: "admin" | "manager" | "attendant";
+  role: "admin" | "manager" | "attendant" | "customer";
   phone?: string;
   address?: string;
 }

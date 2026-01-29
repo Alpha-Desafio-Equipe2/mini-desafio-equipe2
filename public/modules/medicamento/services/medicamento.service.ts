@@ -32,4 +32,25 @@ export class MedicineService {
       throw error;
     }
   }
+  static async update(
+    id: number,
+    medicine: Partial<Medicine>,
+  ): Promise<Medicine> {
+    try {
+      const response = await api.put<Medicine>(`/medicines/${id}`, medicine);
+      return response;
+    } catch (error) {
+      console.error("Erro ao atualizar medicamento", error);
+      throw error;
+    }
+  }
+
+  static async delete(id: number): Promise<void> {
+    try {
+      await api.delete(`/medicines/${id}`);
+    } catch (error) {
+      console.error("Erro ao excluir medicamento", error);
+      throw error;
+    }
+  }
 }

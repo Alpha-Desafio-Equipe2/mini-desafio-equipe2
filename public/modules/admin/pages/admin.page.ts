@@ -32,7 +32,10 @@ export const AdminPage = async (): Promise<HTMLElement> => {
 
   const renderProducts = async () => {
     try {
-      const products = await api.get<Product[]>("/products");
+      // Changed to /medicines based on new backend structure
+      const products = await api.get<Product[]>("/medicines");
+      // Note: If backend endpoint is /products, change back. Guide says /medicines.
+
       contentDiv.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <h3>Gerenciar Produtos</h3>
@@ -58,7 +61,8 @@ export const AdminPage = async (): Promise<HTMLElement> => {
                                 <td style="padding: 10px;">R$ ${p.price.toFixed(2)}</td>
                                 <td style="padding: 10px;">${p.quantity}</td>
                                 <td style="padding: 10px;">
-                                    <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 5px 10px;" onclick="window.deleteProduct(${p.id})">Excluir</button>
+                                    <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 5px 10px; margin-right: 5px;" onclick="window.editProduct(${p.id})">Editar</button>
+                                    <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 5px 10px; color: var(--error); border-color: var(--error);" onclick="window.deleteProduct(${p.id})">Excluir</button>
                                 </td>
                             </tr>
                         `,
@@ -68,15 +72,16 @@ export const AdminPage = async (): Promise<HTMLElement> => {
                 </table>
                 
                 <div id="product-form-modal" style="display: none; margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1rem;">
-                    <h4>Adicionar Produto</h4>
+                    <h4 id="form-title">Adicionar Produto</h4>
                     <form id="add-product-form">
+                        <input type="hidden" name="id" id="product-id">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <input type="text" name="name" placeholder="Nome" class="input-field" required>
-                            <input type="number" name="price" placeholder="Preço" step="0.01" class="input-field" required>
-                            <input type="number" name="quantity" placeholder="Quantidade" class="input-field" required>
-                            <input type="text" name="image_url" placeholder="URL da Imagem" class="input-field">
+                            <input type="text" name="name" id="p-name" placeholder="Nome" class="input-field" required>
+                            <input type="number" name="price" id="p-price" placeholder="Preço" step="0.01" class="input-field" required min="0">
+                            <input type="number" name="quantity" id="p-quantity" placeholder="Quantidade" class="input-field" required min="0">
+                            <input type="text" name="image_url" id="p-image" placeholder="URL da Imagem" class="input-field">
                         </div>
-                        <textarea name="description" placeholder="Descrição" class="input-field" style="margin-top: 1rem; width: 100%;"></textarea>
+                        <textarea name="description" id="p-desc" placeholder="Descrição" class="input-field" style="margin-top: 1rem; width: 100%;"></textarea>
                         <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Salvar</button>
                         <button type="button" class="btn btn-secondary" onclick="document.getElementById('product-form-modal').style.display='none'">Cancelar</button>
                     </form>
@@ -91,11 +96,22 @@ export const AdminPage = async (): Promise<HTMLElement> => {
           const data: any = Object.fromEntries(formData.entries());
           data.price = parseFloat(data.price);
           data.quantity = parseInt(data.quantity);
+          const id = data.id;
+          delete data.id;
 
           try {
-            await api.post("/products", data);
-            alert("Produto criado!");
+            if (id) {
+              // Update
+              await api.put(`/medicines/${id}`, data);
+              alert("Produto atualizado!");
+            } else {
+              // Create
+              await api.post("/medicines", data);
+              alert("Produto criado!");
+            }
             renderProducts();
+            document.getElementById("product-form-modal")!.style.display =
+              "none";
           } catch (err: any) {
             alert(err.message);
           }
@@ -183,13 +199,45 @@ export const AdminPage = async (): Promise<HTMLElement> => {
 
   window.showProductForm = () => {
     const modal = document.getElementById("product-form-modal");
-    if (modal) modal.style.display = "block";
+    if (modal) {
+      modal.style.display = "block";
+      (document.getElementById("form-title") as HTMLElement).textContent =
+        "Adicionar Produto";
+      (document.getElementById("add-product-form") as HTMLFormElement).reset();
+      (document.getElementById("product-id") as HTMLInputElement).value = "";
+    }
+  };
+
+  window.editProduct = async (id: number) => {
+    try {
+      const product = await api.get<Product>(`/medicines/${id}`);
+      const modal = document.getElementById("product-form-modal");
+      if (modal) {
+        modal.style.display = "block";
+        (document.getElementById("form-title") as HTMLElement).textContent =
+          "Editar Produto";
+        (document.getElementById("product-id") as HTMLInputElement).value =
+          product.id.toString();
+        (document.getElementById("p-name") as HTMLInputElement).value =
+          product.name;
+        (document.getElementById("p-price") as HTMLInputElement).value =
+          product.price.toString();
+        (document.getElementById("p-quantity") as HTMLInputElement).value =
+          product.quantity.toString();
+        (document.getElementById("p-image") as HTMLInputElement).value =
+          product.image_url || "";
+        (document.getElementById("p-desc") as HTMLInputElement).value =
+          product.description || "";
+      }
+    } catch (e) {
+      alert("Erro ao carregar produto.");
+    }
   };
 
   window.deleteProduct = async (id: number) => {
-    if (!confirm("Excluir produto?")) return;
+    if (!confirm("Tem certeza que deseja excluir este medicamento?")) return;
     try {
-      await api.delete(`/products/${id}`);
+      await api.delete(`/medicines/${id}`); // Changed to /medicines based on guide
       renderProducts();
     } catch (err: any) {
       alert(err.message);
@@ -211,3 +259,10 @@ export const AdminPage = async (): Promise<HTMLElement> => {
 
   return div;
 };
+
+// Add global types
+declare global {
+  interface Window {
+    editProduct?: (id: number) => void;
+  }
+}

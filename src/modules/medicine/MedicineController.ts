@@ -65,14 +65,8 @@ export class MedicineController {
 
   static delete(req: Request, res: Response) {
     const id = req.params.id;
-    const medicine = MedicineService.getById(parseInt(id));
 
-    if (!medicine) {
-      return res.status(404).json({
-        message: 'Medicine not found',
-      });
-    }
-    MedicineService.delete(id);
+    MedicineService.delete(parseInt(id));
 
     return res.status(204).json(`Medicine id :${id} deleted successfully`);
   }

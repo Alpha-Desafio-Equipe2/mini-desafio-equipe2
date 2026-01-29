@@ -6,7 +6,7 @@ export const ProductCard = (product: Product): HTMLElement => {
   div.className = "card";
 
   const image =
-    product.image_url || "https://via.placeholder.com/300x200?text=Produto";
+    product.image_url || "https://placehold.co/300x200?text=Produto";
 
   div.innerHTML = `
         <img src="${image}" alt="${product.name}" style="width:100%; height:200px; object-fit:cover; border-radius: var(--radius-sm); margin-bottom: 1rem;">

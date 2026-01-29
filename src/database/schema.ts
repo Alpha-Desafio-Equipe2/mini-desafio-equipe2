@@ -73,6 +73,20 @@ CREATE TABLE IF NOT EXISTS branches (
 `);
 
 // =======================
+// SALE ITEMS
+// =======================
+db.exec(`
+CREATE TABLE IF NOT EXISTS sale_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  sale_id INTEGER NOT NULL,
+  medicine_id INTEGER NOT NULL,
+  quantity INTEGER NOT NULL,
+  unit_price REAL NOT NULL,
+  total_price REAL NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (sale_id) REFERENCES sales(id),
+  FOREIGN KEY (medicine_id) REFERENCES medicines(id)
+=======
 // USERS
 // =======================
 db.exec(`

@@ -116,9 +116,11 @@ export const CartPage = (): HTMLElement => {
 
             const saleData: CreateSaleDTO = {
               customer_id: customerId,
+              branch_id: 1, // Default branch ID to satisfy backend constraint
               items: items,
             };
-            // Adding branch_id if needed, logic for it is missing in guide but present in type
+
+            console.log("Sending Sale Data:", saleData);
 
             await SaleService.createSale(saleData);
 

@@ -9,7 +9,7 @@ import { isAuthenticated } from "./modules/auth/AuthMiddleware.js";
 const routes = Router();
 
 routes.use("/auth", authRoutes);
-routes.use("/medicines", medicineRoutes); // Public or Protected? Usually public for catalog
+routes.use("/medicines", medicineRoutes); // Public or Protected? Vide Medicine routes
 routes.use("/customers", isAuthenticated, customerRoutes);
 routes.use("/users", isAuthenticated, userRoutes);
 routes.use("/sales", isAuthenticated, saleRoutes);

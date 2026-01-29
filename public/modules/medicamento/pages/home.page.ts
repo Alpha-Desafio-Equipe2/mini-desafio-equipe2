@@ -38,15 +38,16 @@ export const HomePage = async (): Promise<HTMLElement> => {
           '<p style="text-align: center; grid-column: 1/-1;">Nenhum produto encontrado.</p>';
         return;
       }
-      filtered.forEach((med) => {
+
+      filtered.forEach((med: any) => {
         // Map Medicine to Product interface expected by ProductCard
         const product: Product = {
           id: med.id,
           name: med.name,
           price: med.price,
           quantity: med.stock, // stock -> quantity
-          description: med.manufacturer, // manufacturer -> description
-          requires_prescription: med.requires_prescription,
+          description: med.manufacturer,
+          requires_prescription: Boolean(med.requiresPrescription), // API returns camelCase
         };
         grid.appendChild(ProductCard(product));
       });

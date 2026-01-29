@@ -2,6 +2,7 @@ import request from 'supertest';
 import { db } from '../src/config/database';
 import jwt from 'jsonwebtoken';
 import app from '../src/app.js';
+import '../src/database/schema.js';
 
 describe('Customer Module CRUD', () => {
   // Clear database before each test to ensure clean state
@@ -44,6 +45,35 @@ describe('Customer Module CRUD', () => {
         .send(customerData);
 
       expect(response.status).toBe(409);
+    });
+
+    it('should return 400 when CPF has less than 11 digits', async () => {
+      const response = await request(app)
+        .post('/farma-project/customers')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'Short CPF', cpf: '123' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe("CPF must contain exactly 11 digits");
+    });
+
+    it('should return 400 when CPF has more than 11 digits', async () => {
+      const response = await request(app)
+        .post('/farma-project/customers')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'Long CPF', cpf: '123456789012' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe("CPF must contain exactly 11 digits");
+    });
+
+    it('should accept 11-digit CPF with dots and dashes', async () => {
+      const response = await request(app)
+        .post('/farma-project/customers')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'Formatted CPF', cpf: '123.456.789-00' });
+
+      expect(response.status).toBe(201);
     });
   });
 

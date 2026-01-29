@@ -26,6 +26,8 @@ export interface Customer {
   id: number;
   name: string;
   cpf: string;
+  email?: string;
+  user_id?: number;
 }
 
 export interface SaleItem {
@@ -37,6 +39,8 @@ export interface CreateSaleDTO {
   customer_id: number;
   branch_id?: number;
   items: SaleItem[];
+  doctor_crm?: string;
+  prescription_date?: string;
 }
 
 export interface Product {
@@ -55,18 +59,24 @@ export interface CartItem {
 }
 
 export interface OrderItem {
-  product_id: number;
+  product_id?: number; // Frontend uses this usually
+  medicine_id?: number; // Backend might return this
   quantity: number;
   price_at_time?: number;
+  unit_price?: number; // Backend alias
+  product_name?: string;
 }
 
 export interface Order {
   id: number;
-  user_id: number;
-  status: string;
+  customer_id: number;
+  status?: string;
   type: "delivery" | "pickup";
-  items: OrderItem[];
+  items?: OrderItem[];
+  total_value: number;
   created_at: string;
+  doctor_crm?: string;
+  prescription_date?: string;
 }
 
 // Deprecated or Alias if needed

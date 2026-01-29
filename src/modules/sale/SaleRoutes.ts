@@ -1,10 +1,15 @@
-import { Router } from "express";
-import { SaleController } from "./SaleController.js";
+import { Router } from 'express';
+import { SaleController } from './SaleController.js';
 
-const router = Router();
-const controller = new SaleController();
+const saleRoutes = Router();
+const saleController = new SaleController();
 
-router.post("/", controller.create);
-router.get("/", controller.getAll);
+saleRoutes.post('/', saleController.create);
+saleRoutes.get('/', saleController.list);
+saleRoutes.get('/:id', saleController.show);
+saleRoutes.post('/:id/confirm-payment', saleController.confirmPayment);
+saleRoutes.post('/:id/cancel', saleController.cancel);
+saleRoutes.post('/:id/items', saleController.addItem);
+saleRoutes.delete('/:id/items/:itemId', saleController.removeItem);
 
-export default router;
+export { saleRoutes };

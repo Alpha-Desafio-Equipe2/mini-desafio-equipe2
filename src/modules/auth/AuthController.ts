@@ -1,7 +1,15 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from "express";
+import { AuthService } from "./AuthService.js";
+
+const authService = new AuthService();
 
 export class AuthController {
-  login(req: Request, res: Response) {
-    return res.json({ message: 'Login endpoint' });
+  async login(request: Request, response: Response, next: NextFunction) {
+    try {
+      const result = await authService.login(request.body);
+      return response.json(result);
+    } catch (error: any) {
+      return response.status(401).json({ error: error.message });
+    }
   }
 }

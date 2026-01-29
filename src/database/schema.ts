@@ -1,4 +1,4 @@
-import { db } from '../config/database.js';
+import { db } from "../config/database.js";
 
 // =======================
 // MEDICINES
@@ -86,5 +86,17 @@ CREATE TABLE IF NOT EXISTS sale_items (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (sale_id) REFERENCES sales(id),
   FOREIGN KEY (medicine_id) REFERENCES medicines(id)
+=======
+// USERS
+// =======================
+db.exec(`
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'attendant',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 `);

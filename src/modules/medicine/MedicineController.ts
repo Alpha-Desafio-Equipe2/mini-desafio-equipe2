@@ -54,4 +54,26 @@ export class MedicineController {
 
     return res.status(200).json(medicine);
   }
+
+  static update(req: Request, res: Response) {
+    const id = req.params.id;
+
+    const medicine = MedicineService.update(id, req.body);
+
+    return res.json(medicine);
+  }
+
+  static delete(req: Request, res: Response) {
+    const id = req.params.id;
+    const medicine = MedicineService.getById(parseInt(id));
+
+    if (!medicine) {
+      return res.status(404).json({
+        message: 'Medicine not found',
+      });
+    }
+    MedicineService.delete(id);
+
+    return res.status(204).json(`Medicine id :${id} deleted successfully`);
+  }
 }

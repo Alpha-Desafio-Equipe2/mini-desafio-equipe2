@@ -1,5 +1,7 @@
+
 # --- Dependências (NUNCA enviar) ---
 node_modules/
+coverage/
 
 # --- Build e Compilação (Gerado automaticamente) ---
 dist/
@@ -7,7 +9,10 @@ build/
 out/
 
 # --- Variáveis de Ambiente e Segredos (SEGURANÇA) ---
+database.sqlite
+._*
 .env
+.env.*
 
 # --- Logs e Debug ---
 npm-debug.log*
@@ -24,3 +29,10 @@ Thumbs.db
 .idea/
 *.swp
 
+# SQLite database files
+src/database/*.sqlite
+src/database/*.db
+src/database/*.sqlite3
+src/database/*.sqlite-shm
+src/database/*.sqlite-wal
+src/database/*.sqlite-journal

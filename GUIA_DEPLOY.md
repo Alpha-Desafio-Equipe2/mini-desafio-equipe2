@@ -23,7 +23,7 @@ O projeto encontra-se fragmentado em diversas branches (`backend`, `frontend`, `
 2.  **Configuração do Nginx**:
     - O arquivo `nginx.conf` deve estar na raiz para que o Docker Compose o localize corretamente.
 3.  **Caminhos no `docker-compose.yml`**:
-    - O volume do SQLite deve ser mapeado como `./data:/app/data` para persistência correta.
+    - O volume do SQLite deve ser mapeado como `./backend/src/database:/app/src/database` para persistência correta.
 
 ### Segurança:
 

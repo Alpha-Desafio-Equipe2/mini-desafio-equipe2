@@ -4,6 +4,8 @@ import { CreateUserDTO } from "./dtos/CreateUserDTO.js";
 import { UserRole } from "./domain/enums/UserRole.js";
 import { AppError } from "../../shared/errors/AppError.js";
 import { UpdateUserDTO } from "./dtos/UpdateUserDTO.js";
+import { ErrorCode } from "../../shared/errors/ErrorCode.js";
+import { HttpStatus } from "../../shared/errors/httpStatus.js";
 
 type UserRow = {
   id: number;
@@ -81,7 +83,11 @@ export class UserService {
   `).get(id) as UserRow || undefined;
 
     if (!row) {
-      throw new AppError('User not found', 404);
+      throw new AppError({
+              message: "User not found",
+              code: ErrorCode.USER_NOT_FOUND,
+              httpStatus: HttpStatus.NOT_FOUND,
+            });
     }
 
     return {
@@ -98,11 +104,19 @@ export class UserService {
       .get(id) as UserRow | undefined;
 
     if (!user) {
-      throw new AppError('User not found', 404);
+      throw new AppError({
+              message: "User not found",
+              code: ErrorCode.USER_NOT_FOUND,
+              httpStatus: HttpStatus.NOT_FOUND,
+            });
     }
 
     if (data.role !== undefined && !isValidUserRole(data.role)) {
-      throw new AppError('Invalid role', 400);
+      throw new AppError({
+              message: "Invalid Role",
+              code: ErrorCode.INVALID_USER_ROLE,
+              httpStatus: HttpStatus.BAD_REQUEST,
+            });
     }
 
     const updated = {
@@ -133,7 +147,11 @@ export class UserService {
     const user = UserService.findById(id);
 
     if (!user) {
-      throw new AppError('User not found', 404);
+      throw new AppError({
+              message: "User not found",
+              code: ErrorCode.USER_NOT_FOUND,
+              httpStatus: HttpStatus.NOT_FOUND,
+            });
     }
 
     const stmt = db.prepare(`

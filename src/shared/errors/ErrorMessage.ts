@@ -184,6 +184,27 @@ export const ErrorMessage: Record<ErrorCode, ErrorMessageProps> = {
     message: "Token expirado",
     httpStatus: HttpStatus.UNAUTHORIZED,
   },
+  // Usuários
+[ErrorCode.INVALID_USER_ROLE]: {
+  message: "Role de usuário inválido",
+  httpStatus: HttpStatus.BAD_REQUEST,
+},
+[ErrorCode.USER_ALREADY_EXISTS]: {
+  message: "Usuário já cadastrado",
+  httpStatus: HttpStatus.CONFLICT,
+},
+[ErrorCode.USER_NOT_FOUND]: {
+  message: "Usuário não encontrado",
+  httpStatus: HttpStatus.NOT_FOUND,
+},
+[ErrorCode.INVALID_USER_NAME]: {
+  message: "Nome de usuário inválido",
+  httpStatus: HttpStatus.BAD_REQUEST,
+},
+[ErrorCode.WEAK_PASSWORD]: {
+  message: "Senha deve ter no mínimo 6 caracteres",
+  httpStatus: HttpStatus.BAD_REQUEST,
+},
 
   // Sistema
   [ErrorCode.INTERNAL_SERVER_ERROR]: {

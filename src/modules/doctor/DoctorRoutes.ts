@@ -1,8 +1,13 @@
 import { Router } from 'express';
 import { DoctorController } from './DoctorController.js';
 
-const router = Router();
+const doctorRoutes = Router();
 
-router.post('/', DoctorController.create);
+doctorRoutes.post('/', DoctorController.create);
+doctorRoutes.get('/', DoctorController.list);
+doctorRoutes.get('/:id', DoctorController.show);
+doctorRoutes.get('/crm/:crm', DoctorController.findByCRM);
+doctorRoutes.put('/:id', DoctorController.update);
+doctorRoutes.delete('/:id', DoctorController.delete);
 
-export default router;
+export { doctorRoutes };

@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "rootDir": "frontend/public",
+    "baseUrl": ".",
+    "paths": {
+      "@modules/*": ["frontend/public/modules/*"],
+      "@shared/*": ["frontend/public/shared/*"],
+      "@app/*": ["frontend/public/app/*"]
+    }
+  },
+  "include": ["frontend/public/**/*"],
+  "exclude": ["node_modules"]
+}

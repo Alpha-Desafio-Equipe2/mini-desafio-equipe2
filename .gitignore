@@ -1,15 +1,33 @@
-._*
-.DS_Store
 
-# Node.js files
-node_modules
-dist
-coverage
+# --- Dependências (NUNCA enviar) ---
+node_modules/
+coverage/
 
-# Environment files
-.env
+# --- Build e Compilação (Gerado automaticamente) ---
+dist/
+build/
+out/
+
+# --- Variáveis de Ambiente e Segredos (SEGURANÇA) ---
 database.sqlite
+._*
+.env
 .env.*
+
+# --- Logs e Debug ---
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# --- Ficheiros do Sistema Operativo ---
+.DS_Store
+Thumbs.db
+
+# --- Editores de Código (Opcional, mas recomendado) ---
+.vscode/
+.idea/
+*.swp
 
 # SQLite database files
 src/database/*.sqlite

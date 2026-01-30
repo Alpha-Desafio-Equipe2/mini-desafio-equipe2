@@ -6,12 +6,12 @@ services:
     ports:
       - "3000:3000"  # Pública para testes diretos
     volumes:
-      - ./data:/app/data  # SQLite volume local (private por default)
+      - ./src/database:/app/src/database # SQLite folder mapping for persistence
     environment:
       - NODE_ENV=production
     networks:
       - publica     # Para Nginx proxy
-      - privada     # Para db isolation (SQLite é file local, mas rede previne acesso externo)
+      - privada     # Para db isolation
     restart: unless-stopped
 
   nginx:
@@ -30,5 +30,4 @@ networks:
   publica:
     driver: bridge
   privada:
-    driver: bridge
-    # Não expõe ports; só containers conectados acessam
+    internal: true # Previne acesso externo direto

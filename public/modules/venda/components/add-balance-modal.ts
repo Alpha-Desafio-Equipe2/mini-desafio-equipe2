@@ -1,4 +1,6 @@
 import { BalanceService } from '../services/balance.service.js';
+import { SuccessModal } from '../../../shared/components/success-modal.js';
+import { ErrorModal } from '../../../shared/components/error-modal.js';
 
 /**
  * Modal para adicionar saldo à conta do usuário
@@ -108,14 +110,24 @@ export const AddBalanceModal = (onBalanceAdded: () => void): HTMLElement => {
 
     if (amount > 0) {
       const newBalance = BalanceService.addBalance(amount);
-      alert(
-        "Saldo adicionado com sucesso!\n\n" +
-        `Novo saldo: R$ ${newBalance.toFixed(2)}`
-      );
       closeModal();
+      
+      const successModal = SuccessModal({
+        title: "Saldo Adicionado!",
+        message: "Seu saldo foi atualizado com sucesso.",
+        icon: "💰",
+        details: [`Novo saldo: R$ ${newBalance.toFixed(2)}`]
+      });
+      document.body.appendChild(successModal);
+      
       onBalanceAdded();
     } else {
-      alert('Por favor, insira um valor válido.');
+      const errorModal = ErrorModal({
+        title: "Valor Inválido",
+        message: "Por favor, insira um valor válido maior que zero.",
+        type: "warning"
+      });
+      document.body.appendChild(errorModal);
     }
   });
 

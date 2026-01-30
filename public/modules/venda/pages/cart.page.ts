@@ -4,6 +4,8 @@ import { SaleService } from "../services/sale.service.js";
 import { CreateSaleDTO, SaleItem } from "../../../shared/types.js";
 import { BalanceService } from "../services/balance.service.js";
 import { AddBalanceModal } from "../components/add-balance-modal.js";
+import { OrderReceiptModal } from "../components/order-receipt-modal.js";
+import { ErrorModal } from "../../../shared/components/error-modal.js";
 
 export const CartPage = (): HTMLElement => {
   const div = document.createElement("div");
@@ -159,7 +161,13 @@ export const CartPage = (): HTMLElement => {
           const rawData = Object.fromEntries(formData.entries());
 
           if (type === "delivery" && !delivery_address) {
-            alert("Por favor, informe o endereço de entrega.");
+            const errorModal = ErrorModal({
+              title: "Endereço Não Informado",
+              message: "Para entregas, é necessário informar o endereço completo.",
+              type: "warning",
+              details: ["Por favor, preencha o campo de endereço de entrega"]
+            });
+            document.body.appendChild(errorModal);
             return;
           }
           // Verificar se há saldo suficiente
@@ -167,13 +175,18 @@ export const CartPage = (): HTMLElement => {
                     const currentBalance = BalanceService.getBalance();
                     if (!BalanceService.hasSufficientBalance(total)) {
                       const missing = total - currentBalance;
-                      alert(
-                        "Saldo insuficiente!\n\n" +
-                        `Saldo atual: R$ ${currentBalance.toFixed(2)}\n` +
-                        `Valor do pedido: R$ ${total.toFixed(2)}\n` +
-                        `Faltam: R$ ${missing.toFixed(2)}\n\n` +
-                        "Por favor, adicione saldo antes de finalizar o pedido."
-                      );
+                      const errorModal = ErrorModal({
+                        title: "Saldo Insuficiente",
+                        message: "Você não possui saldo suficiente para completar este pedido.",
+                        type: "error",
+                        details: [
+                          `Saldo atual: R$ ${currentBalance.toFixed(2)}`,
+                          `Valor do pedido: R$ ${total.toFixed(2)}`,
+                          `Faltam: R$ ${missing.toFixed(2)}`,
+                          "Clique no botão 'Adicionar' para adicionar saldo"
+                        ]
+                      });
+                      document.body.appendChild(errorModal);
                       return;
                     }
 
@@ -211,21 +224,50 @@ export const CartPage = (): HTMLElement => {
 
             console.log("Sending Sale Data:", saleData);
 
+
             await SaleService.createSale(saleData);
             // Deduzir o saldo após a confirmação da venda
             BalanceService.deductBalance(total);
             const newBalance = BalanceService.getBalance();
 
+            // Generate order number and date
+            const orderNumber = `ORD-${Date.now().toString().slice(-8)}`;
+            const orderDate = new Date().toLocaleString('pt-BR', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+
+            // Prepare items for receipt
+            const receiptItems = cart.map(item => ({
+              name: item.product.name,
+              quantity: item.quantity,
+              price: item.product.price
+            }));
+
+            // Clear cart before showing modal
             CartService.clearCart();
-            alert(
-              "Pedido realizado com sucesso!\n\n" +
-              `Valor: R$ ${total.toFixed(2)}\n` +
-              `Novo saldo: R$ ${newBalance.toFixed(2)}`
-            );
-            window.navigate("/profile");
+
+            // Show receipt modal
+            const receiptModal = OrderReceiptModal({
+              total,
+              newBalance,
+              items: receiptItems,
+              orderNumber,
+              date: orderDate
+            });
+            document.body.appendChild(receiptModal);
           } catch (error: any) {
             console.error(error);
-            alert("Erro ao finalizar pedido: " + (error.message || error));
+            const errorModal = ErrorModal({
+              title: "Erro ao Finalizar Pedido",
+              message: "Não foi possível processar seu pedido. Por favor, tente novamente.",
+              type: "error",
+              details: [error.message || "Erro desconhecido"]
+            });
+            document.body.appendChild(errorModal);
           }
         });
       }

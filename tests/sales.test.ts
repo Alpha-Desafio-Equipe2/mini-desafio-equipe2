@@ -79,6 +79,24 @@ describe("Sales Module", () => {
       expect(response.body.message).toMatch(/Insufficient stock/);
     });
 
+    it("should create a sale with payment method", async () => {
+      const response = await request(app)
+        .post("/farma-project/sales")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          branch_id: 1,
+          items: [{ medicine_id: medicineId, quantity: 1 }],
+          payment_method: "credit_card",
+        });
+
+      expect(response.status).toBe(201);
+
+      const sale = db
+        .prepare("SELECT * FROM sales WHERE id = ?")
+        .get(response.body.id) as any;
+      expect(sale.payment_method).toBe("credit_card");
+    });
+
     it("should fail if prescription medicine is sold without doctor info", async () => {
       const response = await request(app)
         .post("/farma-project/sales")

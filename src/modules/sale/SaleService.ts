@@ -66,7 +66,7 @@ export class SaleService {
 
       // 2. Create Sale
       const stmt = db.prepare(
-        "INSERT INTO sales (customer_id, branch_id, total_value, doctor_crm, prescription_date, status) VALUES (?, ?, ?, ?, ?, 'pending')",
+        "INSERT INTO sales (customer_id, branch_id, total_value, doctor_crm, prescription_date, payment_method, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')",
       );
       const result = stmt.run(
         customer_id,
@@ -74,6 +74,7 @@ export class SaleService {
         totalValue,
         doctor_crm || null,
         prescription_date || null,
+        data.payment_method || null,
       );
 
       const saleId = result.lastInsertRowid;

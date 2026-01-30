@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS sales (
   status TEXT DEFAULT 'pending',
   doctor_crm TEXT,
   prescription_date TEXT,
+  payment_method TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, 
   FOREIGN KEY (customer_id) REFERENCES customers(id)

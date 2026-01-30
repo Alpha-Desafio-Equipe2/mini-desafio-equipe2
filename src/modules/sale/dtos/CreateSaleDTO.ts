@@ -7,4 +7,5 @@ export interface CreateSaleDTO {
   }[];
   doctor_crm?: string;
   prescription_date?: string;
+  payment_method?: string;
 }

@@ -1,73 +1,86 @@
-import { Request, Response } from 'express';
-import { MedicineService } from './MedicineService.js';
+import { NextFunction, Request, Response } from "express";
+import { MedicineService } from "./MedicineService.js";
+import { AppError } from "../../shared/errors/AppError.js";
+import { ErrorCode } from "../../shared/errors/ErrorCode.js";
+import { HttpStatus } from "../../shared/errors/httpStatus.js";
 
 export class MedicineController {
-  static create(req: Request, res: Response) {
-    const {
-      name,
-      manufacturer,
-      active_principle,
-      requires_prescription,
-      price,
-      stock,
-    } = req.body;
+  static create(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {
+        name,
+        manufacturer,
+        active_principle,
+        requires_prescription,
+        price,
+        stock,
+      } = req.body;
 
-    if (
-      !name ||
-      !active_principle ||
-      requires_prescription === undefined ||
-      price === undefined ||
-      stock === undefined
-    ) {
-      return res.status(400).json({
-        message: 'Missing required fields',
+      if (
+        !name ||
+        !active_principle ||
+        requires_prescription === undefined ||
+        price === undefined ||
+        stock === undefined
+      ) {
+        throw new AppError({
+          message: "Missing required fields",
+          code: ErrorCode.MISSING_MEDICINE_NAME,
+          httpStatus: HttpStatus.BAD_REQUEST,
+        });
+      }
+
+      const medicine = MedicineService.create({
+        name,
+        manufacturer,
+        active_principle,
+        requires_prescription,
+        price,
+        stock,
       });
+
+      return res.status(201).json(medicine);
+    } catch (error) {
+      next(error);
     }
-
-    const medicine = MedicineService.create({
-      name,
-      manufacturer,
-      active_principle,
-      requires_prescription,
-      price,
-      stock,
-    });
-
-    return res.status(201).json(medicine);
   }
 
-  static getAll(req: Request, res: Response) {
-    const medicines = MedicineService.getAll();
-
-    return res.status(200).json(medicines);
-  }
-
-  static getById(req: Request, res: Response) {
-    const { id } = req.params;
-    const medicine = MedicineService.getById(parseInt(id));
-
-    if (!medicine) {
-      return res.status(404).json({
-        message: 'Medicine not found',
-      });
+  static getAll(req: Request, res: Response, next: NextFunction) {
+    try {
+      const medicines = MedicineService.getAll();
+      return res.status(200).json(medicines);
+    } catch (error) {
+      next(error);
     }
-
-    return res.status(200).json(medicine);
   }
 
-  static update(req: Request, res: Response) {
-    const id = req.params.id;
-
-    const medicine = MedicineService.update(id, req.body);
-
-    return res.json(medicine);
+  static getById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const medicine = MedicineService.getById(parseInt(id));
+      return res.status(200).json(medicine);
+    } catch (error) {
+      next(error);
+    }
   }
 
-  static delete(req: Request, res: Response) {
-    const id = req.params.id;
+  static update(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id;
+      const medicine = MedicineService.update(id, req.body);
+      return res.json(medicine);
+    } catch (error) {
+      next(error);
+    }
+  }
 
-    MedicineService.delete(parseInt(id));
-
-    return res.status(204).json(`Medicine id :${id} deleted successfully`);
+  static delete(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id;
+      MedicineService.delete(parseInt(id));
+      return res.status(204).json(`Medicine id :${id} deleted successfully`);
+    } catch (error) {
+      next(error);
+    }
   }
 }

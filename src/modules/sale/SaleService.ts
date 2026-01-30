@@ -1,15 +1,11 @@
 import { db } from "../../config/database.js";
 import { CreateSaleDTO } from "./dtos/CreateSaleDTO.js";
 import { AppError } from "../../shared/errors/AppError.js";
+import { ErrorCode } from "../../shared/errors/ErrorCode.js";
+import { HttpStatus } from "../../shared/errors/httpStatus.js";
 
 export class SaleService {
-  async create(data: any) {
-    // MVP: Receive { customer_id, branch_id, items: [{ medicine_id, quantity }] }
-    // 1. Calculate total
-    // 2. Create Sale
-    // 3. Create SaleItems
-    // 4. Update Stock (simple decrement)
-
+  async create(data: CreateSaleDTO) {
     const { customer_id, branch_id, items, doctor_crm, prescription_date } =
       data;
 
@@ -23,7 +19,42 @@ export class SaleService {
           .prepare("SELECT * FROM medicines WHERE id = ?")
           .get(item.medicine_id) as any;
 
-        // Check stock (MVP: Basic check)
+        if (!medicine) {
+          throw new AppError({
+            message: `Medicine ${item.medicine_id} not found`,
+            code: ErrorCode.MEDICINE_NOT_FOUND,
+            httpStatus: HttpStatus.NOT_FOUND,
+          });
+        }
+
+        // Stock Check
+        if (medicine.stock < item.quantity) {
+          throw new AppError({
+            message: `Insufficient stock for medicine: ${medicine.name}`,
+            code: ErrorCode.INSUFFICIENT_STOCK,
+            httpStatus: HttpStatus.BAD_REQUEST,
+          });
+        }
+
+        if (item.quantity <= 0) {
+          throw new AppError({
+            message: `Invalid quantity for medicine: ${medicine.name}`,
+            code: ErrorCode.INVALID_ITEM_QUANTITY,
+            httpStatus: HttpStatus.BAD_REQUEST,
+          });
+        }
+
+        // Prescription Check
+        if (Boolean(medicine.requires_prescription)) {
+          if (!doctor_crm || !prescription_date) {
+            throw new AppError({
+              message: `Medicine ${medicine.name} requires prescription details (CRM and Date).`,
+              code: ErrorCode.PRESCRIPTION_REQUIRED,
+              httpStatus: HttpStatus.BAD_REQUEST,
+            });
+          }
+        }
+
         const itemTotal = medicine.price * item.quantity;
         totalValue += itemTotal;
         processedItems.push({
@@ -35,7 +66,7 @@ export class SaleService {
 
       // 2. Create Sale
       const stmt = db.prepare(
-        "INSERT INTO sales (customer_id, branch_id, total_value, doctor_crm, prescription_date) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO sales (customer_id, branch_id, total_value, doctor_crm, prescription_date, status) VALUES (?, ?, ?, ?, ?, 'pending')",
       );
       const result = stmt.run(
         customer_id,
@@ -44,6 +75,7 @@ export class SaleService {
         doctor_crm || null,
         prescription_date || null,
       );
+
       const saleId = result.lastInsertRowid;
 
       // 3. Create Sale Items and Update Stock
@@ -52,7 +84,7 @@ export class SaleService {
       );
 
       const updateStockStmt = db.prepare(
-        "UPDATE medicines SET stock = stock - ? WHERE id = ?"
+        "UPDATE medicines SET stock = stock - ? WHERE id = ?",
       );
 
       for (const item of processedItems) {
@@ -72,6 +104,7 @@ export class SaleService {
         total: totalValue,
         items: processedItems,
         status: "pending",
+        doctor_crm,
       };
     });
 
@@ -86,7 +119,11 @@ export class SaleService {
         .all(id) as any[];
 
       if (items.length === 0) {
-        throw new Error("Sale not found or already cancelled");
+        throw new AppError({
+          message: "Sale not found or already cancelled",
+          code: ErrorCode.SALE_NOT_FOUND,
+          httpStatus: HttpStatus.NOT_FOUND,
+        });
       }
 
       // 2. Restore stock for each item
@@ -110,7 +147,12 @@ export class SaleService {
     const result = db
       .prepare("UPDATE sales SET status = 'confirmed' WHERE id = ?")
       .run(id);
-    if (result.changes === 0) throw new Error("Sale not found");
+    if (result.changes === 0)
+      throw new AppError({
+        message: "Sale not found",
+        code: ErrorCode.SALE_NOT_FOUND,
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
     return { id, status: "confirmed" };
   }
 

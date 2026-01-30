@@ -1,55 +1,54 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { SaleService } from "./SaleService.js";
 
 const saleService = new SaleService();
 
 export class SaleController {
-  async create(req: Request, res: Response) {
+  async create(req: Request, res: Response, next: NextFunction) {
     try {
       const sale = await saleService.create(req.body);
       return res.status(201).json(sale);
-    } catch (error: any) {
-      return res.status(400).json({ error: error.message });
+    } catch (error) {
+      next(error);
     }
   }
 
-  async getAll(req: Request, res: Response) {
+  async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const sales = await saleService.findAll();
       return res.json(sales);
-    } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+    } catch (error) {
+      next(error);
     }
   }
 
-  async getById(req: Request, res: Response) {
-    const { id } = req.params;
+  async getById(req: Request, res: Response, next: NextFunction) {
     try {
+      const { id } = req.params;
       const sale = await saleService.findById(id);
-      if (!sale) return res.status(404).json({ error: "Sale not found" });
       return res.json(sale);
-    } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+    } catch (error) {
+      next(error);
     }
   }
 
-  async confirm(req: Request, res: Response) {
-    const { id } = req.params;
+  async confirm(req: Request, res: Response, next: NextFunction) {
     try {
+      const { id } = req.params;
       const result = await saleService.confirm(id);
       return res.json(result);
-    } catch (error: any) {
-      return res.status(400).json({ error: error.message });
+    } catch (error) {
+      next(error);
     }
   }
 
-  async cancel(req: Request, res: Response) {
-    const { id } = req.params;
+  async cancel(req: Request, res: Response, next: NextFunction) {
     try {
+      const { id } = req.params;
       await saleService.cancel(id);
       return res.status(200).json({ message: "Sale cancelled successfully" });
-    } catch (error: any) {
-      return res.status(400).json({ error: error.message });
+    } catch (error) {
+      next(error);
     }
   }
 }

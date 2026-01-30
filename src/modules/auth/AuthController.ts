@@ -8,8 +8,8 @@ export class AuthController {
     try {
       const result = await authService.login(request.body);
       return response.json(result);
-    } catch (error: any) {
-      return response.status(401).json({ error: error.message });
+    } catch (error) {
+      next(error);
     }
   }
 
@@ -17,8 +17,8 @@ export class AuthController {
     try {
       const result = await authService.register(request.body);
       return response.status(201).json(result);
-    } catch (error: any) {
-      return response.status(400).json({ error: error.message });
+    } catch (error) {
+      next(error);
     }
   }
 }

@@ -5,9 +5,6 @@ export interface CreateSaleDTO {
     medicine_id: number;
     quantity: number;
   }[];
-  doctor?: {
-    name: string;
-    crm: string;
-    uf: string;
-  };
+  doctor_crm?: string;
+  prescription_date?: string;
 }

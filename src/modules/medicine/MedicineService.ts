@@ -1,7 +1,9 @@
-import { db } from '../../config/database.js';
-import { CreateMedicineDTO } from './dtos/CreateMedicineDTO.js';
-import { AppError } from '../../shared/errors/AppError.js';
-import { UpdateMedicineDTO } from './dtos/UpdateMedicineDTO.js';
+import { db } from "../../config/database.js";
+import { CreateMedicineDTO } from "./dtos/CreateMedicineDTO.js";
+import { AppError } from "../../shared/errors/AppError.js";
+import { UpdateMedicineDTO } from "./dtos/UpdateMedicineDTO.js";
+import { ErrorCode } from "../../shared/errors/ErrorCode.js";
+import { HttpStatus } from "../../shared/errors/httpStatus.js";
 
 type MedicineRow = {
   id: number;
@@ -33,7 +35,7 @@ export class MedicineService {
       data.active_principle,
       data.requires_prescription ? 1 : 0,
       data.price,
-      data.stock
+      data.stock,
     );
 
     return {
@@ -43,7 +45,9 @@ export class MedicineService {
   }
 
   static getAll() {
-    const rows = db.prepare(`
+    const rows = db
+      .prepare(
+        `
     SELECT
       id,
       name,
@@ -51,7 +55,9 @@ export class MedicineService {
       stock,
       requires_prescription
     FROM medicines
-  `).all();
+  `,
+      )
+      .all();
 
     return rows.map((row: any) => ({
       id: row.id,
@@ -63,7 +69,10 @@ export class MedicineService {
   }
 
   static getById(id: number) {
-    const row = db.prepare(`
+    const row =
+      (db
+        .prepare(
+          `
     SELECT
       id,
       name,
@@ -74,10 +83,16 @@ export class MedicineService {
       stock
     FROM medicines
     WHERE id = ?
-  `).get(id) as MedicineRow || undefined;
+  `,
+        )
+        .get(id) as MedicineRow) || undefined;
 
     if (!row) {
-      throw new AppError('Medicine not found', 404);
+      throw new AppError({
+        message: "Medicine not found",
+        code: ErrorCode.MEDICINE_NOT_FOUND,
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
     }
 
     return {
@@ -93,19 +108,31 @@ export class MedicineService {
 
   static update(id: string, data: UpdateMedicineDTO) {
     const medicine = db
-      .prepare('SELECT * FROM medicines WHERE id = ?')
+      .prepare("SELECT * FROM medicines WHERE id = ?")
       .get(id) as MedicineRow | undefined;
 
     if (!medicine) {
-      throw new AppError('Medicine not found', 404);
+      throw new AppError({
+        message: "Medicine not found",
+        code: ErrorCode.MEDICINE_NOT_FOUND,
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
     }
 
     if (data.stock !== undefined && data.stock < 0) {
-      throw new AppError('Stock cannot be negative', 400);
+      throw new AppError({
+        message: "Stock cannot be negative",
+        code: ErrorCode.INSUFFICIENT_STOCK, // Using this or create INVALID_STOCK?
+        httpStatus: HttpStatus.BAD_REQUEST,
+      });
     }
 
     if (data.price !== undefined && data.price <= 0) {
-      throw new AppError('Price must be greater than zero', 400);
+      throw new AppError({
+        message: "Price must be greater than zero",
+        code: ErrorCode.INVALID_MEDICINE_PRICE,
+        httpStatus: HttpStatus.BAD_REQUEST,
+      });
     }
 
     const updated = {
@@ -114,13 +141,16 @@ export class MedicineService {
       active_principle: data.active_principle ?? medicine.active_principle,
       requires_prescription:
         data.requires_prescription !== undefined
-          ? (data.requires_prescription ? 1 : 0)
+          ? data.requires_prescription
+            ? 1
+            : 0
           : medicine.requires_prescription,
       price: data.price ?? medicine.price,
       stock: data.stock ?? medicine.stock,
     };
 
-    db.prepare(`
+    db.prepare(
+      `
     UPDATE medicines SET
       name = ?,
       manufacturer = ?,
@@ -130,14 +160,15 @@ export class MedicineService {
       stock = ?,
       updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
-  `).run(
+  `,
+    ).run(
       updated.name,
       updated.manufacturer,
       updated.active_principle,
       updated.requires_prescription,
       updated.price,
       updated.stock,
-      id
+      id,
     );
 
     return { id, ...updated };
@@ -147,7 +178,11 @@ export class MedicineService {
     const medicine = MedicineService.getById(id);
 
     if (!medicine) {
-      throw new AppError('Medicine not found', 404);
+      throw new AppError({
+        message: "Medicine not found",
+        code: ErrorCode.MEDICINE_NOT_FOUND,
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
     }
 
     const stmt = db.prepare(`

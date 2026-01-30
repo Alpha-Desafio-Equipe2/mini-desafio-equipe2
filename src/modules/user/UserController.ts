@@ -1,90 +1,106 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { UserService } from "./UserService.js";
-import { AppError } from "../../shared/errors/AppError.js";
-
-import { ErrorCode } from "../../shared/errors/ErrorCode.js";
-import { HttpStatus } from "../../shared/errors/httpStatus.js";
-
-const userService = new UserService();
 
 export class UserController {
-  async create(req: Request, res: Response, next: NextFunction) {
+  private service = new UserService();
+
+  /**
+   * POST /users
+   * Cria um novo usuário
+   */
+  create = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { name, email, password, role } = req.body;
+      const user = await this.service.create(req.body);
 
-      if (!name || !email || !password || role === undefined) {
-        throw new AppError({
-          message: "Missing required fields",
-          code: ErrorCode.MISSING_CUSTOMER_NAME,
-          httpStatus: HttpStatus.BAD_REQUEST,
-        });
-      }
-
-      const user = userService.create({
-        name,
-        email,
-        password,
-        role,
+      return res.status(201).json({
+        message: "Usuário cadastrado com sucesso",
+        data: user,
       });
-
-      return res.status(201).json(user);
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  async getAll(req: Request, res: Response, next: NextFunction) {
+  /**
+   * GET /users
+   * Lista todos os usuários
+   */
+  getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const users = await userService.findAll();
-      return res.json(users);
+      const users = await this.service.findAll();
+
+      return res.status(200).json({
+        data: users,
+      });
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  async getByEmail(req: Request, res: Response, next: NextFunction) {
+  /**
+   * GET /users/:id
+   * Busca um usuário por ID
+   */
+  getById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const user = await this.service.findById(id);
+
+      return res.status(200).json({
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * GET /users/email/:email
+   * Busca um usuário por email
+   */
+  getByEmail = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { email } = req.params;
-      const user = await userService.findByEmail(email);
-      return res.json(user);
-    } catch (error) {
-      next(error);
-    }
-  }
+      const user = await this.service.findByEmail(email);
 
-  async getById(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-      const user = await UserService.findById(parseInt(id));
-      return res.json(user);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async update(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-      const { name, email, password, role } = req.body;
-      const user = await UserService.update(parseInt(id), {
-        name,
-        email,
-        password,
-        role,
+      return res.status(200).json({
+        data: user,
       });
-      return res.json(user);
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  async delete(req: Request, res: Response, next: NextFunction) {
+  /**
+   * PUT /users/:id
+   * Atualiza um usuário
+   */
+  update = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const user = await UserService.delete(parseInt(id));
-      return res.json(user);
+      const user = await this.service.update(id, req.body);
+
+      return res.status(200).json({
+        message: "Usuário atualizado com sucesso",
+        data: user,
+      });
     } catch (error) {
       next(error);
     }
-  }
+  };
+
+  /**
+   * DELETE /users/:id
+   * Deleta um usuário
+   */
+  delete = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const result = await this.service.delete(id);
+
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
 }

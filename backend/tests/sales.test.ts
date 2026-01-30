@@ -50,6 +50,7 @@ describe("Sales Module", () => {
         .post("/farma-project/sales")
         .set("Authorization", `Bearer ${token}`)
         .send({
+          branch_id: 1,
           items: [{ medicine_id: medicineId, quantity: 2 }],
         });
 
@@ -70,6 +71,7 @@ describe("Sales Module", () => {
         .post("/farma-project/sales")
         .set("Authorization", `Bearer ${token}`)
         .send({
+          branch_id: 1,
           items: [{ medicine_id: medicineId, quantity: 101 }],
         });
 
@@ -82,6 +84,7 @@ describe("Sales Module", () => {
         .post("/farma-project/sales")
         .set("Authorization", `Bearer ${token}`)
         .send({
+          branch_id: 1,
           items: [{ medicine_id: medicineId, quantity: 1 }],
           payment_method: "credit_card",
         });
@@ -112,6 +115,7 @@ describe("Sales Module", () => {
         .post("/farma-project/sales")
         .set("Authorization", `Bearer ${token}`)
         .send({
+          branch_id: 1,
           items: [{ medicine_id: restrictedMedicineId, quantity: 1 }],
 
           doctor_crm: undefined, // Missing CRM equivalent check, or we can omit it.
@@ -130,6 +134,7 @@ describe("Sales Module", () => {
         .post("/farma-project/sales")
         .set("Authorization", `Bearer ${token}`)
         .send({
+          branch_id: 1,
           items: [{ medicine_id: restrictedMedicineId, quantity: 1 }],
           doctor_crm: "12345/SP",
           prescription_date: new Date().toISOString(),
@@ -147,6 +152,7 @@ describe("Sales Module", () => {
         .post("/farma-project/sales")
         .set("Authorization", `Bearer ${token}`)
         .send({
+          branch_id: 1,
           items: [{ medicine_id: medicineId, quantity: 5 }],
         });
 
@@ -161,6 +167,7 @@ describe("Sales Module", () => {
         .post("/farma-project/sales")
         .set("Authorization", `Bearer ${token}`)
         .send({
+          branch_id: 1,
           items: [{ medicine_id: medicineId, quantity: -1 }],
         });
 
@@ -177,6 +184,7 @@ describe("Sales Module", () => {
         .post("/farma-project/sales")
         .set("Authorization", `Bearer ${token}`)
         .send({
+          branch_id: 1,
           items: [{ medicine_id: 999999, quantity: 1 }],
         });
 

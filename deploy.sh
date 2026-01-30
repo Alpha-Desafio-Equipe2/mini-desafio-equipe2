@@ -2,7 +2,7 @@
 set -e
 echo "Deploy automático..."
 
-cd /opt/pharmacy-deploy
+cd /opt/farma-app
 git pull origin main
 docker compose down || true
 docker image prune -f

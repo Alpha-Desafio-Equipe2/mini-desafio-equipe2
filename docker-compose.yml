@@ -1,33 +1,32 @@
-version: '3.8'
-
 services:
   backend:
     build: .
     ports:
-      - "3000:3000"  # Pública para testes diretos
+      - "3000:3000"
     volumes:
-      - ./src/database:/app/src/database # SQLite folder mapping for persistence
+      - ./backend/src/database:/app/src/database # SQLite persistence
     environment:
       - NODE_ENV=production
     networks:
-      - publica     # Para Nginx proxy
-      - privada     # Para db isolation
+      - publica
+      - privada
     restart: unless-stopped
 
   nginx:
     image: nginx:alpine
     ports:
-      - "80:80"     # Única porta pública real
+      - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./frontend/public:/usr/share/nginx/html:ro # Serve frontend static files
     depends_on:
       - backend
     networks:
-      - publica     # Frontend/Nginx público
+      - publica
     restart: unless-stopped
 
 networks:
   publica:
     driver: bridge
   privada:
-    internal: true # Previne acesso externo direto
+    internal: true

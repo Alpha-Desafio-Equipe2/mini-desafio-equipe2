@@ -1,14 +1,28 @@
 import { CartItem, Product } from "../../../shared/types";
 
 export const CartService = {
+  getCartKey(): string {
+    const userStr = localStorage.getItem("user");
+    const user = userStr ? JSON.parse(userStr) : null;
+    return user ? `cart_${user.id}` : "cart_guest";
+  },
+
   getCart(): CartItem[] {
-    const stored = localStorage.getItem("cart");
+    const stored = localStorage.getItem(this.getCartKey());
     return stored ? JSON.parse(stored) : [];
   },
 
   addToCart(product: Product, quantity = 1): void {
     const cart = this.getCart();
     const existingItem = cart.find((item) => item.product.id === product.id);
+
+    const currentQty = existingItem ? existingItem.quantity : 0;
+
+    // Validar Estoque (Stock Validation)
+    if (currentQty + quantity > product.quantity) {
+      alert(`Estoque insuficiente! Disponível: ${product.quantity}`);
+      return;
+    }
 
     if (existingItem) {
       existingItem.quantity += quantity;
@@ -29,6 +43,13 @@ export const CartService = {
     const item = cart.find((item) => item.product.id === productId);
 
     if (item) {
+      // Validar Estoque
+      if (quantity > item.product.quantity) {
+        alert(`Quantidade excede o estoque! Máximo: ${item.product.quantity}`);
+        // Reset to max
+        quantity = item.product.quantity;
+      }
+
       item.quantity = quantity;
       if (item.quantity <= 0) {
         this.removeFromCart(productId);
@@ -39,8 +60,8 @@ export const CartService = {
   },
 
   clearCart(): void {
-    localStorage.removeItem("cart");
-    localStorage.removeItem("cart_prescription"); // Clear prescription
+    localStorage.removeItem(this.getCartKey());
+    localStorage.removeItem("cart_prescription"); // Shared or should be per user too? Ideally per user but simple is ok for now.
     window.dispatchEvent(new Event("cart-updated"));
   },
 
@@ -62,7 +83,7 @@ export const CartService = {
   },
 
   saveCart(cart: CartItem[]): void {
-    localStorage.setItem("cart", JSON.stringify(cart));
+    localStorage.setItem(this.getCartKey(), JSON.stringify(cart));
     window.dispatchEvent(new Event("cart-updated"));
   },
 };

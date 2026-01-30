@@ -83,9 +83,10 @@ export const CartPage = (): HTMLElement => {
                                 ${item.product.requires_prescription ? '<span style="color: var(--error); font-size: 0.8rem;">*Requer Receita</span>' : ""}
                             </div>
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <input type="number" min="1" value="${item.quantity}" 
+                                <input type="number" min="1" max="${item.product.quantity}" value="${item.quantity}" 
                                        onchange="window.updateCartItem(${item.product.id}, this.value)"
                                        style="width: 60px; padding: 5px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                                <span style="font-size: 0.8rem; color: #777;">(Max: ${item.product.quantity})</span>
                                 <button class="btn btn-secondary" onclick="window.removeCartItem(${item.product.id})" style="color: var(--error); border-color: var(--error);">Remover</button>
                             </div>
                         </div>

@@ -94,17 +94,6 @@ Endpoint de acesso:
 /swagger
 ```
 ---
-## 🔐 Tratamento de Erros
-
-A API utiliza códigos HTTP padrão em conjunto com **códigos internos de erro**, permitindo
-identificação precisa de falhas de validação, regras de negócio e problemas de autenticação.
-
-Essa abordagem garante padronização das respostas e facilita a comunicação entre backend
-e frontend.
-
-📄 Documentação completa disponível em: [`ERROR_CODES.md`](./ERROR_CODES.md)
-
------
 
 ## 🔐 Segurança e Autenticação
 
@@ -245,8 +234,5 @@ A arquitetura foi planejada para permitir:
 - migração futura para microsserviços
 - implementação de cache
 - mensageria (ex: RabbitMQ)
-
-
-
 ---
 

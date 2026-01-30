@@ -231,53 +231,6 @@ src/
  ```
 </details>
 
-<details>
-<summary><strong>Frontend </strong><summary>
-
-```
-src/
-├── app/
-│   ├── router.ts
-│   ├── app.ts
-│   └── bootstrap.ts
-│
-├── modules/
-│   ├── auth/
-│   │   ├── pages/
-│   │   │   └── login.page.ts
-│   │   ├── services/
-│   │   │   └── auth.service.ts
-│   │   ├── validators/
-│   │   │   └── login.validator.ts
-│   │   └── types.ts
-│   │
-│   ├── medicamento/
-│   │   ├── pages/
-│   │   │   ├── list.page.ts
-│   │   │   └── form.page.ts
-│   │   ├── services/
-│   │   │   └── medicamento.service.ts
-│   │   └── types.ts
-│
-├── shared/
-│   ├── http/
-│   │   └── api.ts
-│   ├── errors/
-│   │   └── error-handler.ts
-│   ├── components/
-│   │   ├── modal.ts
-│   │   └── table.ts
-│   ├── utils/
-│   │   └── dom.ts
-│   └── constants/
-│
-├── styles/
-├── assets/
-└── main.ts
-
-```
-</details>
-
 -----
 ## 🗄️ Modelo de Dados
 

@@ -1,0 +1,196 @@
+import { db } from "../../config/database.js";
+import { CreateMedicineDTO } from "./dtos/CreateMedicineDTO.js";
+import { AppError } from "../../shared/errors/AppError.js";
+import { UpdateMedicineDTO } from "./dtos/UpdateMedicineDTO.js";
+import { ErrorCode } from "../../shared/errors/ErrorCode.js";
+import { HttpStatus } from "../../shared/errors/httpStatus.js";
+
+type MedicineRow = {
+  id: number;
+  name: string;
+  manufacturer: string | null;
+  active_principle: string;
+  requires_prescription: number;
+  price: number;
+  stock: number;
+};
+
+export class MedicineService {
+  static create(data: CreateMedicineDTO) {
+    const stmt = db.prepare(`
+      INSERT INTO medicines (
+        name,
+        manufacturer,
+        active_principle,
+        requires_prescription,
+        price,
+        stock
+      )
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+
+    const result = stmt.run(
+      data.name,
+      data.manufacturer ?? null,
+      data.active_principle,
+      data.requires_prescription ? 1 : 0,
+      data.price,
+      data.stock,
+    );
+
+    return {
+      id: result.lastInsertRowid,
+      ...data,
+    };
+  }
+
+  static getAll() {
+    const rows = db
+      .prepare(
+        `
+    SELECT
+      id,
+      name,
+      price,
+      stock,
+      requires_prescription
+    FROM medicines
+  `,
+      )
+      .all();
+
+    return rows.map((row: any) => ({
+      id: row.id,
+      name: row.name,
+      price: row.price,
+      stock: row.stock,
+      requiresPrescription: Boolean(row.requires_prescription),
+    }));
+  }
+
+  static getById(id: number) {
+    const row =
+      (db
+        .prepare(
+          `
+    SELECT
+      id,
+      name,
+      manufacturer,
+      active_principle,
+      requires_prescription,
+      price,
+      stock
+    FROM medicines
+    WHERE id = ?
+  `,
+        )
+        .get(id) as MedicineRow) || undefined;
+
+    if (!row) {
+      throw new AppError({
+        message: "Medicine not found",
+        code: ErrorCode.MEDICINE_NOT_FOUND,
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
+    }
+
+    return {
+      id: row.id,
+      name: row.name,
+      manufacturer: row.manufacturer,
+      activePrinciple: row.active_principle,
+      requiresPrescription: Boolean(row.requires_prescription),
+      price: row.price,
+      stock: row.stock,
+    };
+  }
+
+  static update(id: string, data: UpdateMedicineDTO) {
+    const medicine = db
+      .prepare("SELECT * FROM medicines WHERE id = ?")
+      .get(id) as MedicineRow | undefined;
+
+    if (!medicine) {
+      throw new AppError({
+        message: "Medicine not found",
+        code: ErrorCode.MEDICINE_NOT_FOUND,
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
+    }
+
+    if (data.stock !== undefined && data.stock < 0) {
+      throw new AppError({
+        message: "Stock cannot be negative",
+        code: ErrorCode.INSUFFICIENT_STOCK, // Using this or create INVALID_STOCK?
+        httpStatus: HttpStatus.BAD_REQUEST,
+      });
+    }
+
+    if (data.price !== undefined && data.price <= 0) {
+      throw new AppError({
+        message: "Price must be greater than zero",
+        code: ErrorCode.INVALID_MEDICINE_PRICE,
+        httpStatus: HttpStatus.BAD_REQUEST,
+      });
+    }
+
+    const updated = {
+      name: data.name ?? medicine.name,
+      manufacturer: data.manufacturer ?? medicine.manufacturer,
+      active_principle: data.active_principle ?? medicine.active_principle,
+      requires_prescription:
+        data.requires_prescription !== undefined
+          ? data.requires_prescription
+            ? 1
+            : 0
+          : medicine.requires_prescription,
+      price: data.price ?? medicine.price,
+      stock: data.stock ?? medicine.stock,
+    };
+
+    db.prepare(
+      `
+    UPDATE medicines SET
+      name = ?,
+      manufacturer = ?,
+      active_principle = ?,
+      requires_prescription = ?,
+      price = ?,
+      stock = ?,
+      updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `,
+    ).run(
+      updated.name,
+      updated.manufacturer,
+      updated.active_principle,
+      updated.requires_prescription,
+      updated.price,
+      updated.stock,
+      id,
+    );
+
+    return { id, ...updated };
+  }
+
+  static delete(id: number) {
+    const medicine = MedicineService.getById(id);
+
+    if (!medicine) {
+      throw new AppError({
+        message: "Medicine not found",
+        code: ErrorCode.MEDICINE_NOT_FOUND,
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
+    }
+
+    const stmt = db.prepare(`
+      DELETE FROM medicines WHERE id = ?
+    `);
+
+    const result = stmt.run(id);
+
+    return result;
+  }
+}

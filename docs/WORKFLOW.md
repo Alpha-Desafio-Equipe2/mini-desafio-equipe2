@@ -18,7 +18,7 @@ Este documento define o fluxo de trabalho do time, organização de **milestones
 | Clientes & Médicos            | CRUD de clientes e médicos                                            | Telas de cadastro e consulta                                  | 30/01/26   |
 | Vendas & Receita Médica       | Registro de vendas, validação de receita, baixa automática de estoque | Fluxo de venda, seleção de cliente e medicamentos            | 01/02/26   |
 | Filiais & Estoque             | Controle de estoque por filial, transferência entre filiais           | Visualização de estoque por filial                            | 03/02/26   |
-| Documentação & Finalização    | Swagger, ajustes finais, auditoria básica                             | Revisão geral e ajustes visuais                               | 04/02/26   |
+| Documentação & Finalização    | Swagger, ajustes finais, auditoria básica                             | Revisão geral e ajustes visuais                               | 03/02/26   |
 
 ---
 
@@ -85,8 +85,8 @@ Milestone: *Vendas & Receita Médica*
 - `feature/medicines/create`
 - `feature/stock/transfer`
 - `feature/sales/register-sale`
-- `feature/medicines-list`
-- `feature/sales-flow`
+- `feature/frontend/medicines-list`
+- `feature/frontend/sales-flow`
 
 ---
 
@@ -99,7 +99,7 @@ Milestone: *Vendas & Receita Médica*
 - `bugfix/auth/token-expiration`
 - `bugfix/stock/negative-quantity`
 - `bugfix/sales/price-calculation`
-- `bugfix/login-error`
+- `bugfix/frontend/login-error`
 
 ---
 
@@ -135,17 +135,9 @@ Milestone: *Vendas & Receita Médica*
 
 ---
 
-## **6️⃣ Fluxo de Branches e Pull Requests**
-
-1. Criar branch a partir de `main` ou `develop`:
-
-```bash
-git checkout main
-git pull origin main
+git checkout frontend
+git pull origin frontend
 git checkout -b feature/medicines/create
-```
-2. Implementar a funcionalidade
-3. Criar commits pequenos e claros
 ```
 feat(medicines): add medicine creation endpoint
 fix(stock): block sale without stock

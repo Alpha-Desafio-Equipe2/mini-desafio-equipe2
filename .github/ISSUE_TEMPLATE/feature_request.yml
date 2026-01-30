@@ -1,0 +1,24 @@
+name: Feature Request
+description: Solicitação de nova funcionalidade
+title: "[FEATURE] "
+labels: enhancement
+assignees: []
+body:
+  - type: input
+    attributes:
+      label: Descrição
+      description: Descreva a nova funcionalidade
+      placeholder: "Ex.: Adicionar dashboard de progresso"
+  - type: textarea
+    attributes:
+      label: Motivação
+      description: Por que esta funcionalidade é importante?
+      placeholder: "Ex.: Facilita acompanhar o progresso dos estudantes"
+  - type: checkboxes
+    attributes:
+      label: Critérios de aceitação
+      options:
+        - label: Implementação do backend concluída
+        - label: Endpoints criados e testados
+        - label: Frontend integrado e funcionando
+        - label: Documentação atualizada

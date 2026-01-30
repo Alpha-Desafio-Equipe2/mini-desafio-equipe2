@@ -1,5 +1,11 @@
 import { api } from "../../../shared/http/api.js";
-import { Product, User, Order, Customer } from "../../../shared/types.js";
+import {
+  Product,
+  User,
+  Order,
+  Customer,
+  Medicine,
+} from "../../../shared/types.js";
 
 export const AdminPage = async (): Promise<HTMLElement> => {
   const div = document.createElement("div");
@@ -44,7 +50,7 @@ export const AdminPage = async (): Promise<HTMLElement> => {
   const renderProducts = async () => {
     try {
       // Changed to /medicines based on new backend structure
-      const products = await api.get<Product[]>("/medicines");
+      const products = await api.get<Medicine[]>("/medicines");
       // Note: If backend endpoint is /products, change back. Guide says /medicines.
 
       contentDiv.innerHTML = `
@@ -70,7 +76,7 @@ export const AdminPage = async (): Promise<HTMLElement> => {
                                 <td style="padding: 10px;">${p.id}</td>
                                 <td style="padding: 10px;">${p.name}</td>
                                 <td style="padding: 10px;">R$ ${p.price.toFixed(2)}</td>
-                                <td style="padding: 10px;">${p.quantity}</td>
+                                <td style="padding: 10px;">${p.stock}</td>
                                 <td style="padding: 10px;">
                                     <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 5px 10px; margin-right: 5px;" onclick="window.editProduct(${p.id})">Editar</button>
                                     <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 5px 10px; color: var(--error); border-color: var(--error);" onclick="window.deleteProduct(${p.id})">Excluir</button>

@@ -10,6 +10,16 @@ import { ErrorModal } from "../../../shared/components/error-modal.js";
 export const CartPage = (): HTMLElement => {
   const div = document.createElement("div");
 
+  // State for Admin POS
+  let allCustomers: any[] = [];
+  const userStr = localStorage.getItem("user");
+  const user = userStr ? JSON.parse(userStr) : null;
+  const isAdminOrAttendant =
+    user &&
+    (user.role === "admin" ||
+      user.role === "manager" ||
+      user.role === "attendant");
+
   const render = () => {
     const cart = CartService.getCart();
     const hasPrescriptionItems = cart.some(
@@ -17,6 +27,32 @@ export const CartPage = (): HTMLElement => {
     );
     const total = CartService.getTotal();
     const balance = BalanceService.getBalance();
+
+    // Customer Select & Payment Logic (Only for Admins)
+    let customerSelectHtml = "";
+    let paymentSelectHtml = "";
+    if (isAdminOrAttendant) {
+      customerSelectHtml = `
+            <div style="margin-bottom: 0.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem;">👤 Selecione o Cliente (Admin)</label>
+                <select id="admin-customer-select" class="input-field" style="background: white;">
+                    <option value="${user.id}">Eu mesmo (${user.name})</option>
+                    ${allCustomers.map((c) => `<option value="${c.id}">${c.name} (CPF: ${c.cpf})</option>`).join("")}
+                </select>
+            </div>
+        `;
+      paymentSelectHtml = `
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem;">💰 Método de Pagamento (PDV)</label>
+                <select name="payment_method" id="admin-payment-method" class="input-field" style="background: white;">
+                    <option value="cash">Dinheiro</option>
+                    <option value="debit">Cartão de Débito</option>
+                    <option value="credit">Cartão de Crédito</option>
+                    <option value="pix">Pix</option>
+                </select>
+            </div>
+        `;
+    }
 
     div.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
@@ -61,21 +97,43 @@ export const CartPage = (): HTMLElement => {
                         <div style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem;">
                             Total: R$ ${total.toFixed(2)}
                         </div>
-                        ${balance < total ? `
+                         ${
+                           !isAdminOrAttendant && balance < total
+                             ? `
                             <div style="background: #fee; color: var(--error); padding: 0.75rem; border-radius: var(--radius-md); font-size: 0.875rem; margin-top: 1rem; border-left: 4px solid var(--error);">
                                 ⚠️ Saldo insuficiente! Adicione R$ ${(total - balance).toFixed(2)} para completar o pedido.
                             </div>
-                        ` : `
+                        `
+                             : ""
+                         }
+                         ${
+                           !isAdminOrAttendant && balance >= total
+                             ? `
                             <div style="background: #efe; color: var(--success); padding: 0.75rem; border-radius: var(--radius-md); font-size: 0.875rem; margin-top: 1rem; border-left: 4px solid var(--success);">
                                 ✅ Saldo suficiente! Você pode finalizar o pedido.
                             </div>
-                        `}
+                        `
+                             : ""
+                         }
                     </div>
                 </div>
 
                 <div style="margin-top: 2rem; background: var(--surface); padding: 1.5rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
                     <h3 style="margin-bottom: 1rem;">Finalizar Pedido</h3>
+                    
                     <form id="checkout-form">
+                         ${
+                           isAdminOrAttendant
+                             ? `
+                            <div style="background: #e3f2fd; padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem; border-left: 4px solid #2196f3;">
+                                <h4 style="color: #1565c0; margin-bottom: 1rem;">🛒 Área do Atendente (PDV)</h4>
+                                ${customerSelectHtml}
+                                ${paymentSelectHtml}
+                            </div>
+                         `
+                             : ""
+                         }
+
                          <div style="margin-bottom: 1rem;">
                             <label style="display: block; margin-bottom: 0.5rem;">Tipo de Entrega</label>
                             <select name="type" class="input-field" required id="delivery-type">
@@ -116,17 +174,17 @@ export const CartPage = (): HTMLElement => {
             }
         `;
 
-        // Event listener para o botão de adicionar saldo
-            const addBalanceBtn = div.querySelector('#add-balance-btn');
-            if (addBalanceBtn) {
-              addBalanceBtn.addEventListener('click', () => {
-                const modal = AddBalanceModal(() => {
-                  render(); // Re-renderiza a página para atualizar o saldo
-                });
-                document.body.appendChild(modal);
-              });
-            }
-        
+    // Event listener para o botão de adicionar saldo
+    const addBalanceBtn = div.querySelector("#add-balance-btn");
+    if (addBalanceBtn) {
+      addBalanceBtn.addEventListener("click", () => {
+        const modal = AddBalanceModal(() => {
+          render(); // Re-renderiza a página para atualizar o saldo
+        });
+        document.body.appendChild(modal);
+      });
+    }
+
     if (cart.length > 0) {
       window.updateCartItem = (id: number, qty: string) => {
         CartService.updateQuantity(id, parseInt(qty));
@@ -191,20 +249,47 @@ export const CartPage = (): HTMLElement => {
                     }
 
           try {
-            // Map to CreateSaleDTO structure
-            // Assumes user is customer or we use a logged in customer ID.
-            // The guide used customer_id in CreateSaleDTO.
-            // Ensure we have a customer_id, otherwise we might fail if backend requires it.
-            // For now, I'll use a mocked customer_id or try to get it from auth user if they have one.
-            // Try to find a customer logic
-            // We can try to use the user ID as customer ID, but if it fails (FK error), we must warn.
-            const userStr = localStorage.getItem("user");
-            const user = userStr ? JSON.parse(userStr) : null;
-            const customerId = user ? user.id : 1;
+            if (!user) {
+              alert("Usuário não autenticado.");
+              return;
+            }
 
-            // Note: If customer doesn't exist, this will fail. Ideally we should check if customer exists.
-            // But we don't have a check endpoint handy here without making it complex.
-            // We rely on the user having created a Customer record via Admin.
+            // Logic to determine customer_id
+            let customerId = user.id;
+            let paymentMethod = "balance"; // default for customers
+
+            // If Admin/Attendant, try to get from dropdown
+            if (isAdminOrAttendant) {
+              const selectEl = document.getElementById(
+                "admin-customer-select",
+              ) as HTMLSelectElement;
+              if (selectEl && selectEl.value) {
+                customerId = parseInt(selectEl.value);
+              }
+
+              const payEl = document.getElementById(
+                "admin-payment-method",
+              ) as HTMLSelectElement;
+              if (payEl) paymentMethod = payEl.value;
+            } else {
+              // Standard user flow: Lookup customer attached to user
+              try {
+                const customers = await SaleService.getCustomers();
+                const foundCustomer = customers.find(
+                  (c) => c.user_id === user.id || c.email === user.email,
+                );
+                if (foundCustomer) {
+                  customerId = foundCustomer.id;
+                } else {
+                  console.warn(
+                    "Customer record not found for user. Using User ID as fallback.",
+                    user.id,
+                  );
+                }
+              } catch (e) {
+                console.error("Failed to lookup customer for standard user", e);
+              }
+            }
 
             const items: SaleItem[] = cart.map((item) => ({
               medicine_id: item.product.id,
@@ -273,6 +358,16 @@ export const CartPage = (): HTMLElement => {
       }
     }
   };
+
+  // Init - Fetch Customers if Admin
+  if (isAdminOrAttendant) {
+    SaleService.getCustomers()
+      .then((customers) => {
+        allCustomers = customers;
+        render(); // Re-render with customer list
+      })
+      .catch((err) => console.error("Failed to load customers for POS", err));
+  }
 
   render();
   return div;

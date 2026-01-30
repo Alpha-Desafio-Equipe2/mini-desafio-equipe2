@@ -1,4 +1,6 @@
 import { db } from "../../config/database.js";
+import { CreateSaleDTO } from "./dtos/CreateSaleDTO.js";
+import { AppError } from "../../shared/errors/AppError.js";
 
 export class SaleService {
   async create(data: any) {
@@ -15,13 +17,11 @@ export class SaleService {
       let totalValue = 0;
       const processedItems = [];
 
-      // Calculate total and prepare items
+      // 1. Validate Items / Calculate Total / Check Prescriptions
       for (const item of items) {
         const medicine = db
           .prepare("SELECT * FROM medicines WHERE id = ?")
           .get(item.medicine_id) as any;
-        if (!medicine)
-          throw new Error(`Medicine ${item.medicine_id} not found`);
 
         // Check stock (MVP: Basic check)
         const itemTotal = medicine.price * item.quantity;
@@ -33,6 +33,7 @@ export class SaleService {
         });
       }
 
+      // 2. Create Sale
       const stmt = db.prepare(
         "INSERT INTO sales (customer_id, branch_id, total_value, doctor_crm, prescription_date) VALUES (?, ?, ?, ?, ?)",
       );
@@ -45,8 +46,13 @@ export class SaleService {
       );
       const saleId = result.lastInsertRowid;
 
+      // 3. Create Sale Items and Update Stock
       const itemStmt = db.prepare(
         "INSERT INTO sale_items (sale_id, medicine_id, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?)",
+      );
+
+      const updateStockStmt = db.prepare(
+        "UPDATE medicines SET stock = stock - ? WHERE id = ?"
       );
 
       for (const item of processedItems) {
@@ -58,11 +64,7 @@ export class SaleService {
           item.total_price,
         );
 
-        // Decrement medicine global stock (from medicines table) for simplicity in MVP
-        db.prepare("UPDATE medicines SET stock = stock - ? WHERE id = ?").run(
-          item.quantity,
-          item.medicine_id,
-        );
+        updateStockStmt.run(item.quantity, item.medicine_id);
       }
 
       return {

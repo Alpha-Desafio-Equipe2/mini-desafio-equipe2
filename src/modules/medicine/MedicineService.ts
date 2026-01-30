@@ -143,7 +143,13 @@ export class MedicineService {
     return { id, ...updated };
   }
 
-  static delete(id: string) {
+  static delete(id: number) {
+    const medicine = MedicineService.getById(id);
+
+    if (!medicine) {
+      throw new AppError('Medicine not found', 404);
+    }
+
     const stmt = db.prepare(`
       DELETE FROM medicines WHERE id = ?
     `);

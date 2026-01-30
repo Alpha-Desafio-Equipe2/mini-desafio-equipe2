@@ -27,6 +27,6 @@
   "homepage": "https://github.com/Alpha-Desafio-Equipe2/mini-desafio-equipe2#readme",
   "devDependencies": {
     "@types/node": "^25.0.10",
-    "typescript": "^5.3.3"
+    "typescript": "^5.9.3"
   }
 }

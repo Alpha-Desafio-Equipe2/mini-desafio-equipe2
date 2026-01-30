@@ -1,12 +1,16 @@
 // Serviço para gerenciar o saldo do usuário
 export class BalanceService {
-  private static STORAGE_KEY = 'user_balance';
+  private static getStorageKey(): string {
+    const userStr = localStorage.getItem("user");
+    const user = userStr ? JSON.parse(userStr) : null;
+    return user ? `balance_${user.id}` : "balance_guest";
+  }
 
   /**
    * Obtém o saldo atual do usuário
    */
   static getBalance(): number {
-    const balance = localStorage.getItem(this.STORAGE_KEY);
+    const balance = localStorage.getItem(this.getStorageKey());
     return balance ? parseFloat(balance) : 0;
   }
 
@@ -16,7 +20,7 @@ export class BalanceService {
   static addBalance(amount: number): number {
     const currentBalance = this.getBalance();
     const newBalance = currentBalance + amount;
-    localStorage.setItem(this.STORAGE_KEY, newBalance.toString());
+    localStorage.setItem(this.getStorageKey(), newBalance.toString());
     return newBalance;
   }
 
@@ -29,7 +33,7 @@ export class BalanceService {
       return false; // Saldo insuficiente
     }
     const newBalance = currentBalance - amount;
-    localStorage.setItem(this.STORAGE_KEY, newBalance.toString());
+    localStorage.setItem(this.getStorageKey(), newBalance.toString());
     return true;
   }
 
@@ -44,6 +48,6 @@ export class BalanceService {
    * Limpa o saldo (útil para logout ou reset)
    */
   static clearBalance(): void {
-    localStorage.removeItem(this.STORAGE_KEY);
+    localStorage.removeItem(this.getStorageKey());
   }
 }

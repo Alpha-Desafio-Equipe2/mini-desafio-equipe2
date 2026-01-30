@@ -8,7 +8,6 @@ export class MedicineService {
       const response = await api.get<Medicine[]>("/medicines");
       return response;
     } catch (error) {
-      console.error("Erro ao buscar medicamentos", error);
       throw error;
     }
   }
@@ -18,7 +17,6 @@ export class MedicineService {
       const response = await api.get<Medicine>(`/medicines/${id}`);
       return response;
     } catch (error) {
-      console.error("Erro ao buscar medicamento", error);
       throw error;
     }
   }
@@ -28,7 +26,6 @@ export class MedicineService {
       const response = await api.post<Medicine>("/medicines", medicine);
       return response;
     } catch (error) {
-      console.error("Erro ao criar medicamento", error);
       throw error;
     }
   }
@@ -40,7 +37,6 @@ export class MedicineService {
       const response = await api.put<Medicine>(`/medicines/${id}`, medicine);
       return response;
     } catch (error) {
-      console.error("Erro ao atualizar medicamento", error);
       throw error;
     }
   }
@@ -49,7 +45,6 @@ export class MedicineService {
     try {
       await api.delete(`/medicines/${id}`);
     } catch (error) {
-      console.error("Erro ao excluir medicamento", error);
       throw error;
     }
   }

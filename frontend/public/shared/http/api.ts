@@ -29,12 +29,10 @@ export const api = {
     }
 
     try {
-      console.log(`[API] Requesting: ${API_URL}${endpoint}`); // Debug Log
       const response = await fetch(`${API_URL}${endpoint}`, config);
 
       // Handle 401 Unauthorized
       if (response.status === 401 && !endpoint.includes("/auth/login")) {
-        console.warn("[API] 401 Unauthorized - Clearing tokens");
         localStorage.removeItem("token");
         localStorage.removeItem("user");
 
@@ -60,16 +58,12 @@ export const api = {
       } else {
         // Received HTML or text?
         const text = await response.text();
-        console.error(
-          "API Error: Received non-JSON response",
-          text.substring(0, 500),
-        );
+
         throw new Error(
           `Erro de comunicação com o servidor (${response.status} ${response.statusText}). Verifique o backend.`,
         );
       }
     } catch (error: any) {
-      console.error("API Error detailed:", error);
       throw error;
     }
   },

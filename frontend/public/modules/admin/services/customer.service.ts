@@ -7,7 +7,6 @@ export class CustomerService {
       const response = await api.get<Customer[]>("/customers");
       return response;
     } catch (error) {
-      console.error("Erro ao buscar clientes", error);
       throw error;
     }
   }
@@ -17,7 +16,6 @@ export class CustomerService {
       const response = await api.get<Customer>(`/customers/${id}`);
       return response;
     } catch (error) {
-      console.error("Erro ao buscar cliente", error);
       throw error;
     }
   }
@@ -27,7 +25,6 @@ export class CustomerService {
       const response = await api.post<Customer>("/customers", customer);
       return response;
     } catch (error) {
-      console.error("Erro ao criar cliente", error);
       throw error;
     }
   }
@@ -40,7 +37,6 @@ export class CustomerService {
       const response = await api.put<Customer>(`/customers/${id}`, customer);
       return response;
     } catch (error) {
-      console.error("Erro ao atualizar cliente", error);
       throw error;
     }
   }
@@ -49,7 +45,6 @@ export class CustomerService {
     try {
       await api.delete(`/customers/${id}`);
     } catch (error) {
-      console.error("Erro ao excluir cliente", error);
       throw error;
     }
   }

@@ -20,7 +20,6 @@ export class AuthService {
 
       return response;
     } catch (error) {
-      console.error("Login error", error);
       throw error;
     }
   }
@@ -39,7 +38,6 @@ export class AuthService {
 
       return response;
     } catch (error) {
-      console.error("Register error", error);
       throw error;
     }
   }

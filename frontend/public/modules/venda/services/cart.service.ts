@@ -59,18 +59,24 @@ export const CartService = {
     }
   },
 
+  getPrescriptionKey(): string {
+    const userStr = localStorage.getItem("user");
+    const user = userStr ? JSON.parse(userStr) : null;
+    return user ? `cart_prescription_${user.id}` : "cart_prescription_guest";
+  },
+
   clearCart(): void {
     localStorage.removeItem(this.getCartKey());
-    localStorage.removeItem("cart_prescription"); // Shared or should be per user too? Ideally per user but simple is ok for now.
+    localStorage.removeItem(this.getPrescriptionKey());
     window.dispatchEvent(new Event("cart-updated"));
   },
 
   setPrescriptionData(data: { crm: string; date: string }): void {
-    localStorage.setItem("cart_prescription", JSON.stringify(data));
+    localStorage.setItem(this.getPrescriptionKey(), JSON.stringify(data));
   },
 
   getPrescriptionData(): { crm: string; date: string } | null {
-    const stored = localStorage.getItem("cart_prescription");
+    const stored = localStorage.getItem(this.getPrescriptionKey());
     return stored ? JSON.parse(stored) : null;
   },
 

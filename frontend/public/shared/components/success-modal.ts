@@ -34,10 +34,11 @@ export const SuccessModal = (data: SuccessModalData) => {
     animation: bounceIn 0.5s ease;
   `;
 
-  const icon = data.icon || '✅';
+  const iconChar = data.icon || "✅";
 
-  modalContent.innerHTML = `
-    <style>
+  // Styles
+  const style = document.createElement("style");
+  style.textContent = `
       @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
@@ -52,122 +53,109 @@ export const SuccessModal = (data: SuccessModalData) => {
         from { opacity: 1; }
         to { opacity: 0; }
       }
-      .success-modal-header {
-        text-align: center;
-        margin-bottom: 1.5rem;
-      }
-      .success-modal-icon {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-        animation: successPulse 0.6s ease;
-      }
       @keyframes successPulse {
         0%, 100% { transform: scale(1); }
         50% { transform: scale(1.2); }
       }
-      .success-modal-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin: 0 0 0.5rem 0;
-        color: var(--success);
-      }
-      .success-modal-message {
-        font-size: 1rem;
-        color: var(--text);
-        line-height: 1.6;
-        text-align: center;
-        margin-bottom: 1rem;
-      }
-      .success-modal-box {
-        background: linear-gradient(135deg, #d4edda, #c3e6cb);
-        border-left: 4px solid var(--success);
-        padding: 1.5rem;
-        border-radius: var(--radius-md);
-        margin-bottom: 1.5rem;
-      }
-      .success-modal-details {
-        list-style: none;
-        padding: 0;
-        margin: 0.5rem 0 0 0;
-      }
-      .success-modal-details li {
-        padding: 0.5rem 0;
-        text-align: center;
-        color: #155724;
-        font-size: 1rem;
-        font-weight: 600;
-      }
-      .success-modal-button {
-        width: 100%;
-        padding: 0.875rem;
-        font-size: 1rem;
-        font-weight: 600;
-        border: none;
-        border-radius: var(--radius-md);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        background: var(--success);
-        color: white;
-      }
-      .success-modal-button:hover {
-        opacity: 0.9;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-      }
-      .success-modal-button:active {
-        transform: translateY(0);
-      }
-    </style>
+  `;
+  modal.appendChild(style);
 
-    <div class="success-modal-header">
-      <div class="success-modal-icon">${icon}</div>
-      <h2 class="success-modal-title">${data.title}</h2>
-    </div>
+  // Header
+  const header = document.createElement("div");
+  header.style.cssText = "text-align: center; margin-bottom: 1.5rem;";
 
-    <div class="success-modal-box">
-      <div class="success-modal-message">${data.message}</div>
-      ${data.details && data.details.length > 0 ? `
-        <ul class="success-modal-details">
-          ${data.details.map(detail => `<li>${detail}</li>`).join('')}
-        </ul>
-      ` : ''}
-    </div>
+  const iconDiv = document.createElement("div");
+  iconDiv.style.cssText =
+    "font-size: 4rem; margin-bottom: 1rem; animation: successPulse 0.6s ease;";
+  iconDiv.textContent = iconChar;
+  header.appendChild(iconDiv);
 
-    <button id="close-success-btn" class="success-modal-button">
-      OK
-    </button>
+  const title = document.createElement("h2");
+  title.style.cssText =
+    "font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0; color: var(--success);";
+  title.textContent = data.title;
+  header.appendChild(title);
+
+  modalContent.appendChild(header);
+
+  // Content Box
+  const box = document.createElement("div");
+  box.style.cssText = `
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    border-left: 4px solid var(--success);
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1.5rem;
   `;
 
+  const message = document.createElement("div");
+  message.style.cssText =
+    "font-size: 1rem; color: var(--text); line-height: 1.6; text-align: center; margin-bottom: 1rem;";
+  message.textContent = data.message;
+  box.appendChild(message);
+
+  if (data.details && data.details.length > 0) {
+    const ul = document.createElement("ul");
+    ul.style.cssText = "list-style: none; padding: 0; margin: 0.5rem 0 0 0;";
+    data.details.forEach((detail) => {
+      const li = document.createElement("li");
+      li.style.cssText =
+        "padding: 0.5rem 0; text-align: center; color: #155724; font-size: 1rem; font-weight: 600;";
+      li.textContent = detail;
+      ul.appendChild(li);
+    });
+    box.appendChild(ul);
+  }
+  modalContent.appendChild(box);
+
+  // Button
+  const button = document.createElement("button");
+  button.id = "close-success-btn";
+  button.style.cssText = `
+    width: 100%;
+    padding: 0.875rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--success);
+    color: white;
+  `;
+  button.textContent = "OK";
+  button.onmouseenter = () => {
+    button.style.opacity = "0.9";
+    button.style.transform = "translateY(-1px)";
+    button.style.boxShadow = "0 4px 12px rgba(40, 167, 69, 0.3)";
+  };
+  button.onmouseleave = () => {
+    button.style.opacity = "1";
+    button.style.transform = "translateY(0)";
+    button.style.boxShadow = "none";
+  };
+
+  modalContent.appendChild(button);
   modal.appendChild(modalContent);
 
-  // Close modal on button click
-  const closeBtn = modalContent.querySelector("#close-success-btn");
-  if (closeBtn) {
-    closeBtn.addEventListener("click", () => {
-      modal.style.animation = "fadeOut 0.2s ease";
-      setTimeout(() => modal.remove(), 200);
-    });
-  }
+  // Close Logic
+  const closeModal = () => {
+    modal.style.animation = "fadeOut 0.2s ease";
+    setTimeout(() => modal.remove(), 200);
+  };
 
-  // Close modal on overlay click
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
-      modal.style.animation = "fadeOut 0.2s ease";
-      setTimeout(() => modal.remove(), 200);
-    }
-  });
+  button.onclick = closeModal;
+  modal.onclick = (e) => {
+    if (e.target === modal) closeModal();
+  };
 
-  // Close on Escape key
   const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      modal.style.animation = "fadeOut 0.2s ease";
-      setTimeout(() => {
-        modal.remove();
-        document.removeEventListener('keydown', handleEscape);
-      }, 200);
+    if (e.key === "Escape") {
+      closeModal();
+      document.removeEventListener("keydown", handleEscape);
     }
   };
-  document.addEventListener('keydown', handleEscape);
+  document.addEventListener("keydown", handleEscape);
 
   return modal;
 };

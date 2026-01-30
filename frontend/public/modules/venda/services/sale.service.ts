@@ -8,7 +8,6 @@ export class SaleService {
       const response = await api.post<Order>("/sales", saleData);
       return response;
     } catch (error) {
-      console.error("Erro ao realizar venda", error);
       throw error;
     }
   }
@@ -18,7 +17,6 @@ export class SaleService {
       const response = await api.get<Customer[]>("/customers");
       return response;
     } catch (error) {
-      console.error("Erro ao buscar clientes", error);
       throw error;
     }
   }
@@ -28,7 +26,6 @@ export class SaleService {
       const response = await api.get<Order[]>("/sales");
       return response;
     } catch (error) {
-      console.error("Erro ao buscar histórico de vendas", error);
       throw error;
     }
   }

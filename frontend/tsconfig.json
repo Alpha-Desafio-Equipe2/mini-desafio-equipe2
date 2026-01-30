@@ -8,14 +8,14 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": "frontend/public",
+    "rootDir": "./public",
     "baseUrl": ".",
     "paths": {
-      "@modules/*": ["frontend/public/modules/*"],
-      "@shared/*": ["frontend/public/shared/*"],
-      "@app/*": ["frontend/public/app/*"]
+      "@modules/*": ["public/modules/*"],
+      "@shared/*": ["public/shared/*"],
+      "@app/*": ["public/app/*"]
     }
   },
-  "include": ["frontend/public/**/*"],
+  "include": ["public/**/*"],
   "exclude": ["node_modules"]
 }

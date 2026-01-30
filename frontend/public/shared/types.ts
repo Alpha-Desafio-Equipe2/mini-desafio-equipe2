@@ -37,10 +37,12 @@ export interface SaleItem {
 
 export interface CreateSaleDTO {
   customer_id: number;
-  branch_id?: number;
   items: SaleItem[];
+  payment_method: string;
   doctor_crm?: string;
   prescription_date?: string;
+  doctor_name?: string;
+  doctor_uf?: string;
 }
 
 export interface Product {
@@ -101,5 +103,8 @@ declare global {
     updateCartItem?: (id: number, qty: string) => void;
     removeCartItem?: (id: number) => void;
     cancelOrder?: (id: number) => void;
+    editProduct?: (id: number) => void;
+    viewOrderDetails?: (id: number) => void;
+    confirmOrder?: (id: number) => void;
   }
 }

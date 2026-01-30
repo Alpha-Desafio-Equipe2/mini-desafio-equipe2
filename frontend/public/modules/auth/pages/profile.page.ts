@@ -14,36 +14,43 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
       throw new Error("User not found. Please login again.");
     }
     const user: User = JSON.parse(userStr);
-    
+
     // Get all sales and filter by user
     let orders: Order[] = [];
     try {
       const allSales = await api.get<Order[]>("/sales");
       // Filter sales for current user (assuming customer_id matches user.id)
-      orders = allSales.filter(sale => sale.customer_id === user.id);
+      orders = allSales.filter((sale) => sale.customer_id === user.id);
     } catch (error) {
-      console.error("Error fetching orders:", error);
       // Continue without orders
     }
-    
+
     const balance = BalanceService.getBalance();
 
     // Calculate statistics
     const totalOrders = orders.length;
-    const completedOrders = orders.filter(o => o.status !== 'cancelled').length;
+    const completedOrders = orders.filter(
+      (o) => o.status !== "cancelled",
+    ).length;
     const totalSpent = orders
-      .filter(o => o.status !== 'cancelled')
+      .filter((o) => o.status !== "cancelled")
       .reduce((sum, order) => sum + (order.total_value || 0), 0);
 
     // Admin pharmacy data (mock data for demo)
-    const pharmacyData = user.role === 'admin' ? {
-      name: "Farmácia Popular Central",
-      cnpj: "12.345.678/0001-90",
-      address: "Rua das Flores, 123 - Centro",
-      phone: "(11) 3456-7890",
-      totalSales: orders.length,
-      totalRevenue: orders.reduce((sum, o) => sum + (o.total_value || 0), 0)
-    } : null;
+    const pharmacyData =
+      user.role === "admin"
+        ? {
+            name: "Farmácia Popular Central",
+            cnpj: "12.345.678/0001-90",
+            address: "Rua das Flores, 123 - Centro",
+            phone: "(11) 3456-7890",
+            totalSales: orders.length,
+            totalRevenue: orders.reduce(
+              (sum, o) => sum + (o.total_value || 0),
+              0,
+            ),
+          }
+        : null;
 
     div.innerHTML = `
       <style>
@@ -266,10 +273,10 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
         <!-- User Info Sidebar -->
         <div>
           <div class="user-card">
-            <div class="user-avatar">${user.role === 'admin' ? '👨‍💼' : '👤'}</div>
+            <div class="user-avatar">${user.role === "admin" ? "👨‍💼" : "👤"}</div>
             <div class="user-name">${user.name}</div>
             <div class="user-email">${user.email}</div>
-            <div class="user-role">${user.role === 'admin' ? '🔑 Administrador' : user.role === 'manager' ? '👔 Gerente' : user.role === 'attendant' ? '🏪 Atendente' : '👤 Cliente'}</div>
+            <div class="user-role">${user.role === "admin" ? "🔑 Administrador" : user.role === "manager" ? "👔 Gerente" : user.role === "attendant" ? "🏪 Atendente" : "👤 Cliente"}</div>
             
             <div class="user-stats">
               <div class="stat-box">
@@ -291,7 +298,9 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
             </div>
           </div>
           
-          ${pharmacyData ? `
+          ${
+            pharmacyData
+              ? `
             <div class="pharmacy-card">
               <h3 style="margin: 0 0 1rem 0; font-size: 1.25rem;">🏥 ${pharmacyData.name}</h3>
               <div style="font-size: 0.875rem; opacity: 0.9;">
@@ -312,7 +321,9 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
                 </div>
               </div>
             </div>
-          ` : ''}
+          `
+              : ""
+          }
           
           <!-- User Details Form -->
           <div class="info-section">
@@ -344,7 +355,9 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
           <div class="info-section">
             <h3 class="section-title">📦 Histórico de Pedidos</h3>
             
-            ${orders.length === 0 ? `
+            ${
+              orders.length === 0
+                ? `
               <div class="empty-state">
                 <div class="empty-icon">📭</div>
                 <h4>Nenhum pedido ainda</h4>
@@ -353,16 +366,26 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
                   🛒 Ir às Compras
                 </button>
               </div>
-            ` : `
+            `
+                : `
               <div>
-                ${orders.map(order => {
-                  const status = order.status || 'pending';
-                  const statusClass = status === 'cancelled' ? 'status-cancelled' : 
-                                     status === 'confirmed' ? 'status-confirmed' : 'status-pending';
-                  const statusText = status === 'cancelled' ? 'Cancelado' : 
-                                    status === 'confirmed' ? 'Confirmado' : 'Pendente';
-                  
-                  return `
+                ${orders
+                  .map((order) => {
+                    const status = order.status || "pending";
+                    const statusClass =
+                      status === "cancelled"
+                        ? "status-cancelled"
+                        : status === "confirmed"
+                          ? "status-confirmed"
+                          : "status-pending";
+                    const statusText =
+                      status === "cancelled"
+                        ? "Cancelado"
+                        : status === "confirmed"
+                          ? "Confirmado"
+                          : "Pendente";
+
+                    return `
                     <div class="order-card">
                       <div class="order-header">
                         <div class="order-number">Pedido #${order.id}</div>
@@ -372,18 +395,22 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
                       <div class="order-meta">
                         <div class="meta-item">
                           <span class="meta-label">Data</span>
-                          <span class="meta-value">${new Date(order.created_at).toLocaleDateString('pt-BR')}</span>
+                          <span class="meta-value">${new Date(order.created_at).toLocaleDateString("pt-BR")}</span>
                         </div>
                         <div class="meta-item">
                           <span class="meta-label">Horário</span>
-                          <span class="meta-value">${new Date(order.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                          <span class="meta-value">${new Date(order.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
                         </div>
-                        ${order.doctor_crm ? `
+                        ${
+                          order.doctor_crm
+                            ? `
                           <div class="meta-item">
                             <span class="meta-label">CRM Médico</span>
                             <span class="meta-value">${order.doctor_crm}</span>
                           </div>
-                        ` : ''}
+                        `
+                            : ""
+                        }
                       </div>
                       
                       <div class="order-total">
@@ -391,66 +418,76 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
                         <span style="color: var(--primary);">R$ ${(order.total_value || 0).toFixed(2)}</span>
                       </div>
                       
-                      ${status === 'pending' ? `
+                      ${
+                        status === "pending"
+                          ? `
                         <button class="btn btn-secondary" 
                                 style="margin-top: 1rem; width: 100%; border-color: var(--error); color: var(--error);" 
                                 onclick="window.cancelOrder(${order.id})">
                           ❌ Cancelar Pedido
                         </button>
-                      ` : ''}
+                      `
+                          : ""
+                      }
                     </div>
                   `;
-                }).join('')}
+                  })
+                  .join("")}
               </div>
-            `}
+            `
+            }
           </div>
         </div>
       </div>
     `;
 
     // Profile form submission
-    div.querySelector("#profile-form")?.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData(e.target as HTMLFormElement);
-      const data = Object.fromEntries(formData.entries());
-      
-      try {
-        await api.put(`/users/${user.id}`, data);
-        
-        // Update localStorage with new data
-        const updatedUser = { ...user, ...data };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-        
-        const successModal = SuccessModal({
-          title: "Perfil Atualizado!",
-          message: "Suas informações foram salvas com sucesso.",
-          icon: "✅"
-        });
-        document.body.appendChild(successModal);
-      } catch (error: any) {
-        const errorModal = ErrorModal({
-          title: "Erro ao Atualizar",
-          message: "Não foi possível salvar suas informações.",
-          type: "error",
-          details: [error.message || "Erro desconhecido"]
-        });
-        document.body.appendChild(errorModal);
-      }
-    });
+    div
+      .querySelector("#profile-form")
+      ?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target as HTMLFormElement);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+          await api.put(`/users/${user.id}`, data);
+
+          // Update localStorage with new data
+          const updatedUser = { ...user, ...data };
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+
+          const successModal = SuccessModal({
+            title: "Perfil Atualizado!",
+            message: "Suas informações foram salvas com sucesso.",
+            icon: "✅",
+          });
+          document.body.appendChild(successModal);
+        } catch (error: any) {
+          const errorModal = ErrorModal({
+            title: "Erro ao Atualizar",
+            message: "Não foi possível salvar suas informações.",
+            type: "error",
+            details: [error.message || "Erro desconhecido"],
+          });
+          document.body.appendChild(errorModal);
+        }
+      });
 
     // Cancel order function
     window.cancelOrder = async (id: number) => {
       const confirmModal = ErrorModal({
         title: "Cancelar Pedido?",
-        message: "Tem certeza que deseja cancelar este pedido? Esta ação não pode ser desfeita.",
-        type: "warning"
+        message:
+          "Tem certeza que deseja cancelar este pedido? Esta ação não pode ser desfeita.",
+        type: "warning",
       });
       document.body.appendChild(confirmModal);
-      
+
       // Add confirm button to modal
       const confirmBtn = document.createElement("button");
       confirmBtn.className = "btn btn-primary";
-      confirmBtn.style.cssText = "width: 100%; margin-top: 1rem; background: var(--error);";
+      confirmBtn.style.cssText =
+        "width: 100%; margin-top: 1rem; background: var(--error);";
       confirmBtn.textContent = "Sim, Cancelar Pedido";
       confirmBtn.onclick = async () => {
         confirmModal.remove();
@@ -459,7 +496,7 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
           const successModal = SuccessModal({
             title: "Pedido Cancelado",
             message: "O pedido foi cancelado com sucesso.",
-            icon: "✅"
+            icon: "✅",
           });
           document.body.appendChild(successModal);
           setTimeout(() => window.location.reload(), 1500);
@@ -468,18 +505,23 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
             title: "Erro ao Cancelar",
             message: "Não foi possível cancelar o pedido.",
             type: "error",
-            details: [error.message || "Erro desconhecido"]
+            details: [error.message || "Erro desconhecido"],
           });
           document.body.appendChild(errModal);
         }
       };
-      
-      confirmModal.querySelector(".error-modal-content")?.appendChild(confirmBtn);
+
+      confirmModal
+        .querySelector(".error-modal-content")
+        ?.appendChild(confirmBtn);
     };
-    
   } catch (error: any) {
     div.innerHTML = `<p style="color: var(--error);">Erro ao carregar perfil: ${error.message}</p>`;
-    if (error.message.includes("token") || error.message.includes("401") || error.message.includes("not found")) {
+    if (
+      error.message.includes("token") ||
+      error.message.includes("401") ||
+      error.message.includes("not found")
+    ) {
       setTimeout(() => window.navigate("/login"), 2000);
     }
   }

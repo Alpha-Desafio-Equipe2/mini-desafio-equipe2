@@ -25,8 +25,11 @@ CREATE TABLE IF NOT EXISTS customers (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   cpf TEXT UNIQUE NOT NULL,
+  email TEXT,
+  user_id INTEGER,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 `);
 
@@ -53,6 +56,9 @@ CREATE TABLE IF NOT EXISTS sales (
   customer_id INTEGER,
   branch_id INTEGER NOT NULL,
   total_value REAL NOT NULL,
+  status TEXT DEFAULT 'pending',
+  doctor_crm TEXT,
+  prescription_date TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, 
   FOREIGN KEY (customer_id) REFERENCES customers(id)

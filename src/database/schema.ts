@@ -18,6 +18,22 @@ CREATE TABLE IF NOT EXISTS medicines (
 `);
 
 // =======================
+// USERS
+// =======================
+db.exec(`
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'attendant',
+  balance REAL DEFAULT 0.0 CHECK (balance >= 0),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+`);
+
+// =======================
 // CUSTOMERS
 // =======================
 db.exec(`
@@ -54,28 +70,16 @@ db.exec(`
 CREATE TABLE IF NOT EXISTS sales (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   customer_id INTEGER,
-  branch_id INTEGER NOT NULL,
   total_value REAL NOT NULL,
   status TEXT DEFAULT 'pending',
   doctor_crm TEXT,
+  doctor_name TEXT,
+  doctor_uf TEXT,
   prescription_date TEXT,
   payment_method TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, 
   FOREIGN KEY (customer_id) REFERENCES customers(id)
-);
-`);
-
-// =======================
-// BRANCHES
-// =======================
-db.exec(`
-CREATE TABLE IF NOT EXISTS branches (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  cnpj TEXT UNIQUE NOT NULL,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 `);
 
@@ -97,16 +101,31 @@ CREATE TABLE IF NOT EXISTS sale_items (
 `);
 
 // =======================
-// USERS
+// CARTS
 // =======================
 db.exec(`
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS carts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  email TEXT UNIQUE NOT NULL,
-  password TEXT NOT NULL,
-  role TEXT NOT NULL DEFAULT 'attendant',
+  user_id INTEGER UNIQUE NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+`);
+
+// =======================
+// CART ITEMS
+// =======================
+db.exec(`
+CREATE TABLE IF NOT EXISTS cart_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  cart_id INTEGER NOT NULL,
+  medicine_id INTEGER NOT NULL,
+  quantity INTEGER NOT NULL CHECK (quantity > 0),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (cart_id) REFERENCES carts(id) ON DELETE CASCADE,
+  FOREIGN KEY (medicine_id) REFERENCES medicines(id),
+  UNIQUE(cart_id, medicine_id)
 );
 `);

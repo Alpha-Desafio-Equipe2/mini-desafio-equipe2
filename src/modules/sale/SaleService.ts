@@ -6,8 +6,14 @@ import { HttpStatus } from "../../shared/errors/httpStatus.js";
 
 export class SaleService {
   async create(data: CreateSaleDTO) {
-    const { customer_id, branch_id, items, doctor_crm, prescription_date } =
-      data;
+    const {
+      customer_id,
+      items,
+      doctor_crm,
+      doctor_name,
+      doctor_uf,
+      prescription_date,
+    } = data;
 
     const createSaleTransaction = db.transaction(() => {
       let totalValue = 0;
@@ -66,13 +72,14 @@ export class SaleService {
 
       // 2. Create Sale
       const stmt = db.prepare(
-        "INSERT INTO sales (customer_id, branch_id, total_value, doctor_crm, prescription_date, payment_method, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')",
+        "INSERT INTO sales (customer_id, total_value, doctor_crm, doctor_name, doctor_uf, prescription_date, payment_method, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')",
       );
       const result = stmt.run(
         customer_id,
-        branch_id,
         totalValue,
         doctor_crm || null,
+        doctor_name || null,
+        doctor_uf || null,
         prescription_date || null,
         data.payment_method || null,
       );

@@ -12,4 +12,13 @@ export class AuthController {
       return response.status(401).json({ error: error.message });
     }
   }
+
+  async register(request: Request, response: Response, next: NextFunction) {
+    try {
+      const result = await authService.register(request.body);
+      return response.status(201).json(result);
+    } catch (error: any) {
+      return response.status(400).json({ error: error.message });
+    }
+  }
 }

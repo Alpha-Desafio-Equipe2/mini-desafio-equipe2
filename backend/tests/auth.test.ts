@@ -1,9 +1,15 @@
+import { describe, it, expect, beforeEach, afterAll } from '@jest/globals';
 import request from "supertest";
 import app from "../src/app";
 import { db } from "../src/config/database";
 import bcrypt from "bcryptjs";
 
 describe("Auth Module", () => {
+
+  afterAll(() => {
+    db.close();
+  });
+
   beforeEach(() => {
     db.prepare("DELETE FROM customers").run();
     db.prepare("DELETE FROM users").run();

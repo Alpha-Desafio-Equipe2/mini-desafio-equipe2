@@ -1,12 +1,14 @@
 import { Router } from "express";
 import { CustomerController } from "./CustomerController.js";
+import { isAuthenticated } from "../auth/AuthMiddleware.js";
 
-const customerRoutes = Router();
+const routes = Router();
+const customerController = new CustomerController();
 
-customerRoutes.post("/", CustomerController.create);
-customerRoutes.get("/", CustomerController.getAll);
-customerRoutes.get("/:id", CustomerController.getById);
-customerRoutes.put("/:id", CustomerController.update);
-customerRoutes.delete("/:id", CustomerController.delete);
+routes.post("/", (req, res, next) => customerController.create(req, res, next));
+routes.get("/", (req, res, next) => customerController.getAll(req, res, next));
+routes.get("/:id", (req, res, next) => customerController.getById(req, res, next));
+routes.put("/:id", (req, res, next) => customerController.update(req, res, next));
+routes.delete("/:id", (req, res, next) => customerController.delete(req, res, next));
 
-export default customerRoutes;
+export default routes;

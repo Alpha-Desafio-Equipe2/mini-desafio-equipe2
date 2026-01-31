@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'api-server',
+      name: 'farma-api',
       script: './apps/api/dist/server.js',
       instances: 1,
       autorestart: true,
@@ -9,8 +9,11 @@ module.exports = {
       max_memory_restart: '1G',
       env: {
         NODE_ENV: 'production',
-        PORT: 3000
-      }
-    }
-  ]
+        PORT: 3000,
+        // As seguintes variáveis devem ser preferencialmente passadas via .env no servidor
+        // JWT_SECRET: '...',
+        // DB_PATH: '...'
+      },
+    },
+  ],
 };

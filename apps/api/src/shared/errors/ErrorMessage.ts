@@ -116,6 +116,10 @@ export const ErrorMessage: Record<ErrorCode, ErrorMessageProps> = {
     message: "Quantidade do item inválida",
     httpStatus: HttpStatus.BAD_REQUEST,
   },
+  [ErrorCode.INVALID_ITEM_PRICE]: {
+    message: "Preço do item inválido",
+    httpStatus: HttpStatus.BAD_REQUEST,
+  },
   [ErrorCode.SALE_ITEM_NOT_FOUND]: {
     message: "Item da venda não encontrado",
     httpStatus: HttpStatus.NOT_FOUND,

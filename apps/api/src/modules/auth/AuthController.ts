@@ -1,12 +1,14 @@
 import { NextFunction, Request, Response } from "express";
-import { AuthService } from "./AuthService.js";
+import { LoginUseCase } from "./use-cases/LoginUseCase.js";
+import { RegisterUseCase } from "./use-cases/RegisterUseCase.js";
 
-const authService = new AuthService();
+const loginUseCase = new LoginUseCase();
+const registerUseCase = new RegisterUseCase();
 
 export class AuthController {
   async login(request: Request, response: Response, next: NextFunction) {
     try {
-      const result = await authService.login(request.body);
+      const result = await loginUseCase.execute(request.body);
       return response.json(result);
     } catch (error) {
       next(error);
@@ -15,7 +17,7 @@ export class AuthController {
 
   async register(request: Request, response: Response, next: NextFunction) {
     try {
-      const result = await authService.register(request.body);
+      const result = await registerUseCase.execute(request.body);
       return response.status(201).json(result);
     } catch (error) {
       next(error);

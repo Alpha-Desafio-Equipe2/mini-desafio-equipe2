@@ -44,10 +44,10 @@ describe("Sales Module", () => {
     restrictedMedicineId = Number(restrictedResult.lastInsertRowid);
   });
 
-  describe("POST /farma-project/sales", () => {
+  describe("POST /sales", () => {
     it("should create a sale successfully", async () => {
       const response = await request(app)
-        .post("/farma-project/sales")
+        .post("/sales")
         .set("Authorization", `Bearer ${token}`)
         .send({
           branch_id: 1,
@@ -68,7 +68,7 @@ describe("Sales Module", () => {
 
     it("should fail if stock is insufficient", async () => {
       const response = await request(app)
-        .post("/farma-project/sales")
+        .post("/sales")
         .set("Authorization", `Bearer ${token}`)
         .send({
           branch_id: 1,
@@ -81,7 +81,7 @@ describe("Sales Module", () => {
 
     it("should create a sale with payment method", async () => {
       const response = await request(app)
-        .post("/farma-project/sales")
+        .post("/sales")
         .set("Authorization", `Bearer ${token}`)
         .send({
           branch_id: 1,
@@ -99,7 +99,7 @@ describe("Sales Module", () => {
 
     it("should fail if prescription medicine is sold without doctor info", async () => {
       const response = await request(app)
-        .post("/farma-project/sales")
+        .post("/sales")
         .set("Authorization", `Bearer ${token}`)
         .send({
           branch_id: 1,
@@ -112,17 +112,12 @@ describe("Sales Module", () => {
 
     it("should fail if doctor info is missing CRM", async () => {
       const response = await request(app)
-        .post("/farma-project/sales")
+        .post("/sales")
         .set("Authorization", `Bearer ${token}`)
         .send({
           branch_id: 1,
           items: [{ medicine_id: restrictedMedicineId, quantity: 1 }],
-
-          doctor_crm: undefined, // Missing CRM equivalent check, or we can omit it.
-          // The service checks if (!doctor_crm). So omitting it is fine.
-          // But the test case says "missing CRM".
-          // If we pass an empty string or nothing, it fails.
-          // Let's send nothing.
+          doctor_crm: undefined,
         });
 
       expect(response.status).toBe(400);
@@ -131,7 +126,7 @@ describe("Sales Module", () => {
 
     it("should create sale with prescription medicine if doctor info is valid", async () => {
       const response = await request(app)
-        .post("/farma-project/sales")
+        .post("/sales")
         .set("Authorization", `Bearer ${token}`)
         .send({
           branch_id: 1,
@@ -149,7 +144,7 @@ describe("Sales Module", () => {
 
     it("should decrement stock after sale", async () => {
       await request(app)
-        .post("/farma-project/sales")
+        .post("/sales")
         .set("Authorization", `Bearer ${token}`)
         .send({
           branch_id: 1,
@@ -164,7 +159,7 @@ describe("Sales Module", () => {
 
     it("should fail when item quantity is negative or zero", async () => {
       const response = await request(app)
-        .post("/farma-project/sales")
+        .post("/sales")
         .set("Authorization", `Bearer ${token}`)
         .send({
           branch_id: 1,
@@ -172,16 +167,11 @@ describe("Sales Module", () => {
         });
 
       expect(response.status).toBe(400);
-      // Depending on how validators work, it might throw Insufficient stock (stock < -1 is false)
-      // OR a specific validation error.
-      // Since we don't have explicit validator for > 0 in Service yet (it just checks stock < quantity),
-      // 100 < -1 is false, so it might pass! We need to fix the SERVICE or assert that it passes (which is a bug).
-      // Let's assume we WANT it to fail.
     });
 
     it("should fail with invalid medicine_id", async () => {
       const response = await request(app)
-        .post("/farma-project/sales")
+        .post("/sales")
         .set("Authorization", `Bearer ${token}`)
         .send({
           branch_id: 1,

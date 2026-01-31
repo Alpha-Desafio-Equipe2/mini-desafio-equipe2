@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/farma-project";
+const API_URL = "/api";
 
 interface RequestConfig extends RequestInit {
   headers?: HeadersInit;

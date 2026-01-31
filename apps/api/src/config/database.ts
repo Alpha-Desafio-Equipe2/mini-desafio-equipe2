@@ -1,11 +1,18 @@
 import Database from 'better-sqlite3';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Apontando para a raiz do monorepo /data/database.sqlite
 const DATABASE_PATH = process.env.DATABASE_PATH || path.resolve(__dirname, '../../../../data/database.sqlite');
+const DATABASE_DIR = path.dirname(DATABASE_PATH);
+
+// Garante que a pasta existe (importante para deploy no Ubuntu)
+if (!fs.existsSync(DATABASE_DIR)) {
+    fs.mkdirSync(DATABASE_DIR, { recursive: true });
+}
 
 export const db = new Database(DATABASE_PATH, { 
     verbose: console.log 

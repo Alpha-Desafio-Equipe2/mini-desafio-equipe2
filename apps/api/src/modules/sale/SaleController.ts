@@ -1,12 +1,20 @@
 import { NextFunction, Request, Response } from "express";
-import { SaleService } from "./SaleService.js";
+import { CreateSaleUseCase } from "./use-cases/CreateSaleUseCase.js";
+import { FindAllSalesUseCase } from "./use-cases/FindAllSalesUseCase.js";
+import { FindSaleByIdUseCase } from "./use-cases/FindSaleByIdUseCase.js";
+import { ConfirmSaleUseCase } from "./use-cases/ConfirmSaleUseCase.js";
+import { CancelSaleUseCase } from "./use-cases/CancelSaleUseCase.js";
 
-const saleService = new SaleService();
+const createSaleUseCase = new CreateSaleUseCase();
+const findAllSalesUseCase = new FindAllSalesUseCase();
+const findSaleByIdUseCase = new FindSaleByIdUseCase();
+const confirmSaleUseCase = new ConfirmSaleUseCase();
+const cancelSaleUseCase = new CancelSaleUseCase();
 
 export class SaleController {
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const sale = await saleService.create(req.body);
+      const sale = await createSaleUseCase.execute(req.body);
       return res.status(201).json(sale);
     } catch (error) {
       next(error);
@@ -15,7 +23,7 @@ export class SaleController {
 
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const sales = await saleService.findAll();
+      const sales = await findAllSalesUseCase.execute();
       return res.json(sales);
     } catch (error) {
       next(error);
@@ -25,7 +33,7 @@ export class SaleController {
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const sale = await saleService.findById(id);
+      const sale = await findSaleByIdUseCase.execute(Number(id));
       return res.json(sale);
     } catch (error) {
       next(error);
@@ -35,7 +43,7 @@ export class SaleController {
   async confirm(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const result = await saleService.confirm(id);
+      const result = await confirmSaleUseCase.execute(Number(id));
       return res.json(result);
     } catch (error) {
       next(error);
@@ -45,7 +53,7 @@ export class SaleController {
   async cancel(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      await saleService.cancel(id);
+      await cancelSaleUseCase.execute(Number(id));
       return res.status(200).json({ message: "Sale cancelled successfully" });
     } catch (error) {
       next(error);

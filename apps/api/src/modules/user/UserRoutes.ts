@@ -1,14 +1,14 @@
 import { Router } from "express";
 import { UserController } from "./UserController.js";
 
-const router = Router();
-const controller = new UserController();
+const routes = Router();
+const userController = new UserController();
 
-router.post("/", controller.create);
-router.get("/", controller.getAll);
-router.get("/:id", controller.getById);
-router.get("/:email", controller.getByEmail);
-router.put("/:id", controller.update);
-router.delete("/:id", controller.delete);
+routes.get("/", (req, res, next) => userController.getAll(req, res, next));
+routes.post("/", (req, res, next) => userController.create(req, res, next));
+routes.get("/:id", (req, res, next) => userController.getById(req, res, next));
+routes.get("/email/:email", (req, res, next) => userController.getByEmail(req, res, next));
+routes.put("/:id", (req, res, next) => userController.update(req, res, next));
+routes.delete("/:id", (req, res, next) => userController.delete(req, res, next));
 
-export default router;
+export default routes;

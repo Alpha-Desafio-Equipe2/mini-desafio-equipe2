@@ -16,10 +16,10 @@ describe("Auth Module", () => {
     cpf: "12345678900",
   };
 
-  describe("POST /farma-project/auth/register", () => {
+  describe("POST /auth/register", () => {
     it("should register a new user and customer successfully", async () => {
       const response = await request(app)
-        .post("/farma-project/auth/register")
+        .post("/auth/register")
         .send(validUser);
 
       expect(response.status).toBe(201);
@@ -41,11 +41,11 @@ describe("Auth Module", () => {
 
     it("should fail when registering with existing email", async () => {
       // Create first user
-      await request(app).post("/farma-project/auth/register").send(validUser);
+      await request(app).post("/auth/register").send(validUser);
 
       // Try to create same user again
       const response = await request(app)
-        .post("/farma-project/auth/register")
+        .post("/auth/register")
         .send({ ...validUser, cpf: "00987654321" }); // Different CPF, same email
 
       expect(response.status).toBe(400);
@@ -54,11 +54,11 @@ describe("Auth Module", () => {
 
     it("should fail when registering with existing CPF", async () => {
       // Create first user
-      await request(app).post("/farma-project/auth/register").send(validUser);
+      await request(app).post("/auth/register").send(validUser);
 
       // Try to create user with same CPF
       const response = await request(app)
-        .post("/farma-project/auth/register")
+        .post("/auth/register")
         .send({ ...validUser, email: "other@example.com" }); // Different email, same CPF
 
       expect(response.status).toBe(400);
@@ -66,7 +66,7 @@ describe("Auth Module", () => {
     });
   });
 
-  describe("POST /farma-project/auth/login", () => {
+  describe("POST /auth/login", () => {
     beforeEach(async () => {
       // Seed a user for login tests
       const hashedPassword = await bcrypt.hash(validUser.password, 8);
@@ -77,7 +77,7 @@ describe("Auth Module", () => {
 
     it("should login successfully with valid credentials", async () => {
       const response = await request(app)
-        .post("/farma-project/auth/login")
+        .post("/auth/login")
         .send({
           email: validUser.email,
           password: validUser.password,
@@ -90,28 +90,26 @@ describe("Auth Module", () => {
 
     it("should fail with invalid password", async () => {
       const response = await request(app)
-        .post("/farma-project/auth/login")
+        .post("/auth/login")
         .send({
           email: validUser.email,
           password: "wrongpassword",
         });
 
       expect(response.status).toBe(401);
-      expect(response.body.message).toBe("Invalid password");
+      expect(response.body.message).toBe("Invalid credentials");
     });
 
     it("should fail with non-existent user", async () => {
       const response = await request(app)
-        .post("/farma-project/auth/login")
+        .post("/auth/login")
         .send({
           email: "nonexistent@example.com",
           password: "password123",
         });
 
-      expect(response.status).toBe(401); // Or 404 depending on implementation, usually 401 for security
-      // Based on AuthService.ts: if (!user) throw new Error("User not found");
-      // AuthController returns 401 for any error.
-      expect(response.body.message).toBe("User not found");
+      expect(response.status).toBe(401);
+      expect(response.body.message).toBe("Invalid credentials");
     });
   });
 });

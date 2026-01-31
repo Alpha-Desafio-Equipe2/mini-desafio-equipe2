@@ -10,8 +10,9 @@ try {
   initDatabase();
   runSeeds();
 
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  // Listen only on 127.0.0.1 for security - exposure is handled by Nginx
+  app.listen(Number(PORT), '127.0.0.1', () => {
+    console.log(`Server (local-only) running on port ${PORT}`);
   });
 } catch (error) {
   console.error('Failed to start server:', error);

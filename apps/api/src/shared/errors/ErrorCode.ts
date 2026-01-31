@@ -33,7 +33,8 @@ export enum ErrorCode {
 
   // Itens de venda
   INVALID_ITEM_QUANTITY = 1500,
-  SALE_ITEM_NOT_FOUND = 1501,
+  INVALID_ITEM_PRICE = 1501,
+  SALE_ITEM_NOT_FOUND = 1502,
 
   // Prescrições
   INVALID_PRESCRIPTION = 1600,

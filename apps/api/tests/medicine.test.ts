@@ -27,10 +27,10 @@ describe("Medicine Module", () => {
     ).run("Dipirona", "Farmácia Teste", "Dipirona", 0, 12.5, 100);
   });
 
-  describe("POST /farma-project/medicines", () => {
+  describe("POST /medicines", () => {
     it("deve cadastrar um medicamento", async () => {
       const response = await request(app)
-        .post("/farma-project/medicines")
+        .post("/medicines")
         .set("Authorization", `Bearer ${token}`)
         .send({
           name: "Dipirona",
@@ -49,9 +49,9 @@ describe("Medicine Module", () => {
     });
   });
 
-  describe("GET /farma-project/medicines", () => {
+  describe("GET /medicines", () => {
     it("deve listar todos os medicamentos", async () => {
-      const response = await request(app).get("/farma-project/medicines"); // Public route (usually) or check routes.ts
+      const response = await request(app).get("/medicines");
 
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -72,19 +72,19 @@ describe("Medicine Module", () => {
         .get() as { id: number };
 
       const response = await request(app)
-        .get(`/farma-project/medicines/${medicine.id}`)
+        .get(`/medicines/${medicine.id}`)
         .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty("id", medicine.id);
       expect(response.body).toHaveProperty("name");
       expect(response.body).toHaveProperty("price");
-      expect(response.body).toHaveProperty("requiresPrescription");
+      expect(response.body).toHaveProperty("requires_prescription");
     });
 
     it("deve retornar 404 se medicamento não existir", async () => {
       const response = await request(app)
-        .get("/farma-project/medicines/999999")
+        .get("/medicines/999999")
         .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(404);
@@ -92,14 +92,14 @@ describe("Medicine Module", () => {
     });
   });
 
-  describe("PUT /farma-project/medicines/:id", () => {
+  describe("PUT /medicines/:id", () => {
     it("deve atualizar apenas o estoque", async () => {
       const medicine = db
         .prepare("SELECT id, stock FROM medicines LIMIT 1")
         .get() as { id: number; stock: number };
 
       const response = await request(app)
-        .put(`/farma-project/medicines/${medicine.id}`)
+        .put(`/medicines/${medicine.id}`)
         .set("Authorization", `Bearer ${token}`)
         .send({
           stock: medicine.stock + 10,
@@ -115,7 +115,7 @@ describe("Medicine Module", () => {
       };
 
       const response = await request(app)
-        .put(`/farma-project/medicines/${medicine.id}`)
+        .put(`/medicines/${medicine.id}`)
         .set("Authorization", `Bearer ${token}`)
         .send({
           price: 19.9,
@@ -131,7 +131,7 @@ describe("Medicine Module", () => {
       };
 
       const response = await request(app)
-        .put(`/farma-project/medicines/${medicine.id}`)
+        .put(`/medicines/${medicine.id}`)
         .set("Authorization", `Bearer ${token}`)
         .send({
           stock: -5,
@@ -147,7 +147,7 @@ describe("Medicine Module", () => {
       };
 
       const response = await request(app)
-        .put(`/farma-project/medicines/${medicine.id}`)
+        .put(`/medicines/${medicine.id}`)
         .set("Authorization", `Bearer ${token}`)
         .send({
           price: 0,
@@ -159,7 +159,7 @@ describe("Medicine Module", () => {
 
     it("deve retornar 404 se medicamento não existir", async () => {
       const response = await request(app)
-        .put("/farma-project/medicines/999999")
+        .put("/medicines/999999")
         .set("Authorization", `Bearer ${token}`)
         .send({
           stock: 10,
@@ -170,7 +170,7 @@ describe("Medicine Module", () => {
     });
   });
 
-  describe("DELETE /farma-project/medicines/:id", () => {
+  describe("DELETE /medicines/:id", () => {
     it("deve deletar um medicamento existente", async () => {
       const medicine = db
         .prepare(
@@ -187,7 +187,7 @@ describe("Medicine Module", () => {
       };
 
       const response = await request(app)
-        .delete(`/farma-project/medicines/${medicine.id}`)
+        .delete(`/medicines/${medicine.id}`)
         .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(204);
@@ -201,7 +201,7 @@ describe("Medicine Module", () => {
 
     it("deve retornar 404 ao tentar deletar medicamento inexistente", async () => {
       const response = await request(app)
-        .delete("/farma-project/medicines/999999")
+        .delete("/medicines/999999")
         .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(404);

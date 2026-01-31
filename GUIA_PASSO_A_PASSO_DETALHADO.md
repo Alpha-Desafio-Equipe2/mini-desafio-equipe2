@@ -133,6 +133,26 @@ docker compose down
 docker compose up -d --build
 ```
 
+### 5.3 Problemas com LXC/LXD (Permission Denied / OverlayFS)
+
+Se o seu servidor for um container LXC (comum em laboratórios e VPS específicas), o Docker pode falhar ao montar imagens.
+**Solução:**
+
+```bash
+sudo apt install fuse-overlayfs -y
+sudo nano /etc/docker/daemon.json
+```
+
+Coloque este conteúdo:
+
+```json
+{
+  "storage-driver": "fuse-overlayfs"
+}
+```
+
+Depois: `sudo systemctl restart docker`.
+
 ### Firewall (Se necessário)
 
 Se o firewall do Ubuntu estiver ativo, libere as portas 80 (Web) e 3000 (API):

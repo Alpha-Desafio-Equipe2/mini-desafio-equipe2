@@ -1,0 +1,16 @@
+{
+  "project": "Farmacia Popular Monorepo",
+  "structure": {
+    "apps": {
+      "api": "Backend (Node.js + Better-sqlite3)",
+      "web": "Frontend (React/Next.js)"
+    },
+    "packages": {
+      "types": "Shared TypeScript Interfaces",
+      "ui": "Design System / Shared Components",
+      "database": "Shared Database connection/utils"
+    },
+    "data": "SQLite database persistence",
+    ".agent/personas": "Multi-agent system prompts"
+  }
+}

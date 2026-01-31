@@ -5,26 +5,31 @@ import { UserRole } from "./domain/enums/UserRole.js";
 import { AppError } from "../../shared/errors/AppError.js";
 import { UpdateUserDTO } from "./dtos/UpdateUserDTO.js";
 import { ErrorCode } from "../../shared/errors/ErrorCode.js";
-import { HttpStatus } from "../../shared/errors/httpStatus.js";
 
 type UserRow = {
   id: number;
   name: string;
   email: string;
+  password: string;
   role: string;
+  cpf: string;
 };
 
 export class UserService {
   async create(data: CreateUserDTO) {
-    const { role, name, email, password } = data;
+    const { role, name, email, password, cpf } = data
+    const userRole =
+      role && isValidUserRole(role) ? role : UserRole.USER;
 
-    if (!isValidUserRole(role)) {
-      throw new Error("Invalid role");
+    if (userRole && !isValidUserRole(userRole)) {
+      throw new AppError(ErrorCode.INVALID_USER_ROLE);
     }
 
-    const existing = await this.findByEmail(email);
+    const existing = await db
+      .prepare("SELECT * FROM users WHERE email = ?")
+      .get(email);
     if (existing) {
-      throw new Error("User already exists");
+      throw new AppError(ErrorCode.USER_ALREADY_EXISTS);
     }
 
     const hashedPassword = await bcrypt.hash(password, 8);
@@ -34,29 +39,32 @@ export class UserService {
         name,
         email,
         password,
-        role
+        role,
+        cpf
       )
-      VALUES (?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
       name,
       email,
       hashedPassword,
-      role ?? UserRole.USER
+      userRole,
+      cpf
     );
 
     return {
       id: result.lastInsertRowid,
       name,
       email,
-      role,
+      role: userRole,
+      cpf
     };
   }
 
   async findAll() {
     return db
-      .prepare("SELECT id, name, email, role FROM users")
+      .prepare("SELECT id, name, email, role, cpf FROM users")
       .all();
   }
 
@@ -66,28 +74,25 @@ export class UserService {
       .get(email);
 
     if (!existing) {
-      throw new Error("User not found");
+      throw new AppError(ErrorCode.USER_NOT_FOUND);
     }
     return existing;
   }
 
-  static findById(id: number) {
+  async findById(id: number) {
     const row = db.prepare(`
     SELECT
       id,
       name,
       email,
-      role
+      role,
+      cpf
     FROM users
     WHERE id = ?
   `).get(id) as UserRow || undefined;
 
     if (!row) {
-      throw new AppError({
-              message: "User not found",
-              code: ErrorCode.USER_NOT_FOUND,
-              httpStatus: HttpStatus.NOT_FOUND,
-            });
+      throw new AppError(ErrorCode.USER_NOT_FOUND);
     }
 
     return {
@@ -95,64 +100,55 @@ export class UserService {
       name: row.name,
       email: row.email,
       role: row.role,
+      cpf: row.cpf
     };
   }
 
-  static update(id: number, data: UpdateUserDTO) {
+  async update(id: number, data: UpdateUserDTO) {
     const user = db
       .prepare('SELECT * FROM users WHERE id = ?')
       .get(id) as UserRow | undefined;
 
     if (!user) {
-      throw new AppError({
-              message: "User not found",
-              code: ErrorCode.USER_NOT_FOUND,
-              httpStatus: HttpStatus.NOT_FOUND,
-            });
+      throw new AppError(ErrorCode.USER_NOT_FOUND);
     }
 
-    if (data.role !== undefined && !isValidUserRole(data.role)) {
-      throw new AppError({
-              message: "Invalid Role",
-              code: ErrorCode.INVALID_USER_ROLE,
-              httpStatus: HttpStatus.BAD_REQUEST,
-            });
+    if (data.role && !isValidUserRole(data.role)) {
+      throw new AppError(ErrorCode.INVALID_USER_ROLE);
     }
+
+    const hashedPassword = data.password ? await bcrypt.hash(data.password, 8) : user.password;
 
     const updated = {
       name: data.name ?? user.name,
       email: data.email ?? user.email,
+      password: hashedPassword,
       role: data.role ?? user.role,
+      cpf: data.cpf ?? user.cpf
     };
 
     db.prepare(`
     UPDATE users SET
       name = ?,
       email = ?,
-      role = ?
+      role = ?,
+      password = ?,
+      cpf = ?,
       updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
       `).run(
       updated.name,
       updated.email,
       updated.role,
+      updated.cpf,
       id
     );
 
     return { id, ...updated };
   }
 
-  static delete(id: number) {
-
-    const user = UserService.findById(id);
-
-    if (!user) {
-      throw new AppError({
-              message: "User not found",
-              code: ErrorCode.USER_NOT_FOUND,
-              httpStatus: HttpStatus.NOT_FOUND,
-            });
-    }
+  async delete(id: number) {
+    const user = await this.findById(id);
 
     const stmt = db.prepare(`
       DELETE FROM users WHERE id = ?

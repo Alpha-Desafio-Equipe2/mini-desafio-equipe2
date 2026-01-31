@@ -3,7 +3,6 @@ import path from 'path';
 
 const DATABASE_PATH = process.env.DATABASE_PATH || 'src/database/farmacia.sqlite';
 
-
 const dbPath = path.resolve(DATABASE_PATH);
 
 export const db = new Database(dbPath);

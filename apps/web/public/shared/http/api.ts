@@ -1,4 +1,4 @@
-const API_URL = "/api";
+const API_URL = "/server07/api";
 
 interface RequestConfig extends RequestInit {
   headers?: HeadersInit;

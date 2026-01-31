@@ -1,7 +1,8 @@
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from '@jest/globals';
 import request from "supertest";
+import app from "../src/app";
 import { db } from "../src/config/database";
 import jwt from "jsonwebtoken";
-import app from "../src/app.js";
 
 describe("Sales Module", () => {
   let token: string;
@@ -13,6 +14,10 @@ describe("Sales Module", () => {
       { id: 1, email: "test@test.com" },
       process.env.JWT_SECRET || "secret",
     );
+  });
+
+  afterAll(() => {
+    db.close();
   });
 
   beforeEach(() => {

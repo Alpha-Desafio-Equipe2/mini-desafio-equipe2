@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterAll } from '@jest/globals';
 import request from "supertest";
 import { db } from "../src/config/database";
 import jwt from "jsonwebtoken";
@@ -5,6 +6,11 @@ import app from "../src/app.js";
 import "../src/database/schema.js";
 
 describe("Customer Module CRUD", () => {
+
+  afterAll(() => {
+    db.close();
+  });
+
   // Clear database before each test to ensure clean state
   beforeEach(() => {
     db.prepare("DELETE FROM customers").run();

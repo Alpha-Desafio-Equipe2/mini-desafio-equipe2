@@ -1,7 +1,10 @@
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from '@jest/globals';
 import request from "supertest";
 import app from "../src/app";
 import { db } from "../src/config/database";
 import jwt from "jsonwebtoken";
+
+
 
 describe("Medicine Module", () => {
   let token: string;
@@ -12,6 +15,10 @@ describe("Medicine Module", () => {
       { id: 1, email: "test@test.com" },
       process.env.JWT_SECRET || "secret",
     );
+  });
+
+  afterAll(() => {
+    db.close();
   });
 
   beforeEach(() => {
@@ -183,8 +190,8 @@ describe("Medicine Module", () => {
         `,
         )
         .get("Medicamento Delete", "Teste", "Teste", 0, 10, 10) as {
-        id: number;
-      };
+          id: number;
+        };
 
       const response = await request(app)
         .delete(`/farma-project/medicines/${medicine.id}`)

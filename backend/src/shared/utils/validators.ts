@@ -74,6 +74,21 @@ export class Validators {
     return clean.replace(/(\d{5})(\d{3})/, '$1-$2');
   }
 
+  static validatePassword(password: string) {
+    if (!password) {
+      throw new AppError(ErrorCode.INVALID_PASSWORD);
+    }
+
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+
+    if (!passwordRegex.test(password)) {
+      throw new AppError(ErrorCode.WEAK_PASSWORD);
+    }
+
+    return password;
+  }
+
   static validatePrescriptionNumber(numero: string | number | undefined): boolean {
     if (numero === undefined || numero === null) return true;
     if (typeof numero === 'string') {

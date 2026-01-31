@@ -5,6 +5,7 @@ import { UserRole } from "./domain/enums/UserRole.js";
 import { AppError } from "../../shared/errors/AppError.js";
 import { UpdateUserDTO } from "./dtos/UpdateUserDTO.js";
 import { ErrorCode } from "../../shared/errors/ErrorCode.js";
+import { Validators } from "../../shared/utils/validators.js";
 
 type UserRow = {
   id: number;
@@ -25,10 +26,11 @@ export class UserService {
       throw new AppError(ErrorCode.INVALID_USER_ROLE);
     }
 
-    const existing = await db
-      .prepare("SELECT * FROM users WHERE email = ?")
-      .get(email);
-    if (existing) {
+    if (data.cpf && !isUserCpfUnique(data.cpf)) {
+      throw new AppError(ErrorCode.USER_ALREADY_EXISTS);
+    }
+
+    if (data.email && !isUserEmailUnique(data.email)) {
       throw new AppError(ErrorCode.USER_ALREADY_EXISTS);
     }
 
@@ -64,14 +66,31 @@ export class UserService {
 
   async findAll() {
     return db
-      .prepare("SELECT id, name, email, role, cpf FROM users")
-      .all();
+      .prepare(`
+        SELECT 
+        id, 
+        name, 
+        email, 
+        role, 
+        cpf 
+        FROM users
+      `)
+      .all() as UserRow[];
   }
 
   async findByEmail(email: string) {
     const existing = db
-      .prepare("SELECT * FROM users WHERE email = ?")
-      .get(email);
+      .prepare(`
+        SELECT 
+        id, 
+        name, 
+        email, 
+        role, 
+        cpf 
+        FROM users 
+        WHERE email = ?
+      `)
+      .get(email) as UserRow || undefined;
 
     if (!existing) {
       throw new AppError(ErrorCode.USER_NOT_FOUND);
@@ -80,7 +99,7 @@ export class UserService {
   }
 
   async findById(id: number) {
-    const row = db.prepare(`
+    const existing = db.prepare(`
     SELECT
       id,
       name,
@@ -91,17 +110,11 @@ export class UserService {
     WHERE id = ?
   `).get(id) as UserRow || undefined;
 
-    if (!row) {
+    if (!existing) {
       throw new AppError(ErrorCode.USER_NOT_FOUND);
     }
 
-    return {
-      id: row.id,
-      name: row.name,
-      email: row.email,
-      role: row.role,
-      cpf: row.cpf
-    };
+    return existing;
   }
 
   async update(id: number, data: UpdateUserDTO) {
@@ -109,8 +122,35 @@ export class UserService {
       .prepare('SELECT * FROM users WHERE id = ?')
       .get(id) as UserRow | undefined;
 
+    const userRole =
+      data.role && isValidUserRole(data.role) ? data.role : UserRole.USER;
+
     if (!user) {
       throw new AppError(ErrorCode.USER_NOT_FOUND);
+    }
+
+    if (data.name && !Validators.validateName(data.name)) {
+      throw new AppError(ErrorCode.INVALID_USER_NAME);
+    }
+
+    if (data.email && !Validators.validateEmail(data.email)) {
+      throw new AppError(ErrorCode.INVALID_EMAIL);
+    }
+
+    if (data.password && !Validators.validatePassword(data.password)) {
+      throw new AppError(ErrorCode.INVALID_PASSWORD);
+    }
+
+    if (data.cpf && !Validators.validateCPF(data.cpf)) {
+      throw new AppError(ErrorCode.INVALID_CPF);
+    }
+
+    if (data.cpf && !isUserCpfUnique(data.cpf)) {
+      throw new AppError(ErrorCode.USER_ALREADY_EXISTS);
+    }
+
+    if (data.email && !isUserEmailUnique(data.email)) {
+      throw new AppError(ErrorCode.USER_ALREADY_EXISTS);
     }
 
     if (data.role && !isValidUserRole(data.role)) {
@@ -123,11 +163,11 @@ export class UserService {
       name: data.name ?? user.name,
       email: data.email ?? user.email,
       password: hashedPassword,
-      role: data.role ?? user.role,
+      role: userRole ?? user.role,
       cpf: data.cpf ?? user.cpf
     };
 
-    db.prepare(`
+    const stmt = db.prepare(`
     UPDATE users SET
       name = ?,
       email = ?,
@@ -136,15 +176,18 @@ export class UserService {
       cpf = ?,
       updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
-      `).run(
+      `)
+
+    const result = stmt.run(
       updated.name,
       updated.email,
       updated.role,
+      updated.password,
       updated.cpf,
       id
     );
 
-    return { id, ...updated };
+    return ({ id, name: updated.name, email: updated.email, role: updated.role, cpf: updated.cpf });
   }
 
   async delete(id: number) {
@@ -162,4 +205,18 @@ export class UserService {
 
 function isValidUserRole(role: string): role is UserRole {
   return Object.values(UserRole).includes(role as UserRole);
-} 
+}
+
+function isUserCpfUnique(cpf: string) {
+  const existing = db
+    .prepare('SELECT * FROM users WHERE cpf = ?')
+    .get(cpf) as UserRow | undefined;
+  return !existing;
+}
+
+function isUserEmailUnique(email: string) {
+  const existing = db
+    .prepare('SELECT * FROM users WHERE email = ?')
+    .get(email) as UserRow | undefined;
+  return !existing;
+}  

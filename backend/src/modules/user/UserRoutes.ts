@@ -13,23 +13,20 @@ router.post("/",
   controller.create
 );
 
-router.get("/", controller.getAll);
+router.get("/email/:email",
+  Validators.validateEmailParamMiddleware,
+  controller.getByEmail
+);
 
 router.get("/:id",
   Validators.validateIdParamMiddleware,
   controller.getById
 );
 
-router.get("/:email",
-  Validators.validateEmailParamMiddleware,
-  controller.getByEmail
-);
+router.get("/", controller.getAll);
 
 router.put("/:id",
   Validators.validateIdParamMiddleware,
-  Validators.validateNameMiddleware,
-  Validators.validateEmailMiddleware,
-  Validators.validateCPFMiddleware,
   controller.update
 );
 

@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "rootDir": "./public",
+    "baseUrl": ".",
+    "paths": {
+      "@modules/*": ["./public/modules/*"],
+      "@shared/*": ["./public/shared/*"],
+      "@app/*": ["./public/app/*"]
+    }
+  },
+  "include": ["./public/**/*"],
+  "exclude": ["node_modules"]
+}

@@ -206,6 +206,11 @@ export const ErrorMessage: Record<ErrorCode, ErrorMessageProps> = {
     httpStatus: HttpStatus.BAD_REQUEST,
   },
 
+  [ErrorCode.JWT_SECRET_NOT_DEFINED]: {
+    message: "JWT_SECRET não definido",
+    httpStatus: HttpStatus.INTERNAL_SERVER_ERROR,
+  },
+
   // Generics
   [ErrorCode.INVALID_ID]: {
     message: "ID inválido",

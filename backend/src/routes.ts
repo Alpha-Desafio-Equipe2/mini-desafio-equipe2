@@ -9,9 +9,9 @@ import { isAuthenticated } from "./modules/auth/AuthMiddleware.js";
 const routes = Router();
 
 routes.use("/auth", authRoutes);
-routes.use("/medicines", medicineRoutes); // Public or Protected? Vide Medicine routes
+routes.use("/medicines", medicineRoutes);
 routes.use("/customers", isAuthenticated, customerRoutes);
-routes.use("/users", userRoutes);
+routes.use("/users", isAuthenticated, userRoutes);
 routes.use("/sales", isAuthenticated, saleRoutes);
 
 export default routes;

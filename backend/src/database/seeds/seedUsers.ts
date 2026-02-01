@@ -25,10 +25,10 @@ export async function seedUsers() {
   );
 
   insertUser.run(
-    "Manager",
-    "manager@email.com",
-    bcrypt.hashSync("manager123", 8),
-    UserRole.MANAGER,
+    "Pharmacist",
+    "pharmacist@email.com",
+    bcrypt.hashSync("pharmacist123", 8),
+    UserRole.PHARMACIST,
     "12345678999"
   );
 

@@ -63,6 +63,7 @@ export enum ErrorCode {
   INVALID_USER_NAME = 1908,
   WEAK_PASSWORD = 1909,
   INVALID_PASSWORD = 1910,
+  JWT_SECRET_NOT_DEFINED = 1911,
 
   // Parametros
   INVALID_ID = 1950,

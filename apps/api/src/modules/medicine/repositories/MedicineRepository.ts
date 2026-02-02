@@ -48,7 +48,14 @@ export class MedicineRepository {
     
     if (!fields) return;
 
-    const values = Object.values(data);
+    // Prepare values, coercing some JS types to SQLite-compatible types
+    const rawValues = Object.values(data);
+    const values = rawValues.map((v: any) => {
+      if (typeof v === 'boolean') return v ? 1 : 0;
+      if (v === undefined) return null;
+      return v;
+    });
+
     const stmt = db.prepare(`
       UPDATE medicines 
       SET ${fields}, updated_at = CURRENT_TIMESTAMP

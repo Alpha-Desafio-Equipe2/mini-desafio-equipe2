@@ -53,6 +53,14 @@ export const RegisterPage = (): HTMLElement => {
       const formData = new FormData(form as HTMLFormElement);
       const data: any = Object.fromEntries(formData.entries());
 
+      // Validate email format
+      const email = data.email as string;
+      if (!email.includes('@') || !email.includes('.') || email.length < 5) {
+        errorMsg.textContent = "Email inválido. Deve conter '@' e '.' com pelo menos 5 caracteres.";
+        errorMsg.style.display = "block";
+        return;
+      }
+
       // Fix for backend "SQLite3 can only bind..." error
       // The backend likely expects phone/address fields to exist, even if empty.
       // Since we removed them from the form, we explicitly send empty strings.

@@ -9,6 +9,15 @@ export class CreateUserUseCase {
   async execute(data: CreateUserDTO) {
     const { name, email, password, role } = data;
 
+    // Validate email format
+    if (!email.includes('@') || !email.includes('.') || email.length < 5) {
+      throw new AppError({
+        message: "Invalid email format. Email must contain '@' and '.' and be at least 5 characters long.",
+        code: ErrorCode.USER_ALREADY_EXISTS,
+        httpStatus: HttpStatus.BAD_REQUEST,
+      });
+    }
+
     const existingUser = UserRepository.findByEmail(email);
     if (existingUser) {
       throw new AppError({

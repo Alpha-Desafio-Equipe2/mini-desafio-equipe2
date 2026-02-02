@@ -22,6 +22,15 @@ export class UserController {
         });
       }
 
+      // Validate email format
+      if (!email.includes('@') || !email.includes('.') || email.length < 5) {
+        throw new AppError({
+          message: "Invalid email format",
+          code: ErrorCode.MISSING_CUSTOMER_NAME,
+          httpStatus: HttpStatus.BAD_REQUEST,
+        });
+      }
+
       const user = await createUserUseCase.execute({
         name,
         email,

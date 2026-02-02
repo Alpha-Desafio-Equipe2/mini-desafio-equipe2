@@ -5,8 +5,16 @@ export function seedUsers() {
   const adminEmail = "admin@email.com";
   const clientEmail = "client@email.com";
   const saltRounds = 8;
-  const adminPassword = bcrypt.hashSync("admin123", saltRounds);
-  const clientPassword = bcrypt.hashSync("client123", saltRounds);
+  const adminPasswordRaw = process.env.ADMIN_PASSWORD;
+  const clientPasswordRaw = process.env.CLIENT_PASSWORD;
+
+  if (!adminPasswordRaw || !clientPasswordRaw) {
+    throw new Error("ADMIN_PASSWORD and CLIENT_PASSWORD must be set in .env");
+  }
+  
+
+  const adminPassword = bcrypt.hashSync(adminPasswordRaw, saltRounds);
+  const clientPassword = bcrypt.hashSync(clientPasswordRaw, saltRounds);
 
   const insertUser = db.prepare(
     "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
@@ -26,7 +34,10 @@ export function seedUsers() {
     insertUser.run("Admin User", adminEmail, adminPassword, "admin");
     console.log("Admin User created.");
   } else {
-    console.log("Admin User already exists.");
+    // Update admin password
+    const update = db.prepare("UPDATE users SET password = ? WHERE email = ?");
+    update.run(adminPassword, adminEmail);
+    console.log("Admin User already exists. Password updated.");
   }
 
   // 2. Check/Insert Client
@@ -43,7 +54,10 @@ export function seedUsers() {
     clientUser = { id: info.lastInsertRowid };
     console.log("Client User created.");
   } else {
-    console.log("Client User already exists.");
+    // Update client password
+    const update = db.prepare("UPDATE users SET password = ? WHERE email = ?");
+    update.run(clientPassword, clientEmail);
+    console.log("Client User already exists. Password updated.");
   }
 
   // 3. Check/Insert Client's Customer Profile

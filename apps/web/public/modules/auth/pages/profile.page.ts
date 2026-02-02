@@ -130,7 +130,7 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
             
             <div class="user-stats">
               <div class="stat-box">
-                <span class="stat-value">R$ ${balance.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                <span class="stat-value" id="user-balance-display">R$ ${balance.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
                 <span class="stat-label">Saldo</span>
                 <button id="add-balance-btn" style="background:white; color:#007bff; border:none; border-radius:4px; padding:4px 8px; font-size:9px; cursor:pointer; margin-top:8px; font-weight:bold;">RECARREGAR</button>
               </div>
@@ -198,10 +198,10 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
                 const date = new Date(order.created_at);
 
                 return `
-                  <div class="order-card">
+                  <div class="order-card" id="order-card-${order.id}">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                       <span style="font-weight:700; color:#333;">Pedido #${order.id}</span>
-                      <span class="status-badge ${status.class}">${status.label}</span>
+                      <span class="status-badge ${status.class}" id="order-status-${order.id}">${status.label}</span>
                     </div>
                     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:15px; font-size:0.8rem; color:#666; padding-bottom:12px; border-bottom:1px solid #f9f9f9;">
                       <div><small style="color: #aaa; font-weight: bold;">DATA</small><br><strong>${date.toLocaleDateString('pt-BR')}</strong></div>
@@ -213,7 +213,7 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
                       <span style="font-size:1.15rem; font-weight:800; color:#007bff;">R$ ${(Number(order.total_value)).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
                     </div>
                     ${order.status === 'pending' ? `
-                      <button class="btn-cancel" onclick="window.cancelOrder(${order.id})">CANCELAR PEDIDO</button>
+                      <button class="btn-cancel" onclick="event.preventDefault(); window.profileCancelOrder(${order.id})">CANCELAR PEDIDO</button>
                     ` : ''}
                   </div>
                 `;
@@ -227,10 +227,17 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
     
     div.querySelector("#add-balance-btn")?.addEventListener("click", () => {
       const modal = AddBalanceModal(() => {
-        if ((window as any).navigate) {
-          (window as any).navigate('/server07/profile');
-        } else {
-          window.location.reload();
+        // Atualizar saldo no DOM sem recarregar
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            // Atualiza a variável local para manter consistência
+            user.balance = parsedUser.balance;
+            
+            const balanceDisplay = document.getElementById("user-balance-display");
+            if (balanceDisplay) {
+                balanceDisplay.textContent = `R$ ${Number(user.balance).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            }
         }
       });
       document.body.appendChild(modal);
@@ -267,8 +274,8 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
       }
     });
 
-    // Função de Cancelamento Global
-    (window as any).cancelOrder = async (id: number) => {
+    // Função de Cancelamento Global (Renomeada para evitar conflitos)
+    (window as any).profileCancelOrder = async (id: number) => {
       const confirmModal = ErrorModal({
         title: "Confirmar Cancelamento",
         message: "Deseja realmente cancelar este pedido?",
@@ -280,18 +287,28 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
       confirmBtn.className = "btn btn-primary";
       confirmBtn.style.cssText = "width: 100%; margin-top: 1rem; background: #dc3545; border:none; padding: 10px; border-radius: 8px; font-weight: bold;";
       confirmBtn.textContent = "SIM, CANCELAR";
-      confirmBtn.onclick = async () => {
+      confirmBtn.onclick = async (e: MouseEvent) => {
+        if(e) {
+             e.preventDefault();
+             e.stopPropagation();
+        }
         confirmModal.remove();
         try {
           await api.post(`/sales/${id}/cancel`, {});
           document.body.appendChild(SuccessModal({ title: "Pedido Cancelado", message: "O status foi atualizado." }));
-          setTimeout(() => {
-            if ((window as any).navigate) {
-              (window as any).navigate('/server07/profile');
-            } else {
-              window.location.reload();
+          // Atualizar interface sem recarregar
+          const orderCard = document.getElementById(`order-card-${id}`);
+          if (orderCard) {
+            const statusBadge = document.getElementById(`order-status-${id}`);
+            if (statusBadge) {
+                statusBadge.className = 'status-badge status-cancelled';
+                statusBadge.textContent = 'Cancelado';
             }
-          }, 1500);
+            
+            // Remover botão de cancelar
+            const cancelBtn = orderCard.querySelector('.btn-cancel');
+            if (cancelBtn) cancelBtn.remove();
+          }
         } catch (error: any) {
           document.body.appendChild(ErrorModal({ title: "Erro", message: "Não foi possível cancelar o pedido." }));
         }

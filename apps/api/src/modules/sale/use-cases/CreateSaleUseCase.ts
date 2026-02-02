@@ -113,7 +113,7 @@ export class CreateSaleUseCase {
         doctor_crm,
         prescription_date,
         payment_method: data.payment_method,
-        status: 'confirmed' // Auto-confirm for balance deduction? Or wait? Usually instantaneous for wallet.
+        status: 'pending' // Created as pending; only confirmed when admin confirms
       });
 
       for (const item of processedItems) {
@@ -124,15 +124,14 @@ export class CreateSaleUseCase {
           unit_price: item.unit_price,
           total_price: item.total_price
         });
-
-        MedicineRepository.decrementStock(item.medicine_id, item.quantity);
+        // Stock decrement will happen when sale is confirmed by admin
       }
 
       return {
         id: saleId,
         total: totalValue,
         items: processedItems,
-        status: "confirmed" // Return confirmed
+        status: "pending" // Return pending
       };
     })();
 

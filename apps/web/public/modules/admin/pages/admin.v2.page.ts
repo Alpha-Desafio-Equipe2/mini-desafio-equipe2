@@ -219,32 +219,60 @@ export const AdminPage = async (): Promise<HTMLElement> => {
       ]);
 
       const customerMap = new Map(customers.map((c) => [c.id, c.name]));
+      
+      // Separate pending and confirmed orders
+      const pendingOrders = orders.filter(o => !o.status || o.status === 'pending');
+      const confirmedOrders = orders.filter(o => o.status === 'confirmed');
+      const cancelledOrders = orders.filter(o => o.status === 'cancelled');
+
+      const renderOrdersList = (list: Order[]) => {
+        return list.map((order) => {
+          const customerName = customerMap.get(order.customer_id) || `ID ${order.customer_id}`;
+          const statusColor = !order.status || order.status === 'pending' ? '#ff9800' : order.status === 'confirmed' ? '#4caf50' : '#f44336';
+          const statusLabel = !order.status || order.status === 'pending' ? 'Pendente' : order.status === 'confirmed' ? 'Confirmado' : 'Cancelado';
+          
+          return `
+            <div style="border: 1px solid var(--border); padding: 1rem; border-radius: var(--radius-sm); background: ${order.status === 'pending' ? '#fffde7' : 'white'};">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>Pedido #${order.id} - ${customerName}</strong>
+                        <span style="display: inline-block; margin-left: 1rem; padding: 4px 12px; background: ${statusColor}; color: white; font-size: 0.75rem; font-weight: bold; border-radius: 4px;">${statusLabel}</span>
+                    </div>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem;">Total: R$ ${order.total_value ? order.total_value.toFixed(2) : "0.00"}</p>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <button class="btn btn-primary" style="font-size: 0.8rem;" onclick="window.viewOrderDetails(${order.id})">Ver Detalhes</button>
+                    ${order.status !== 'confirmed' ? `<button class="btn btn-secondary" style="font-size: 0.8rem; color: var(--error);" onclick="window.adminCancelOrder(${order.id})">Cancelar</button>` : ''}
+                </div>
+            </div>
+          `;
+        }).join("");
+      };
 
       contentDiv.innerHTML = `
-                 <h3>Todos os Pedidos</h3>
-                  <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
-                    ${orders
-                      .map((order) => {
-                        const customerName =
-                          customerMap.get(order.customer_id) ||
-                          `ID ${order.customer_id}`;
-                        return `
-                        <div style="border: 1px solid var(--border); padding: 1rem; border-radius: var(--radius-sm);">
-                            <div style="display: flex; justify-content: space-between;">
-                                <strong>Pedido #${order.id} - ${customerName}</strong>
-                                <!-- Status implicitly Active if listed here -->
-                            </div>
-                            <p style="font-size: 0.9rem; color: var(--text-muted);">Total: R$ ${order.total_value ? order.total_value.toFixed(2) : "0.00"}</p>
-                             <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                                <button class="btn btn-primary" style="font-size: 0.8rem;" onclick="window.viewOrderDetails(${order.id})">Ver Detalhes</button>
-                                <button class="btn btn-secondary" style="font-size: 0.8rem; color: var(--error);" onclick="window.adminCancelOrder(${order.id})">Cancelar/Excluir</button>
-                             </div>
-                        </div>
-                    `;
-                      })
-                      .join("")}
-                 </div>
-            `;
+        <div>
+          ${pendingOrders.length > 0 ? `
+            <h3 style="color: #ff9800; margin-bottom: 1rem;">⚠️ Pedidos Pendentes (${pendingOrders.length})</h3>
+            <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
+              ${renderOrdersList(pendingOrders)}
+            </div>
+          ` : '<p style="color: var(--text-muted);">Nenhum pedido pendente.</p>'}
+          
+          ${confirmedOrders.length > 0 ? `
+            <h3 style="color: #4caf50; margin-bottom: 1rem;">✅ Pedidos Confirmados (${confirmedOrders.length})</h3>
+            <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
+              ${renderOrdersList(confirmedOrders)}
+            </div>
+          ` : ''}
+          
+          ${cancelledOrders.length > 0 ? `
+            <h3 style="color: #f44336; margin-bottom: 1rem;">❌ Pedidos Cancelados (${cancelledOrders.length})</h3>
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              ${renderOrdersList(cancelledOrders)}
+            </div>
+          ` : ''}
+        </div>
+      `;
     } catch (err: any) {
       contentDiv.innerHTML = `<p style="color: var(--error);">Erro: ${err.message}</p>`;
     }

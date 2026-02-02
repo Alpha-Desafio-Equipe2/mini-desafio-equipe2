@@ -56,8 +56,39 @@ export class SaleRepository {
     return db.prepare("SELECT * FROM sale_items WHERE sale_id = ?").all(saleId) as SaleItem[];
   }
 
+  static findCustomerBySaleId(saleId: number): any | undefined {
+    const sale = db.prepare("SELECT customer_id FROM sales WHERE id = ?").get(saleId) as { customer_id: number } | undefined;
+    if (!sale || !sale.customer_id) return undefined;
+    return db.prepare("SELECT * FROM customers WHERE id = ?").get(sale.customer_id);
+  }
+
   static updateStatus(id: number, status: string): void {
     db.prepare("UPDATE sales SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(status, id);
+  }
+
+  static update(id: number, data: Partial<Sale>): void {
+    const fields: string[] = [];
+    const values: any[] = [];
+
+    if (data.status !== undefined) {
+      fields.push("status = ?");
+      values.push(data.status);
+    }
+    if (data.total_value !== undefined) {
+      fields.push("total_value = ?");
+      values.push(data.total_value);
+    }
+    if (data.payment_method !== undefined) {
+      fields.push("payment_method = ?");
+      values.push(data.payment_method);
+    }
+
+    if (fields.length > 0) {
+      fields.push("updated_at = CURRENT_TIMESTAMP");
+      values.push(id);
+      const stmt = db.prepare(`UPDATE sales SET ${fields.join(", ")} WHERE id = ?`);
+      stmt.run(...values);
+    }
   }
 
   static delete(id: number): void {

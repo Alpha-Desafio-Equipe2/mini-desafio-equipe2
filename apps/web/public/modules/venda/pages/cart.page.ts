@@ -198,6 +198,44 @@ export const CartPage = async (): Promise<HTMLElement> => {
         render();
       };
 
+      // If admin (PDV), listen to customer select changes and sync customer balance
+      if (isAdminOrAttendant) {
+        const customerSelect = div.querySelector(
+          "#admin-customer-select",
+        ) as HTMLSelectElement;
+        if (customerSelect) {
+          customerSelect.addEventListener("change", async (e) => {
+            const selectedCustomerId = parseInt(
+              (e.target as HTMLSelectElement).value,
+            );
+            try {
+              // Fetch customer data to get updated balance
+              const freshCustomer = await api.get<any>(
+                `/customers/${selectedCustomerId}`,
+              );
+              if (freshCustomer && (freshCustomer as any).balance !== undefined) {
+                // Find and update the displayed balance element
+                const balanceElements = div.querySelectorAll(
+                  "p[style*='1.5rem']",
+                );
+                for (const el of balanceElements) {
+                  if (
+                    el.textContent &&
+                    el.textContent.includes("R$")
+                  ) {
+                    const newBalance = Number((freshCustomer as any).balance) || 0;
+                    el.textContent = `R$ ${newBalance.toFixed(2)}`;
+                    break;
+                  }
+                }
+              }
+            } catch (err) {
+              console.warn("Could not sync customer balance", err);
+            }
+          });
+        }
+      }
+
       const typeSelect = div.querySelector(
         "#delivery-type",
       ) as HTMLSelectElement;
@@ -437,7 +475,8 @@ export const CartPage = async (): Promise<HTMLElement> => {
       initUser.role === "attendant");
 
   // Ensure we sync the logged user from the server before first render
-  if (initUser) {
+  // BUT: If admin, don't sync their balance (they shouldn't pay with their balance)
+  if (initUser && !initIsAdmin) {
     try {
       const fresh = await api.get(`/users/${initUser.id}`);
       if (fresh) {
@@ -447,6 +486,10 @@ export const CartPage = async (): Promise<HTMLElement> => {
     } catch (err) {
       console.warn("Could not sync user before render", err);
     }
+  } else if (initUser && initIsAdmin) {
+    // For admin, explicitly set balance to 0 (they're acting as cashier, not customer)
+    const adminUser = { ...initUser, balance: 0 };
+    localStorage.setItem("user", JSON.stringify(adminUser));
   }
 
   if (initIsAdmin) {

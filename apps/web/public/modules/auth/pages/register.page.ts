@@ -61,6 +61,15 @@ export const RegisterPage = (): HTMLElement => {
         return;
       }
 
+      // Validate password: min 8 chars, uppercase, lowercase, number, special char
+      const password = data.password as string;
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      if (!passwordRegex.test(password)) {
+        errorMsg.textContent = "Senha deve ter no mínimo 8 caracteres, incluindo maiúscula, minúscula, número e caractere especial (@$!%*?&).";
+        errorMsg.style.display = "block";
+        return;
+      }
+
       // Fix for backend "SQLite3 can only bind..." error
       // The backend likely expects phone/address fields to exist, even if empty.
       // Since we removed them from the form, we explicitly send empty strings.

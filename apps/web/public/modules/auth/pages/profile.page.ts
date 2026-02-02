@@ -285,7 +285,13 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
         try {
           await api.post(`/sales/${id}/cancel`, {});
           document.body.appendChild(SuccessModal({ title: "Pedido Cancelado", message: "O status foi atualizado." }));
-          setTimeout(() => window.location.reload(), 1500);
+          setTimeout(() => {
+            if ((window as any).navigate) {
+              (window as any).navigate('/server07/profile');
+            } else {
+              window.location.reload();
+            }
+          }, 1500);
         } catch (error: any) {
           document.body.appendChild(ErrorModal({ title: "Erro", message: "Não foi possível cancelar o pedido." }));
         }

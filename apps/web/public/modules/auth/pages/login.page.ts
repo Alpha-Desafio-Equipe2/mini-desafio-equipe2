@@ -36,7 +36,7 @@ export const LoginPage = (): HTMLElement => {
 
       try {
         await AuthService.login(data.email as string, data.password as string);
-        window.navigate("/");
+        window.navigate("/server07/");
       } catch (error: any) {
         errorMsg.textContent = error.message;
         errorMsg.style.display = "block";
@@ -46,7 +46,7 @@ export const LoginPage = (): HTMLElement => {
 
   div.querySelector("#go-register")?.addEventListener("click", (e) => {
     e.preventDefault();
-    window.navigate("/register");
+    window.navigate("/server07/register");
   });
 
   return div;

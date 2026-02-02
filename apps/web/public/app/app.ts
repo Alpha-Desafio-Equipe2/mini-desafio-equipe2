@@ -4,7 +4,7 @@ import { Navbar } from "../shared/components/navbar.js";
 import { HomePage } from "../modules/medicamento/pages/home.page.js";
 import { LoginPage } from "../modules/auth/pages/login.page.js";
 import { RegisterPage } from "../modules/auth/pages/register.page.js";
-import { AdminPage } from "../modules/admin/pages/admin.page.js";
+import { AdminPage } from "../modules/admin/pages/admin.v2.page.js";
 import { CartPage } from "../modules/venda/pages/cart.page.js";
 import { ProfilePage } from "../modules/auth/pages/profile.page.js";
 import { CustomerListPage } from "../modules/admin/pages/customer-list.page.js";
@@ -12,14 +12,14 @@ import { CustomerFormPage } from "../modules/admin/pages/customer-form.page.js";
 
 export const routes: Record<string, () => Promise<HTMLElement> | HTMLElement> =
   {
-    "/": HomePage,
-    "/login": LoginPage,
-    "/register": RegisterPage,
-    "/admin": AdminPage,
-    "/cart": CartPage,
-    "/profile": ProfilePage,
-    "/customers": CustomerListPage,
-    "/customers/new": () => CustomerFormPage(),
+    "/server07/": HomePage,
+    "/server07/login": LoginPage,
+    "/server07/register": RegisterPage,
+    "/server07/admin": AdminPage,
+    "/server07/cart": CartPage,
+    "/server07/profile": ProfilePage,
+    "/server07/customers": CustomerListPage,
+    "/server07/customers/new": () => CustomerFormPage(),
   };
 
 export class App {
@@ -39,6 +39,16 @@ export class App {
       const { path } = e.detail;
       this.navigateTo(path);
     });
+
+    // Disable Right Click (No Inspect)
+    document.addEventListener('contextmenu', event => event.preventDefault()); 
+    document.addEventListener('keydown', event => {
+        if (event.key === 'F12' || 
+            (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'J')) || 
+            (event.ctrlKey && event.key === 'u')) {
+            event.preventDefault();
+        }
+    });
   }
 
   navigateTo(path: string) {
@@ -56,15 +66,17 @@ export class App {
 
     // Simple Dynamic Route Matching
     if (!PageComponent) {
-      if (this.currentPath.startsWith("/customers/edit/")) {
+      if (this.currentPath.startsWith("/server07/customers/edit/")) {
         const id = this.currentPath.split("/").pop();
         PageComponent = CustomerFormPage as any;
         pageArgs = [id];
-      } else if (this.currentPath === "/") {
+      } else if (this.currentPath === "/server07/" || this.currentPath === "/server07") {
         PageComponent = HomePage;
       } else {
         // Simple fallback
         PageComponent = HomePage;
+        // Optional: Update URL to canonical home if completely unmatched?
+        // window.history.replaceState({}, "", "/server07/"); 
       }
     }
 

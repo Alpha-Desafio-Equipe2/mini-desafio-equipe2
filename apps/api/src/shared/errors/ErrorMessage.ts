@@ -142,6 +142,10 @@ export const ErrorMessage: Record<ErrorCode, ErrorMessageProps> = {
     message: "Nome do médico inválido",
     httpStatus: HttpStatus.BAD_REQUEST,
   },
+  [ErrorCode.PAYMENT_FAILED]: {
+    message: "Pagamento falhou",
+    httpStatus: HttpStatus.BAD_REQUEST,
+  },
 
   // Filiais
   [ErrorCode.MISSING_BRANCH_NAME]: {

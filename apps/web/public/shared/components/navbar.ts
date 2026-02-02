@@ -14,25 +14,29 @@ export const Navbar = (): HTMLElement => {
 
   nav.innerHTML = `
         <div class="container nav-content">
-            <a href="#" onclick="window.navigate('/'); return false;" class="logo">FarmaPro</a>
+            <a href="/server07/" style="text-decoration: none;" class="logo">FarmaPro</a>
             <div class="nav-links">
-                <a href="#" onclick="window.navigate('/'); return false;" class="nav-link">Home</a>
+                <a href="#" onclick="window.navigate('/server07/'); return false;" class="nav-link">Home</a>
                 ${
                   isLoggedIn
                     ? `
-                    <a href="#" onclick="window.navigate('/cart'); return false;" class="nav-link">Carrinho</a>
-                    <a href="#" onclick="window.navigate('/profile'); return false;" class="nav-link">Perfil</a>
-                    ${isAdmin ? `<a href="#" onclick="window.navigate('/customers'); return false;" class="nav-link">Clientes</a>` : ""}
-                    ${isAdmin ? `<a href="#" onclick="window.navigate('/admin'); return false;" class="nav-link">Admin</a>` : ""}
+                    <a href="#" onclick="window.navigate('/server07/cart'); return false;" class="nav-link">Carrinho</a>
+                    <a href="#" onclick="window.navigate('/server07/profile'); return false;" class="nav-link">Perfil</a>
+                    ${isAdmin ? `<a href="#" onclick="window.navigate('/server07/customers'); return false;" class="nav-link">Clientes</a>` : ""}
+                    ${isAdmin ? `<a href="#" onclick="window.navigate('/server07/admin'); return false;" class="nav-link">Admin</a>` : ""}
                     <a href="#" id="logout-btn" class="nav-link">Sair</a>
                 `
                     : `
-                    <a href="#" onclick="window.navigate('/login'); return false;" class="nav-link">Entrar</a>
+                    <a href="#" onclick="window.navigate('/server07/login'); return false;" class="nav-link">Entrar</a>
                 `
                 }
             </div>
         </div>
     `;
+
+  const navLinks = nav.querySelector(".nav-links");
+  const links = nav.querySelectorAll(".nav-link");
+
 
   const logoutBtn = nav.querySelector("#logout-btn");
   if (logoutBtn) {
@@ -41,7 +45,7 @@ export const Navbar = (): HTMLElement => {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       if (window.navigate) {
-        window.navigate("/");
+        window.navigate("/server07/");
       } else {
         window.location.reload();
       }

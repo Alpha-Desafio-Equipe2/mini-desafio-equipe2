@@ -22,7 +22,7 @@ export const CustomerFormPage = async (id?: string): Promise<HTMLElement> => {
 
             <div style="display: flex; gap: 1rem;">
                 <button type="submit" class="btn btn-primary" id="save-btn">Salvar</button>
-                <button type="button" class="btn btn-secondary" onclick="window.navigate('/customers')">Cancelar</button>
+                <button type="button" class="btn btn-secondary" onclick="window.navigate('/server07/customers')">Cancelar</button>
             </div>
         </form>
     `;
@@ -38,7 +38,7 @@ export const CustomerFormPage = async (id?: string): Promise<HTMLElement> => {
       cpfInput.value = customer.cpf;
     } catch (error) {
       alert("Erro ao carregar dados do cliente.");
-      window.navigate("/customers");
+      window.navigate("/server07/customers");
     }
   }
 
@@ -71,7 +71,7 @@ export const CustomerFormPage = async (id?: string): Promise<HTMLElement> => {
         await CustomerService.create(data);
         alert("Cliente criado com sucesso!");
       }
-      window.navigate("/customers");
+      window.navigate("/server07/customers");
     } catch (error: any) {
       alert("Erro ao salvar: " + (error.message || error));
       saveBtn.disabled = false;

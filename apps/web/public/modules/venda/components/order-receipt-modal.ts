@@ -192,7 +192,7 @@ export const OrderReceiptModal = (orderData: {
       modal.style.animation = "fadeOut 0.3s ease";
       setTimeout(() => {
         modal.remove();
-        window.navigate("/profile");
+        window.navigate("/server07/profile");
       }, 300);
     });
   }
@@ -203,7 +203,7 @@ export const OrderReceiptModal = (orderData: {
       modal.style.animation = "fadeOut 0.3s ease";
       setTimeout(() => {
         modal.remove();
-        window.navigate("/profile");
+        window.navigate("/server07/profile");
       }, 300);
     }
   });

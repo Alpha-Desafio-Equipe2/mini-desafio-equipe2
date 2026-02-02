@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   role: "admin" | "manager" | "attendant" | "customer";
+  balance?: number;
   phone?: string;
   address?: string;
 }
@@ -19,6 +20,7 @@ export interface Medicine {
   active_principle: string;
   price: number;
   stock: number;
+  image_url?: string;
   requires_prescription: boolean;
 }
 

@@ -10,7 +10,7 @@ export class SaleRepository {
 
     const result = stmt.run(
       data.customer_id || null,
-      data.branch_id,
+      data.branch_id || 1, // <--- ADICIONAMOS O "|| 1" AQUI
       data.total_value,
       data.doctor_crm || null,
       data.prescription_date || null,
@@ -30,7 +30,10 @@ export class SaleRepository {
     stmt.run(data.sale_id, data.medicine_id, data.quantity, data.unit_price, data.total_price);
   }
 
-  static findAll(): Sale[] {
+  static findAll(customerId?: number): Sale[] {
+    if (customerId) {
+      return db.prepare("SELECT * FROM sales WHERE customer_id = ?").all(customerId) as Sale[];
+    }
     return db.prepare("SELECT * FROM sales").all() as Sale[];
   }
 

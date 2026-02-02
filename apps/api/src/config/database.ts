@@ -22,6 +22,19 @@ export const db = new Database(DATABASE_PATH, {
 db.pragma('journal_mode = WAL');
 db.pragma('synchronous = NORMAL');
 
+// Migration simplificada para adicionar coluna balance
+try {
+  const tableInfo = db.prepare("PRAGMA table_info(users)").all() as any[];
+  const hasBalance = tableInfo.some(col => col.name === 'balance');
+  
+  if (!hasBalance) {
+    db.prepare("ALTER TABLE users ADD COLUMN balance REAL DEFAULT 0.00").run();
+    console.log("Migration: Added 'balance' column to users table.");
+  }
+} catch (error) {
+  console.error("Migration Error:", error);
+}
+
 export function initDatabase() {
   console.log('Database connected (SQLite) at:', DATABASE_PATH);
 }

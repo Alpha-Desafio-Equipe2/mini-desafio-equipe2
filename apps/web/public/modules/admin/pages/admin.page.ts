@@ -61,6 +61,7 @@ export const AdminPage = async (): Promise<HTMLElement> => {
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="text-align: left; border-bottom: 2px solid var(--border);">
+                            <th style="padding: 10px;">Imagem</th>
                             <th style="padding: 10px;">ID</th>
                             <th style="padding: 10px;">Nome</th>
                             <th style="padding: 10px;">Preço</th>
@@ -73,12 +74,18 @@ export const AdminPage = async (): Promise<HTMLElement> => {
                           .map(
                             (p) => `
                             <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 10px;">
+                                    ${p.image_url 
+                                        ? `<img src="${p.image_url}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">` 
+                                        : '<span style="font-size: 0.8rem; color: #999;">Sem IMG</span>'}
+                                </td>
                                 <td style="padding: 10px;">${p.id}</td>
                                 <td style="padding: 10px;">${p.name}</td>
                                 <td style="padding: 10px;">R$ ${p.price.toFixed(2)}</td>
                                 <td style="padding: 10px;">${p.stock}</td>
                                 <td style="padding: 10px;">
                                     <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 5px 10px; margin-right: 5px;" onclick="window.editProduct(${p.id})">Editar</button>
+                                    <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 5px 10px; margin-right: 5px; background-color: #17a2b8; border-color: #17a2b8; color: white;" onclick="window.manageImage(${p.id})">Imagem</button>
                                     <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 5px 10px; color: var(--error); border-color: var(--error);" onclick="window.deleteProduct(${p.id})">Excluir</button>
                                 </td>
                             </tr>
@@ -104,12 +111,37 @@ export const AdminPage = async (): Promise<HTMLElement> => {
                                 <label for="p-prescription">Requer Receita?</label>
                             </div>
                         </div>
-                        <!-- <input type="text" name="image_url" id="p-image" placeholder="URL da Imagem" class="input-field" style="margin-top: 1rem;"> -->
+                        <!-- Removed Image input from here as per request -->
                         
                         <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Salvar</button>
                         <button type="button" class="btn btn-secondary" onclick="document.getElementById('product-form-modal').style.display='none'">Cancelar</button>
                     </form>
                 </div>
+
+    <div id="image-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001;">
+                <div style="background: var(--surface); margin: 10% auto; padding: 2rem; border-radius: var(--radius-md); width: 90%; max-width: 500px;">
+                    <h4 style="margin-bottom: 1rem;">Gerenciar Imagem do Produto</h4>
+                    <input type="hidden" id="img-product-id">
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem;">URL da Imagem</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" id="img-url-input" class="input-field" placeholder="https://..." style="flex: 1;">
+                            <button type="button" class="btn btn-secondary" onclick="window.previewImageModal()">Ver</button>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-bottom: 1.5rem; min-height: 150px; display: flex; align-items: center; justify-content: center; background: #f9f9f9; border: 1px dashed var(--border); border-radius: 4px;">
+                        <img id="img-modal-preview" src="" style="max-width: 100%; max-height: 200px; display: none;">
+                        <p id="img-modal-placeholder" style="color: #999;">Prévia da Imagem</p>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" style="flex: 1;" onclick="window.saveImage()">Salvar Imagem</button>
+                        <button class="btn btn-secondary" style="flex: 1;" onclick="document.getElementById('image-modal').style.display='none'">Fechar</button>
+                    </div>
+                </div>
+            </div>
             `;
 
       const form = contentDiv.querySelector("#add-product-form");
@@ -130,6 +162,8 @@ export const AdminPage = async (): Promise<HTMLElement> => {
             requires_prescription: (
               document.getElementById("p-prescription") as HTMLInputElement
             ).checked, // Boolean
+            // image_url removed from create/update form payload if using separate flow, OR keep it if compatible. 
+            // If I remove it from form, it won't be sent.
           };
 
           const id = data.id;
@@ -318,10 +352,61 @@ export const AdminPage = async (): Promise<HTMLElement> => {
         (
           document.getElementById("p-prescription") as HTMLInputElement
         ).checked = !!product.requires_prescription;
+
+        // Image handled separately now
       }
     } catch (e) {
       alert("Erro ao carregar produto.");
     }
+  };
+
+  window.manageImage = async (id: number) => {
+      const modal = document.getElementById("image-modal");
+      if (!modal) return;
+      
+      try {
+          // Fetch current image to populate
+          const product = await api.get<any>(`/medicines/${id}`);
+          (document.getElementById("img-product-id") as HTMLInputElement).value = id.toString();
+          (document.getElementById("img-url-input") as HTMLInputElement).value = product.image_url || "";
+          
+          if (window.previewImageModal) window.previewImageModal();
+          modal.style.display = "block";
+      } catch(e) {
+          alert('Erro ao carregar dados do produto');
+      }
+  };
+
+  window.previewImageModal = () => {
+      const url = (document.getElementById("img-url-input") as HTMLInputElement).value;
+      const img = document.getElementById("img-modal-preview") as HTMLImageElement;
+      const placeholder = document.getElementById("img-modal-placeholder");
+      
+      if(url) {
+          img.src = url;
+          img.style.display = 'block';
+          if(placeholder) placeholder.style.display = 'none';
+      } else {
+          img.src = "";
+          img.style.display = 'none';
+          if(placeholder) placeholder.style.display = 'block';
+      }
+  };
+  
+  window.saveImage = async () => {
+      const id = (document.getElementById("img-product-id") as HTMLInputElement).value;
+      const url = (document.getElementById("img-url-input") as HTMLInputElement).value;
+      
+      if(!id) return;
+      
+      try {
+          await api.put(`/medicines/${id}`, { image_url: url });
+          alert("Imagem atualizada!");
+          document.getElementById("image-modal")!.style.display = "none";
+          renderProducts(); // Refresh list to show new image thumbnail
+      } catch(e: any) {
+          alert("Erro ao salvar imagem: " + e.message);
+      }
   };
 
   window.deleteProduct = async (id: number) => {
@@ -463,5 +548,8 @@ declare global {
     editProduct?: (id: number) => void;
     viewOrderDetails?: (id: number) => void;
     confirmOrder?: (id: number) => void;
+    manageImage?: (id: number) => void;
+    previewImageModal?: () => void;
+    saveImage?: () => void;
   }
-}
+} // Removed previous previewImage which is no longer used in global scope logic here

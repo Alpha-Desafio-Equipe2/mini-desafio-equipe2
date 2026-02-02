@@ -9,6 +9,7 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
     "rootDir": "./public",
+     "sourceMap": false,
     "baseUrl": ".",
     "paths": {
       "@modules/*": ["./public/modules/*"],

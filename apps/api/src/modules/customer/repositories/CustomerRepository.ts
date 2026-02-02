@@ -24,6 +24,10 @@ export class CustomerRepository {
     return db.prepare("SELECT * FROM customers WHERE cpf = ?").get(cpf) as Customer | undefined;
   }
 
+  static findByUserId(userId: number): Customer | undefined {
+    return db.prepare("SELECT * FROM customers WHERE user_id = ?").get(userId) as Customer | undefined;
+  }
+
   static update(id: number, data: Partial<Omit<Customer, "id" | "created_at" | "updated_at">>): void {
     const fields = Object.keys(data).map(key => `${key} = ?`).join(", ");
     const values = Object.values(data);

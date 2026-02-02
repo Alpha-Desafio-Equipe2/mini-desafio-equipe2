@@ -2,7 +2,7 @@ import { CartService } from "../services/cart.service.js";
 import { api } from "../../../shared/http/api.js";
 import { SaleService } from "../services/sale.service.js";
 import { CreateSaleDTO, SaleItem } from "../../../shared/types.js";
-import { BalanceService } from "../services/balance.service.js";
+
 import { AddBalanceModal } from "../components/add-balance-modal.js";
 import { OrderReceiptModal } from "../components/order-receipt-modal.js";
 import { ErrorModal } from "../../../shared/components/error-modal.js";
@@ -26,7 +26,7 @@ export const CartPage = (): HTMLElement => {
       (item) => item.product.requires_prescription,
     );
     const total = CartService.getTotal();
-    const balance = BalanceService.getBalance();
+    const balance = user ? (user.balance || 0) : 0;
 
     // Customer Select & Payment Logic (Only for Admins)
     let customerSelectHtml = "";
@@ -231,21 +231,39 @@ export const CartPage = (): HTMLElement => {
           }
           // Verificar se há saldo suficiente
                     const total = CartService.getTotal();
-                    const currentBalance = BalanceService.getBalance();
-                    if (!BalanceService.hasSufficientBalance(total)) {
+                    const currentBalance = user.balance || 0;
+                    
+                    if (!isAdminOrAttendant && currentBalance < total) {
                       const missing = total - currentBalance;
-                      const errorModal = ErrorModal({
-                        title: "Saldo Insuficiente",
-                        message: "Você não possui saldo suficiente para completar este pedido.",
-                        type: "error",
-                        details: [
-                          `Saldo atual: R$ ${currentBalance.toFixed(2)}`,
-                          `Valor do pedido: R$ ${total.toFixed(2)}`,
-                          `Faltam: R$ ${missing.toFixed(2)}`,
-                          "Clique no botão 'Adicionar' para adicionar saldo"
-                        ]
-                      });
+                      const errorModal = document.createElement('div');
+                      errorModal.style.cssText = `
+                        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                        background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;
+                      `;
+                      errorModal.innerHTML = `
+                        <div style="background: white; padding: 2rem; border-radius: 8px; max-width: 400px; text-align: center;">
+                           <h3 style="color: var(--error); margin-bottom: 1rem;">Saldo Insuficiente</h3>
+                           <p>Saldo atual: R$ ${currentBalance.toFixed(2)}</p>
+                           <p>Valor do pedido: R$ ${total.toFixed(2)}</p>
+                           <p style="font-weight: bold; margin: 1rem 0;">Faltam: R$ ${missing.toFixed(2)}</p>
+                           <div style="display: flex; gap: 10px; justify-content: center; margin-top: 1.5rem;">
+                               <button id="modal-add-balance" class="btn btn-primary">💰 Adicionar Saldo</button>
+                               <button id="modal-cancel" class="btn btn-secondary">Cancelar</button>
+                           </div>
+                        </div>
+                      `;
+                      
                       document.body.appendChild(errorModal);
+                      
+                      errorModal.querySelector('#modal-cancel')?.addEventListener('click', () => errorModal.remove());
+                      errorModal.querySelector('#modal-add-balance')?.addEventListener('click', () => {
+                          errorModal.remove();
+                          const balanceModal = AddBalanceModal(() => {
+                              render(); // Refresh cart page to show new balance
+                          });
+                          document.body.appendChild(balanceModal);
+                      });
+                      
                       return;
                     }
 
@@ -312,10 +330,20 @@ export const CartPage = (): HTMLElement => {
 
 
             await SaleService.createSale(saleData);
-            // Deduzir o saldo após a confirmação da venda
-            BalanceService.deductBalance(total);
-            const newBalance = BalanceService.getBalance();
-
+            
+            // Note: Balance deduction is now handled by the backend!
+            // Just need to refresh user balance locally for UI to update
+            try {
+                 const currentUser = await api.get<{balance: number}>(`/users/${user.id}`);
+                 if(currentUser) {
+                     user.balance = currentUser.balance;
+                     localStorage.setItem("user", JSON.stringify(user));
+                 }
+            } catch(e) { console.warn("Could not sync balance", e); }
+            
+            // Logic for receipt...
+            const newBalance = user.balance || 0; // Approximate
+            
             // Generate order number and date
             const orderNumber = `ORD-${Date.now().toString().slice(-8)}`;
             const orderDate = new Date().toLocaleString('pt-BR', {
@@ -347,11 +375,48 @@ export const CartPage = (): HTMLElement => {
             document.body.appendChild(receiptModal);
           } catch (error: any) {
             console.error(error);
+            
+            // Check if error is about insufficient balance
+            const errorMessage = error.message || "";
+            if (errorMessage.toLowerCase().includes("saldo insuficiente")) {
+                 const currentBalance = user?.balance || 0;
+                 const missing = total - currentBalance;
+                 
+                 const errorModal = document.createElement('div');
+                  errorModal.style.cssText = `
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                    background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;
+                  `;
+                  errorModal.innerHTML = `
+                    <div style="background: white; padding: 2rem; border-radius: 8px; max-width: 400px; text-align: center;">
+                       <h3 style="color: var(--error); margin-bottom: 1rem;">Saldo Insuficiente</h3>
+                       <p>${errorMessage}</p> <!-- Show specific backend message -->
+                       <p style="font-weight: bold; margin: 1rem 0;">Faltam: R$ ${missing > 0 ? missing.toFixed(2) : "0.00"}</p>
+                       <div style="display: flex; gap: 10px; justify-content: center; margin-top: 1.5rem;">
+                           <button id="modal-add-balance-err" class="btn btn-primary">💰 Adicionar Saldo</button>
+                           <button id="modal-cancel-err" class="btn btn-secondary">Cancelar</button>
+                       </div>
+                    </div>
+                  `;
+                  
+                  document.body.appendChild(errorModal);
+                  
+                  errorModal.querySelector('#modal-cancel-err')?.addEventListener('click', () => errorModal.remove());
+                  errorModal.querySelector('#modal-add-balance-err')?.addEventListener('click', () => {
+                      errorModal.remove();
+                      const balanceModal = AddBalanceModal(() => {
+                          render(); // Refresh cart page to show new balance
+                      });
+                      document.body.appendChild(balanceModal);
+                  });
+                  return;
+            }
+
             const errorModal = ErrorModal({
               title: "Erro ao Finalizar Pedido",
               message: "Não foi possível processar seu pedido. Por favor, tente novamente.",
               type: "error",
-              details: [error.message || "Erro desconhecido"]
+              details: [errorMessage || "Erro desconhecido"]
             });
             document.body.appendChild(errorModal);
           }

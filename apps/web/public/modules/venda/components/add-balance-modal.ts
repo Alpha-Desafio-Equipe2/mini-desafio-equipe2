@@ -1,4 +1,4 @@
-import { BalanceService } from '../services/balance.service.js';
+import { api } from '../../../shared/http/api.js';
 import { SuccessModal } from '../../../shared/components/success-modal.js';
 import { ErrorModal } from '../../../shared/components/error-modal.js';
 
@@ -103,24 +103,47 @@ export const AddBalanceModal = (onBalanceAdded: () => void): HTMLElement => {
 
   // Submit do formulário
   const form = modal.querySelector('#add-balance-form') as HTMLFormElement;
-  form?.addEventListener('submit', (e) => {
+  form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(form);
     const amount = parseFloat(formData.get('amount') as string);
+    const userStr = localStorage.getItem("user");
+    const user = userStr ? JSON.parse(userStr) : null;
+
+    if (!user) {
+        alert("Erro: Usuário não identificado.");
+        return;
+    }
 
     if (amount > 0) {
-      const newBalance = BalanceService.addBalance(amount);
-      closeModal();
+      try {
+        // Use API to add balance
+        const response = await api.post<{newBalance: number}>(`/users/${user.id}/balance`, { amount });
+        
+        // Update local user
+        user.balance = response.newBalance;
+        localStorage.setItem("user", JSON.stringify(user));
+
+        closeModal();
       
-      const successModal = SuccessModal({
-        title: "Saldo Adicionado!",
-        message: "Seu saldo foi atualizado com sucesso.",
-        icon: "💰",
-        details: [`Novo saldo: R$ ${newBalance.toFixed(2)}`]
-      });
-      document.body.appendChild(successModal);
+        const successModal = SuccessModal({
+            title: "Saldo Adicionado!",
+            message: "Seu saldo foi atualizado com sucesso.",
+            icon: "💰",
+            details: [`Novo saldo: R$ ${response.newBalance.toFixed(2)}`]
+        });
+        document.body.appendChild(successModal);
       
-      onBalanceAdded();
+        onBalanceAdded();
+      } catch (error: any) {
+        const errorModal = ErrorModal({
+            title: "Erro ao adicionar saldo",
+            message: "Não foi possível atualizar seu saldo.",
+            type: "error",
+            details: [error.message || "Erro de conexão"]
+        });
+        document.body.appendChild(errorModal);
+      }
     } else {
       const errorModal = ErrorModal({
         title: "Valor Inválido",

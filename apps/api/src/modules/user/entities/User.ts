@@ -6,6 +6,7 @@ export interface User {
   email: string;
   password?: string;
   role: UserRole;
+  balance?: number;
   created_at?: string;
   updated_at?: string;
 }

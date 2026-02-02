@@ -9,6 +9,7 @@ routes.post("/", (req, res, next) => userController.create(req, res, next));
 routes.get("/:id", (req, res, next) => userController.getById(req, res, next));
 routes.get("/email/:email", (req, res, next) => userController.getByEmail(req, res, next));
 routes.put("/:id", (req, res, next) => userController.update(req, res, next));
+routes.post("/:id/balance", (req, res, next) => userController.addBalance(req, res, next));
 routes.delete("/:id", (req, res, next) => userController.delete(req, res, next));
 
 export default routes;

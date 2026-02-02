@@ -3,20 +3,20 @@ import { Medicine } from "../entities/Medicine.js";
 
 export class MedicineRepository {
   private static findByIdStmt = db.prepare(`
-    SELECT id, name, manufacturer, active_principle, requires_prescription, price, stock, created_at, updated_at
+    SELECT id, name, manufacturer, active_principle, requires_prescription, price, stock, image_url, created_at, updated_at
     FROM medicines
     WHERE id = ?
   `);
 
   private static findAllStmt = db.prepare(`
-    SELECT id, name, manufacturer, active_principle, requires_prescription, price, stock, created_at, updated_at
+    SELECT id, name, manufacturer, active_principle, requires_prescription, price, stock, image_url, created_at, updated_at
     FROM medicines
   `);
 
   static create(medicine: Omit<Medicine, "id" | "created_at" | "updated_at">) {
     const stmt = db.prepare(`
-      INSERT INTO medicines (name, manufacturer, active_principle, requires_prescription, price, stock)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO medicines (name, manufacturer, active_principle, requires_prescription, price, stock, image_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -25,7 +25,8 @@ export class MedicineRepository {
       medicine.active_principle,
       medicine.requires_prescription ? 1 : 0,
       medicine.price,
-      medicine.stock
+      medicine.stock,
+      medicine.image_url || null
     );
 
     return result.lastInsertRowid;

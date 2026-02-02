@@ -47,7 +47,8 @@ export const HomePage = async (): Promise<HTMLElement> => {
           price: med.price,
           quantity: med.stock, // stock -> quantity
           description: med.manufacturer,
-          requires_prescription: Boolean(med.requiresPrescription), // API returns camelCase
+          image_url: med.image_url,
+          requires_prescription: Boolean(med.requires_prescription || med.requiresPrescription), // API returns camelCase
         };
         grid.appendChild(ProductCard(product));
       });

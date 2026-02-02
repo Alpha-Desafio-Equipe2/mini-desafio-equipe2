@@ -8,23 +8,25 @@ export const CustomerListPage = async (): Promise<HTMLElement> => {
   div.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
             <h2 style="color: var(--primary);">Gerenciar Clientes</h2>
-            <button class="btn btn-primary" onclick="window.navigate('/customers/new')">Novo Cliente</button>
+            <button class="btn btn-primary" onclick="window.navigate('/server07/customers/new')">Novo Cliente</button>
         </div>
         
         <div class="card">
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="text-align: left; border-bottom: 2px solid var(--border);">
-                        <th style="padding: 10px;">ID</th>
-                        <th style="padding: 10px;">Nome</th>
-                        <th style="padding: 10px;">CPF</th>
-                        <th style="padding: 10px;">Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="customers-table-body">
-                    <tr><td colspan="4" style="text-align: center; padding: 20px;">Carregando...</td></tr>
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table style="width: 100%; border-collapse: collapse; min-width: 600px;">
+                    <thead>
+                        <tr style="text-align: left; border-bottom: 2px solid var(--border);">
+                            <th style="padding: 10px;">ID</th>
+                            <th style="padding: 10px;">Nome</th>
+                            <th style="padding: 10px;">CPF</th>
+                            <th style="padding: 10px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customers-table-body">
+                        <tr><td colspan="4" style="text-align: center; padding: 20px;">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     `;
 
@@ -47,7 +49,7 @@ export const CustomerListPage = async (): Promise<HTMLElement> => {
                     <td style="padding: 10px;">${c.name}</td>
                     <td style="padding: 10px;">${c.cpf}</td>
                     <td style="padding: 10px;">
-                        <button class="btn btn-secondary" style="margin-right: 5px;" onclick="window.navigate('/customers/edit/${c.id}')">Editar</button>
+                        <button class="btn btn-secondary" style="margin-right: 5px;" onclick="window.navigate('/server07/customers/edit/${c.id}')">Editar</button>
                         <button class="btn btn-secondary" style="color: var(--error); border-color: var(--error);" onclick="window.deleteCustomer(${c.id})">Excluir</button>
                     </td>
                 </tr>

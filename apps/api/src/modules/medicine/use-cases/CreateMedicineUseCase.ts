@@ -32,7 +32,10 @@ export class CreateMedicineUseCase {
       });
     }
 
-    const medicineId = MedicineRepository.create(data);
+    const medicineId = MedicineRepository.create({
+      ...data,
+      image_url: data.image_url || `https://placehold.co/400x300?text=${encodeURIComponent(data.name)}`
+    });
     return MedicineRepository.findById(Number(medicineId));
   }
 }

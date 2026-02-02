@@ -5,4 +5,5 @@ export interface CreateMedicineDTO {
   requires_prescription: boolean;
   price: number;
   stock: number;
+  image_url?: string;
 }

@@ -83,7 +83,17 @@ export class UserController {
       const { id } = req.params;
       const { name, email, role } = req.body;
       
-      UserRepository.update(parseInt(id), { name, email, role });
+      const updateData: any = {};
+      if (name !== undefined) updateData.name = name;
+      if (email !== undefined) updateData.email = email;
+      if (role !== undefined && role !== null) updateData.role = role;
+
+      console.log(`[UserController] Updating user ${id} with:`, updateData); // Debug log
+
+      if (Object.keys(updateData).length > 0) {
+        UserRepository.update(parseInt(id), updateData);
+      }
+      
       const user = UserRepository.findById(parseInt(id));
       
       return res.json(user);
@@ -108,6 +118,25 @@ export class UserController {
       return res.json({ message: "User deleted successfully" });
     } catch (error) {
       next(error);
+    }
+  }
+
+  async addBalance(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const { amount } = req.body;
+      
+      const user = UserRepository.findById(parseInt(id));
+      if (!user) {
+         throw new AppError({ message: "User not found", code: ErrorCode.USER_NOT_FOUND, httpStatus: 404 });
+      }
+
+      const newBalance = (user.balance || 0) + parseFloat(amount);
+      UserRepository.update(parseInt(id), { balance: newBalance });
+      
+      return res.json({ newBalance });
+    } catch(error) {
+       next(error);
     }
   }
 }

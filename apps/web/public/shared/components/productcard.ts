@@ -48,7 +48,7 @@ export const ProductCard = (product: Product): HTMLElement => {
       const token = localStorage.getItem("token");
       if (!token) {
         alert("Faça login para comprar.");
-        if (window.navigate) window.navigate("/login");
+        if (window.navigate) window.navigate("/server07/login");
         return;
       }
 

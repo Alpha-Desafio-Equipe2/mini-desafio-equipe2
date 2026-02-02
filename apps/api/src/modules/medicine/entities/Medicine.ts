@@ -6,6 +6,7 @@ export interface Medicine {
   requires_prescription: boolean;
   price: number;
   stock: number;
+  image_url?: string;
   created_at?: string;
   updated_at?: string;
 }

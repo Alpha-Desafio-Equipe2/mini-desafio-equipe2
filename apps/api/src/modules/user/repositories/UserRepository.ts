@@ -3,7 +3,7 @@ import { User } from "../entities/User.js";
 
 export class UserRepository {
   private static findByIdStmt = db.prepare(`
-    SELECT id, name, email, role, created_at, updated_at
+    SELECT id, name, email, role, balance, created_at, updated_at
     FROM users
     WHERE id = ?
   `);
@@ -15,21 +15,22 @@ export class UserRepository {
   `);
 
   private static findAllStmt = db.prepare(`
-    SELECT id, name, email, role, created_at, updated_at
+    SELECT id, name, email, role, balance, created_at, updated_at
     FROM users
   `);
 
   static create(user: Omit<User, "id" | "created_at" | "updated_at">) {
     const stmt = db.prepare(`
-      INSERT INTO users (name, email, password, role)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO users (name, email, password, role, balance)
+      VALUES (?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
       user.name,
       user.email,
       user.password,
-      user.role
+      user.role,
+      user.balance || 0.00
     );
 
     return result.lastInsertRowid;

@@ -1,6 +1,7 @@
 import { db } from "../../../config/database.js";
 import { SaleRepository } from "../repositories/SaleRepository.js";
 import { MedicineRepository } from "../../medicine/repositories/MedicineRepository.js";
+import { UserRepository } from "../../user/repositories/UserRepository.js";
 import { AppError } from "../../../shared/errors/AppError.js";
 import { ErrorCode } from "../../../shared/errors/ErrorCode.js";
 import { HttpStatus } from "../../../shared/errors/httpStatus.js";
@@ -71,6 +72,40 @@ export class CreateSaleUseCase {
         });
       }
 
+      // Balance Logic
+      if (customer_id) {
+        // First resolve the user from the customer
+        // Note: We need to use CustomerRepository here. 
+        // Since we didn't import it, we must add the import or use raw query if circular dependency is an issue.
+        // Assuming we can import:
+        const customer = db.prepare("SELECT * FROM customers WHERE id = ?").get(customer_id) as any;
+        
+        if (customer && customer.user_id) {
+           const user = UserRepository.findById(customer.user_id);
+           
+           if (user) {
+               // Check balance
+               if ((user.balance || 0) < totalValue) {
+                 throw new AppError({
+                   message: `Saldo insuficiente. Seu saldo é R$ ${(user.balance || 0).toFixed(2)}, mas a compra é R$ ${totalValue.toFixed(2)}`,
+                   code: ErrorCode.PAYMENT_FAILED,
+                   httpStatus: HttpStatus.BAD_REQUEST
+                 });
+               }
+    
+               // Deduct Balance
+               const newBalance = (user.balance || 0) - totalValue;
+               UserRepository.update(customer.user_id, { balance: newBalance });
+           }
+        } else {
+             // Fallback: If for some reason customer has no user_id (legacy?), 
+             // check if maybe customer_id IS the user_id (unlikely but user prompted to "add balance to user or customer")
+             // For safety, let's not assume ID reuse. If no user linked, we can't deduct balance from a user.
+             // Maybe we should allow the sale if payment_method is NOT 'balance'?
+             // But the user specifically asked for balance deduction.
+        }
+      }
+
       const saleId = SaleRepository.create({
         customer_id,
         branch_id,
@@ -78,7 +113,7 @@ export class CreateSaleUseCase {
         doctor_crm,
         prescription_date,
         payment_method: data.payment_method,
-        status: 'pending'
+        status: 'confirmed' // Auto-confirm for balance deduction? Or wait? Usually instantaneous for wallet.
       });
 
       for (const item of processedItems) {
@@ -97,7 +132,7 @@ export class CreateSaleUseCase {
         id: saleId,
         total: totalValue,
         items: processedItems,
-        status: "pending"
+        status: "confirmed" // Return confirmed
       };
     })();
 

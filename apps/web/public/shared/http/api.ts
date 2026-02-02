@@ -10,7 +10,13 @@ export const api = {
     method = "GET",
     body: any = null,
   ): Promise<T> {
-    const token = localStorage.getItem("token");
+    let token = localStorage.getItem("token");
+    
+    // Fallback/Primary: Try reading from cookie
+    if (!token) {
+        const match = document.cookie.match(new RegExp('(^| )token=([^;]+)'));
+        if (match) token = match[2];
+    }
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     };
@@ -38,11 +44,11 @@ export const api = {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
 
-        if (window.location.pathname !== "/login.html") {
+        if (window.location.pathname !== "/server07/login") {
           if (window.navigate) {
-            window.navigate("/login");
+            window.navigate("/server07/login");
           } else {
-            window.location.href = "/login.html";
+            window.location.href = "/server07/login";
           }
         }
         throw new Error("Sessão expirada. Faça login novamente.");

@@ -9,6 +9,15 @@ export class AuthController {
   async login(request: Request, response: Response, next: NextFunction) {
     try {
       const result = await loginUseCase.execute(request.body);
+      
+      // Set Cookie
+      response.cookie("token", result.token, {
+        httpOnly: false, // Accessible by JS for this challenge, usually true for security
+        secure: false, // HTTPS only if true
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+        path: '/'
+      });
+
       return response.json(result);
     } catch (error) {
       next(error);

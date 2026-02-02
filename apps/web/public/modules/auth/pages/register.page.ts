@@ -62,7 +62,7 @@ export const RegisterPage = (): HTMLElement => {
       try {
         await AuthService.register(data);
         alert("Cadastro realizado com sucesso!");
-        window.navigate("/");
+        window.navigate("/server07/");
       } catch (error: any) {
         errorMsg.textContent = error.message;
         errorMsg.style.display = "block";
@@ -72,7 +72,7 @@ export const RegisterPage = (): HTMLElement => {
 
   div.querySelector("#go-login")?.addEventListener("click", (e) => {
     e.preventDefault();
-    window.navigate("/login");
+    window.navigate("/server07/login");
   });
 
   const cpfInput = div.querySelector('input[name="cpf"]') as HTMLInputElement;

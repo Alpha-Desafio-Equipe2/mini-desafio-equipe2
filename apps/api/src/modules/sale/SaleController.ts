@@ -11,6 +11,8 @@ const findSaleByIdUseCase = new FindSaleByIdUseCase();
 const confirmSaleUseCase = new ConfirmSaleUseCase();
 const cancelSaleUseCase = new CancelSaleUseCase();
 
+import { CustomerRepository } from "../customer/repositories/CustomerRepository.js";
+
 export class SaleController {
   async create(req: Request, res: Response, next: NextFunction) {
     try {
@@ -23,7 +25,20 @@ export class SaleController {
 
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const sales = await findAllSalesUseCase.execute();
+      const user = (req as any).user;
+      let customerId: number | undefined;
+
+      if (user && user.role === 'client') {
+        const customer = CustomerRepository.findByUserId(user.id);
+        if (customer) {
+          customerId = customer.id;
+        } else {
+          // If a client user has no customer record, they have no sales.
+          return res.json([]); 
+        }
+      }
+
+      const sales = await findAllSalesUseCase.execute(customerId);
       return res.json(sales);
     } catch (error) {
       next(error);

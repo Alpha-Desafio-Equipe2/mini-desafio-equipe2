@@ -226,7 +226,13 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
     // 4. Lógica de Eventos
     
     div.querySelector("#add-balance-btn")?.addEventListener("click", () => {
-      const modal = AddBalanceModal(() => window.location.reload());
+      const modal = AddBalanceModal(() => {
+        if ((window as any).navigate) {
+          (window as any).navigate('/server07/profile');
+        } else {
+          window.location.reload();
+        }
+      });
       document.body.appendChild(modal);
     });
 

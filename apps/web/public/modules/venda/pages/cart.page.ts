@@ -7,21 +7,23 @@ import { AddBalanceModal } from "../components/add-balance-modal.js";
 import { OrderReceiptModal } from "../components/order-receipt-modal.js";
 import { ErrorModal } from "../../../shared/components/error-modal.js";
 
-export const CartPage = (): HTMLElement => {
+export const CartPage = async (): Promise<HTMLElement> => {
   const div = document.createElement("div");
 
   // State for Admin POS
   let allCustomers: any[] = [];
-  const userStr = localStorage.getItem("user");
-  const user = userStr ? JSON.parse(userStr) : null;
-  const isAdminOrAttendant =
-    user &&
-    (user.role === "admin" ||
-      user.role === "manager" ||
-      user.role === "attendant");
+  // all rendering should read the current user from localStorage so
+  // balance and role changes propagate without full page reload
 
   const render = () => {
     const cart = CartService.getCart();
+    const userStr = localStorage.getItem("user");
+    const user = userStr ? JSON.parse(userStr) : null;
+    const isAdminOrAttendant =
+      user &&
+      (user.role === "admin" ||
+        user.role === "manager" ||
+        user.role === "attendant");
     const hasPrescriptionItems = cart.some(
       (item) => item.product.requires_prescription,
     );
@@ -425,14 +427,35 @@ export const CartPage = (): HTMLElement => {
     }
   };
 
-  // Init - Fetch Customers if Admin
-  if (isAdminOrAttendant) {
-    SaleService.getCustomers()
-      .then((customers) => {
-        allCustomers = customers;
-        render(); // Re-render with customer list
-      })
-      .catch((err) => console.error("Failed to load customers for POS", err));
+  // Init - Fetch Customers if Admin (based on current stored user)
+  const initUserStr = localStorage.getItem("user");
+  const initUser = initUserStr ? JSON.parse(initUserStr) : null;
+  const initIsAdmin =
+    initUser &&
+    (initUser.role === "admin" ||
+      initUser.role === "manager" ||
+      initUser.role === "attendant");
+
+  // Ensure we sync the logged user from the server before first render
+  if (initUser) {
+    try {
+      const fresh = await api.get(`/users/${initUser.id}`);
+      if (fresh) {
+        const merged = { ...initUser, ...fresh };
+        localStorage.setItem("user", JSON.stringify(merged));
+      }
+    } catch (err) {
+      console.warn("Could not sync user before render", err);
+    }
+  }
+
+  if (initIsAdmin) {
+    try {
+      const customers = await SaleService.getCustomers();
+      allCustomers = customers;
+    } catch (err) {
+      console.error("Failed to load customers for POS", err);
+    }
   }
 
   render();

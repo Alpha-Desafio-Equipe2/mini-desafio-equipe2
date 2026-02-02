@@ -31,6 +31,16 @@ export class UserController {
         });
       }
 
+      // Validate password: min 8 chars, uppercase, lowercase, number, special char
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      if (!passwordRegex.test(password)) {
+        throw new AppError({
+          message: "Password must have at least 8 characters, including uppercase, lowercase, number, and special character (@$!%*?&)",
+          code: ErrorCode.MISSING_CUSTOMER_NAME,
+          httpStatus: HttpStatus.BAD_REQUEST,
+        });
+      }
+
       const user = await createUserUseCase.execute({
         name,
         email,

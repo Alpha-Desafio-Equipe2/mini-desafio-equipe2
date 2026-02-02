@@ -25,11 +25,24 @@ const canCancelSale = (req: any, res: any, next: any) => {
   }
 
   const isAdminUser = req.user && (req.user.role === 'admin' || req.user.role === 'manager');
-  const isCustomer = sale.customer_id === req.user?.id;
-  
-  // Customer from customers table might not have direct user_id match
-  // So we also check if the sale belongs to a customer related to this user
-  if (isAdminUser || isCustomer) {
+
+  // If sale.customer_id references a customer row, try to resolve its user_id
+  let saleBelongsToUser = false;
+  try {
+    const customer = SaleRepository.findCustomerBySaleId(Number(id));
+    if (customer && customer.user_id && req.user) {
+      saleBelongsToUser = Number(customer.user_id) === Number(req.user.id);
+    }
+  } catch (err) {
+    // ignore lookup errors
+  }
+
+  // Fallback: sometimes customer_id may directly equal user id in legacy data
+  if (!saleBelongsToUser && req.user) {
+    saleBelongsToUser = Number(sale.customer_id) === Number(req.user.id);
+  }
+
+  if (isAdminUser || saleBelongsToUser) {
     next();
   } else {
     res.status(403).json({ error: "You can only cancel your own orders" });

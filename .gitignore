@@ -8,10 +8,17 @@ build/
 out/
 
 # --- Variáveis de Ambiente e Segredos (SEGURANÇA) ---
-database.sqlite
-._*
 .env
 .env.*
+
+# --- Banco de Dados e Dados Persistentes ---
+data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite-journal
+*.db
+*.sqlite3
 
 # --- Logs e Debug ---
 npm-debug.log*
@@ -23,15 +30,7 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# --- Editores de Código (Opcional, mas recomendado) ---
+# --- Editores de Código ---
 .vscode/
 .idea/
 *.swp
-
-# SQLite database files
-src/database/*.sqlite
-src/database/*.db
-src/database/*.sqlite3
-src/database/*.sqlite-shm
-src/database/*.sqlite-wal
-src/database/*.sqlite-journal

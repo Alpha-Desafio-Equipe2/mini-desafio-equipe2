@@ -1,0 +1,32 @@
+{
+  "name": "mini-desafio-equipe2",
+  "version": "1.0.0",
+  "description": "Frontend do Sistema de Farmácia Popular",
+  "main": "dist/app/main.js",
+  "scripts": {
+    "build": "tsc && cp -r public/* dist/ && rm -f dist/main.ts",
+    "watch": "tsc -w",
+    "start": "npx http-server dist -c-1",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Alpha-Desafio-Equipe2/mini-desafio-equipe2.git"
+  },
+  "keywords": [
+    "frontend",
+    "typescript",
+    "farmacia"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Alpha-Desafio-Equipe2/mini-desafio-equipe2/issues"
+  },
+  "homepage": "https://github.com/Alpha-Desafio-Equipe2/mini-desafio-equipe2#readme",
+  "devDependencies": {
+    "@types/node": "^25.0.10",
+    "typescript": "^5.3.3"
+  }
+}

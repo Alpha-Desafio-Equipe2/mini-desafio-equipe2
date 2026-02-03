@@ -80,6 +80,7 @@ sudo cp /var/www/mini-desafio/nginx-server07.conf /etc/nginx/sites-available/ser
 sudo ln -sf /etc/nginx/sites-available/server07 /etc/nginx/sites-enabled/server07
 sudo nginx -t
 sudo systemctl reload nginx
+sudo nano /etc/nginx/sites-enabled/server07 
 
 EOF
 echo ""
@@ -89,7 +90,7 @@ echo "STEP 5: Verify Deployment"
 echo "-------------------------"
 echo "# Check PM2 status"
 echo "pm2 status"
-echo "pm2 logs farmacia-backend"
+echo "pm2 logs farma-api"
 echo ""
 echo "# Check Nginx status"
 echo "sudo systemctl status nginx"
@@ -107,8 +108,8 @@ echo ""
 echo "🔧 TROUBLESHOOTING"
 echo "-----------------"
 echo "# If PM2 fails:"
-echo "pm2 logs farmacia-backend --lines 50"
-echo "pm2 restart farmacia-backend"
+echo "pm2 logs farma-api --lines 50"
+echo "pm2 restart farma-api"
 echo ""
 echo "# If Nginx fails:"
 echo "sudo nginx -t"

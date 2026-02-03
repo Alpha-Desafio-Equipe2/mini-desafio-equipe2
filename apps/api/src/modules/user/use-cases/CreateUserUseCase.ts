@@ -1,14 +1,15 @@
 import bcrypt from "bcryptjs";
 import { UserRepository } from "../repositories/UserRepository.js";
-import { CreateUserDTO } from "../dtos/CreateUserDTO.js";
+import { CreateUserDTO } from "../dtos/UserCreateDTO.js";
 import { AppError } from "../../../shared/errors/AppError.js";
 import { ErrorCode } from "../../../shared/errors/ErrorCode.js";
 import { HttpStatus } from "../../../shared/errors/httpStatus.js";
 import { UserRole } from "../domain/enums/UserRole.js";
+import { UserResponseDTO } from "../dtos/UserResponseDTO.js";
 
 export class CreateUserUseCase {
-  async execute(data: CreateUserDTO) {
-    const { name, email, password, role, balance } = data;
+  async execute(data: CreateUserDTO): Promise<UserResponseDTO> {
+    const { name, email, password, role, balance, cpf } = data;
 
     // Validate email format
     if (!email.includes('@') || !email.includes('.') || email.length < 5) {
@@ -42,20 +43,21 @@ export class CreateUserUseCase {
 
     const hashedPassword = await bcrypt.hash(password, 8);
 
-    const userId = UserRepository.create({
+    const userResponse: UserResponseDTO = UserRepository.create({
       name,
       email,
+      cpf,
       password: hashedPassword,
       role: userRole,
       balance: 0,
     });
 
     return {
-      id: userId,
-      name,
-      email,
-      role: userRole,
-      balance: 0,
-    };
+      name: userResponse.name,
+      email: userResponse.email,
+      cpf: userResponse.cpf,
+      role: userResponse.role,
+      balance: userResponse.balance,
+    } satisfies UserResponseDTO;
   }
 }

@@ -54,8 +54,8 @@ export function seedUsers() {
   ];
 
   const insertMany = db.transaction((users: User[]) => {
-    for (const d of users) {
-      insertUser.run(d.name, d.cpf, d.email, d.password, d.role, d.balance);
+    for (const user of users) {
+      insertUser.run(user.name, user.cpf, user.email, user.password, user.role, user.balance);
     }
   });
 

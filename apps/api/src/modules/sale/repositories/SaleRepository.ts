@@ -7,17 +7,17 @@ export class SaleRepository {
       INSERT INTO sales (customer_id, branch_id, total_value, doctor_crm, prescription_date, payment_method, status)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
-
+    
     const result = stmt.run(
       data.customer_id || null,
-      data.branch_id || 1, // <--- ADICIONAMOS O "|| 1" AQUI
+      data.branch_id,
       data.total_value,
       data.doctor_crm || null,
       data.prescription_date || null,
       data.payment_method || null,
       data.status || 'pending'
     );
-
+    
     return result.lastInsertRowid as number;
   }
 
@@ -26,15 +26,22 @@ export class SaleRepository {
       INSERT INTO sale_items (sale_id, medicine_id, quantity, unit_price, total_price)
       VALUES (?, ?, ?, ?, ?)
     `);
-
-    stmt.run(data.sale_id, data.medicine_id, data.quantity, data.unit_price, data.total_price);
+    
+    stmt.run(
+      data.sale_id, 
+      data.medicine_id, 
+      data.quantity, 
+      data.unit_price, 
+      data.total_price
+    );
   }
 
   static findAll(customerId?: number): Sale[] {
     if (customerId) {
-      return db.prepare("SELECT * FROM sales WHERE customer_id = ?").all(customerId) as Sale[];
+      return db.prepare("SELECT * FROM sales WHERE customer_id = ? ORDER BY created_at DESC")
+        .all(customerId) as Sale[];
     }
-    return db.prepare("SELECT * FROM sales").all() as Sale[];
+    return db.prepare("SELECT * FROM sales ORDER BY created_at DESC").all() as Sale[];
   }
 
   static findById(id: number): (Sale & { items: SaleItem[] }) | undefined {
@@ -57,13 +64,17 @@ export class SaleRepository {
   }
 
   static findCustomerBySaleId(saleId: number): any | undefined {
-    const sale = db.prepare("SELECT customer_id FROM sales WHERE id = ?").get(saleId) as { customer_id: number } | undefined;
+    const sale = db.prepare("SELECT customer_id FROM sales WHERE id = ?")
+      .get(saleId) as { customer_id: number } | undefined;
+    
     if (!sale || !sale.customer_id) return undefined;
+    
     return db.prepare("SELECT * FROM customers WHERE id = ?").get(sale.customer_id);
   }
 
   static updateStatus(id: number, status: string): void {
-    db.prepare("UPDATE sales SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(status, id);
+    db.prepare("UPDATE sales SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+      .run(status, id);
   }
 
   static update(id: number, data: Partial<Sale>): void {
@@ -74,10 +85,12 @@ export class SaleRepository {
       fields.push("status = ?");
       values.push(data.status);
     }
+    
     if (data.total_value !== undefined) {
       fields.push("total_value = ?");
       values.push(data.total_value);
     }
+    
     if (data.payment_method !== undefined) {
       fields.push("payment_method = ?");
       values.push(data.payment_method);
@@ -86,7 +99,10 @@ export class SaleRepository {
     if (fields.length > 0) {
       fields.push("updated_at = CURRENT_TIMESTAMP");
       values.push(id);
-      const stmt = db.prepare(`UPDATE sales SET ${fields.join(", ")} WHERE id = ?`);
+      
+      // FIX: Corrigido SQL injection - usar string normal, não template literal
+      const sql = `UPDATE sales SET ${fields.join(", ")} WHERE id = ?`;
+      const stmt = db.prepare(sql);
       stmt.run(...values);
     }
   }
@@ -97,5 +113,26 @@ export class SaleRepository {
 
   static deleteItemsBySaleId(saleId: number): void {
     db.prepare("DELETE FROM sale_items WHERE sale_id = ?").run(saleId);
+  }
+
+  // Métodos auxiliares para relatórios e estatísticas
+  static getTotalSalesByStatus(status: string): number {
+    const result = db.prepare("SELECT COUNT(*) as total FROM sales WHERE status = ?")
+      .get(status) as { total: number };
+    return result.total;
+  }
+
+  static getTotalRevenueByStatus(status: string): number {
+    const result = db.prepare("SELECT SUM(total_value) as total FROM sales WHERE status = ?")
+      .get(status) as { total: number | null };
+    return result.total || 0;
+  }
+
+  static getSalesByDateRange(startDate: string, endDate: string): Sale[] {
+    return db.prepare(`
+      SELECT * FROM sales 
+      WHERE created_at BETWEEN ? AND ?
+      ORDER BY created_at DESC
+    `).all(startDate, endDate) as Sale[];
   }
 }

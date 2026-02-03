@@ -7,8 +7,8 @@ export interface Sale {
   doctor_crm?: string;
   prescription_date?: string;
   payment_method?: string;
-  created_at?: string;
-  updated_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface SaleItem {
@@ -18,5 +18,10 @@ export interface SaleItem {
   quantity: number;
   unit_price: number;
   total_price: number;
-  created_at?: string;
+  created_at: string;
+  medicine_name?: string; // Preenchido via JOIN
+}
+
+export interface SaleWithItems extends Sale {
+  items: SaleItem[];
 }

@@ -2,6 +2,7 @@ import { db } from "../../../config/database.js";
 import { SaleRepository } from "../repositories/SaleRepository.js";
 import { MedicineRepository } from "../../medicine/repositories/MedicineRepository.js";
 import { UserRepository } from "../../user/repositories/UserRepository.js";
+import { CustomerRepository } from "../../customer/repositories/CustomerRepository.js";
 import { AppError } from "../../../shared/errors/AppError.js";
 import { ErrorCode } from "../../../shared/errors/ErrorCode.js";
 import { HttpStatus } from "../../../shared/errors/httpStatus.js";
@@ -9,7 +10,7 @@ import { HttpStatus } from "../../../shared/errors/httpStatus.js";
 export class CancelSaleUseCase {
   async execute(id: number) {
     const sale = SaleRepository.findById(id);
-
+    
     if (!sale) {
       throw new AppError({
         message: "Sale not found",
@@ -18,33 +19,55 @@ export class CancelSaleUseCase {
       });
     }
 
+    // Se já está cancelada, não faz nada
     if (sale.status === 'cancelled') {
-      return;
+      return {
+        message: "Sale already cancelled",
+        status: "cancelled"
+      };
     }
 
     db.transaction(() => {
       const items = SaleRepository.findItemsBySaleId(id);
 
-      // Return stock to inventory
-      for (const item of items) {
-        MedicineRepository.incrementStock(item.medicine_id, item.quantity);
-      }
+      // SÓ DEVOLVER ESTOQUE E SALDO SE A VENDA FOI CONFIRMADA
+      if (sale.status === 'confirmed') {
+        // 1. DEVOLVER ESTOQUE
+        for (const item of items) {
+          const medicine = MedicineRepository.findById(item.medicine_id);
+          
+          if (medicine) {
+            MedicineRepository.incrementStock(item.medicine_id, item.quantity);
+          }
+        }
 
-      // Return balance to customer if sale was confirmed or pending (i.e., balance was deducted)
-      if (sale.status === 'confirmed' || sale.status === 'pending') {
-        const customer = SaleRepository.findCustomerBySaleId(id);
-        if (customer && customer.user_id) {
-          const user = UserRepository.findById(customer.user_id);
-          if (user) {
-            const refundedBalance = (user.balance || 0) + Number(sale.total_value);
-            UserRepository.update(customer.user_id, { balance: refundedBalance });
+        // 2. DEVOLVER SALDO AO CLIENTE
+        if (sale.customer_id) {
+          const customer = CustomerRepository.findById(sale.customer_id);
+          
+          if (customer && customer.user_id) {
+            const user = UserRepository.findById(customer.user_id);
+            
+            if (user) {
+              const refundedBalance = (user.balance || 0) + Number(sale.total_value);
+              UserRepository.update(customer.user_id, { balance: refundedBalance });
+            }
           }
         }
       }
+      // Se status era 'pending', não há nada para devolver (estoque e saldo não foram deduzidos)
 
-      // Mark sale as cancelled instead of deleting it (for audit trail)
-      SaleRepository.update(id, { status: 'cancelled' });
-      SaleRepository.deleteItemsBySaleId(id);
+      // 3. MARCAR VENDA COMO CANCELADA (mantém para auditoria)
+      SaleRepository.updateStatus(id, 'cancelled');
+      
+      // Opcional: manter os itens para histórico ou deletar
+      // SaleRepository.deleteItemsBySaleId(id);
     })();
+
+    return {
+      message: "Sale cancelled successfully",
+      status: "cancelled",
+      refunded: sale.status === 'confirmed' // Indica se houve devolução
+    };
   }
 }

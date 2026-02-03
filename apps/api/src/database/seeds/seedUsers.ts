@@ -1,78 +1,65 @@
 import { db } from "../../config/database.js";
 import bcrypt from "bcryptjs";
+import dotenv from "dotenv";
+import { UserRole } from "../../modules/user/domain/enums/UserRole.js";
+
+dotenv.config();
+
+interface User {
+  name: string;
+  cpf: string;
+  email: string;
+  password: string;
+  role: UserRole;
+  balance: number;
+}
+
 
 export function seedUsers() {
   const adminEmail = "admin@email.com";
-  const clientEmail = "client@email.com";
   const saltRounds = 8;
   const adminPasswordRaw = process.env.ADMIN_PASSWORD;
   const clientPasswordRaw = process.env.CLIENT_PASSWORD;
 
+  const count = db
+    .prepare('SELECT COUNT(*) as total FROM users')
+    .get() as { total: number };
+
+  if (count.total > 0) {
+    console.log('Users already seeded');
+    return;
+  }
+
   if (!adminPasswordRaw || !clientPasswordRaw) {
     throw new Error("ADMIN_PASSWORD and CLIENT_PASSWORD must be set in .env");
   }
-  
 
   const adminPassword = bcrypt.hashSync(adminPasswordRaw, saltRounds);
   const clientPassword = bcrypt.hashSync(clientPasswordRaw, saltRounds);
 
+
   const insertUser = db.prepare(
-    "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+    "INSERT INTO users (name, cpf, email, password, role, balance) VALUES (?, ?, ?, ?, ?, ?)",
   );
 
-  const insertCustomer = db.prepare(
-    "INSERT INTO customers (name, cpf, user_id, email) VALUES (?, ?, ?, ?)",
-  );
+  const users = [
+    {
+      name: 'Ana', cpf: '123.456.789-00', email: 'ana.paula@example.com', password: clientPassword, role: UserRole.CLIENT, balance: 100.00
+    },
+    {
+      name: 'Admin', cpf: '123.456.888-00', email: 'admin@email.com', password: adminPassword, role: UserRole.ADMIN, balance: 70.00
+    },
+    { name: 'João', cpf: '987.654.321-00', email: 'joao.silva@example.com', password: clientPassword, role: UserRole.CLIENT, balance: 10.00 },
+    { name: 'Mariana', cpf: '456.789.123-00', email: 'mariana.costa@example.com', password: clientPassword, role: UserRole.USER, balance: 50.00 }
+  ];
 
-  console.log("Checking default users...");
+  const insertMany = db.transaction((users: User[]) => {
+    for (const d of users) {
+      insertUser.run(d.name, d.cpf, d.email, d.password, d.role, d.balance);
+    }
+  });
 
-  // 1. Check/Insert Admin
-  const existingAdmin = db
-    .prepare("SELECT * FROM users WHERE email = ?")
-    .get(adminEmail) as any;
-  if (!existingAdmin) {
-    insertUser.run("Admin User", adminEmail, adminPassword, "admin");
-    console.log("Admin User created.");
-  } else {
-    // Update admin password
-    const update = db.prepare("UPDATE users SET password = ? WHERE email = ?");
-    update.run(adminPassword, adminEmail);
-    console.log("Admin User already exists. Password updated.");
-  }
+  insertMany(users);
 
-  // 2. Check/Insert Client
-  let clientUser = db
-    .prepare("SELECT * FROM users WHERE email = ?")
-    .get(clientEmail) as any;
-  if (!clientUser) {
-    const info = insertUser.run(
-      "Client User",
-      clientEmail,
-      clientPassword,
-      "client",
-    );
-    clientUser = { id: info.lastInsertRowid };
-    console.log("Client User created.");
-  } else {
-    // Update client password
-    const update = db.prepare("UPDATE users SET password = ? WHERE email = ?");
-    update.run(clientPassword, clientEmail);
-    console.log("Client User already exists. Password updated.");
-  }
-
-  // 3. Check/Insert Client's Customer Profile
-  const existingCustomer = db
-    .prepare("SELECT * FROM customers WHERE user_id = ?")
-    .get(clientUser.id);
-  if (!existingCustomer) {
-    insertCustomer.run(
-      "Client User",
-      "12345678900",
-      clientUser.id,
-      clientEmail,
-    );
-    console.log("Customer profile for Client created.");
-  } else {
-    console.log("Customer profile for Client already exists.");
-  }
+  console.log('Users seeded successfully');
 }

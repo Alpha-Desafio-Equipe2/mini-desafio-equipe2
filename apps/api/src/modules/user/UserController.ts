@@ -46,6 +46,7 @@ export class UserController {
         email,
         password,
         role,
+        balance: 0,
       });
 
       return res.status(201).json(user);
@@ -56,7 +57,7 @@ export class UserController {
 
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const users = await findAllUsersUseCase.execute();
+      const users = findAllUsersUseCase.execute();
       return res.json(users);
     } catch (error) {
       next(error);
@@ -100,21 +101,21 @@ export class UserController {
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const { name, email, role } = req.body;
-      
+      const { name, email, role, balance } = req.body;
+
       const updateData: any = {};
       if (name !== undefined) updateData.name = name;
       if (email !== undefined) updateData.email = email;
       if (role !== undefined && role !== null) updateData.role = role;
+      if (balance !== undefined && balance !== null) updateData.balance = balance;
 
-      console.log(`[UserController] Updating user ${id} with:`, updateData); // Debug log
 
       if (Object.keys(updateData).length > 0) {
         UserRepository.update(parseInt(id), updateData);
       }
-      
+
       const user = UserRepository.findById(parseInt(id));
-      
+
       return res.json(user);
     } catch (error) {
       next(error);
@@ -144,18 +145,18 @@ export class UserController {
     try {
       const { id } = req.params;
       const { amount } = req.body;
-      
+
       const user = UserRepository.findById(parseInt(id));
       if (!user) {
-         throw new AppError({ message: "User not found", code: ErrorCode.USER_NOT_FOUND, httpStatus: 404 });
+        throw new AppError({ message: "User not found", code: ErrorCode.USER_NOT_FOUND, httpStatus: HttpStatus.NOT_FOUND });
       }
 
       const newBalance = (user.balance || 0) + parseFloat(amount);
       UserRepository.update(parseInt(id), { balance: newBalance });
-      
+
       return res.json({ newBalance });
-    } catch(error) {
-       next(error);
+    } catch (error) {
+      next(error);
     }
   }
 }

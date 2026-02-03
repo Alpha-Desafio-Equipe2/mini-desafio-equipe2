@@ -1,5 +1,6 @@
 import { db } from "../../../config/database.js";
-import { User } from "../entities/User.js";
+import { CreateUserDTO } from "../dtos/CreateUserDTO.js";
+import { UpdateUserDTO } from "../dtos/UpdateUserDTO.js";
 
 export class UserRepository {
   private static findByIdStmt = db.prepare(`
@@ -19,7 +20,7 @@ export class UserRepository {
     FROM users
   `);
 
-  static create(user: Omit<User, "id" | "created_at" | "updated_at">) {
+  static create(user: Omit<CreateUserDTO, "id" | "created_at" | "updated_at">) {
     const stmt = db.prepare(`
       INSERT INTO users (name, email, password, role, balance)
       VALUES (?, ?, ?, ?, ?)
@@ -30,30 +31,30 @@ export class UserRepository {
       user.email,
       user.password,
       user.role,
-      user.balance || 0.00
+      user.balance
     );
 
     return result.lastInsertRowid;
   }
 
-  static findById(id: number): User | undefined {
-    return this.findByIdStmt.get(id) as User | undefined;
+  static findById(id: number): UpdateUserDTO | undefined {
+    return this.findByIdStmt.get(id) as UpdateUserDTO | undefined;
   }
 
-  static findByEmail(email: string): User | undefined {
-    return this.findByEmailStmt.get(email) as User | undefined;
+  static findByEmail(email: string): UpdateUserDTO | undefined {
+    return this.findByEmailStmt.get(email) as UpdateUserDTO | undefined;
   }
 
-  static findAll(): User[] {
-    return this.findAllStmt.all() as User[];
+  static findAll(): UpdateUserDTO[] {
+    return this.findAllStmt.all() as UpdateUserDTO[];
   }
 
-  static update(id: number, data: Partial<User>) {
+  static update(id: number, data: Partial<UpdateUserDTO>) {
     const fields = Object.keys(data)
       .filter(key => key !== "id")
       .map(key => `${key} = ?`)
       .join(", ");
-    
+
     if (!fields) return;
 
     const values = Object.values(data);

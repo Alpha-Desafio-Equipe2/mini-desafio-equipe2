@@ -4,10 +4,11 @@ import { CreateUserDTO } from "../dtos/CreateUserDTO.js";
 import { AppError } from "../../../shared/errors/AppError.js";
 import { ErrorCode } from "../../../shared/errors/ErrorCode.js";
 import { HttpStatus } from "../../../shared/errors/httpStatus.js";
+import { UserRole } from "../domain/enums/UserRole.js";
 
 export class CreateUserUseCase {
   async execute(data: CreateUserDTO) {
-    const { name, email, password, role } = data;
+    const { name, email, password, role, balance } = data;
 
     // Validate email format
     if (!email.includes('@') || !email.includes('.') || email.length < 5) {
@@ -37,20 +38,24 @@ export class CreateUserUseCase {
       });
     }
 
+    const userRole = data.role ?? UserRole.CLIENT;
+
     const hashedPassword = await bcrypt.hash(password, 8);
 
     const userId = UserRepository.create({
       name,
       email,
       password: hashedPassword,
-      role: role || "attendant" as any,
+      role: userRole,
+      balance: 0,
     });
 
     return {
       id: userId,
       name,
       email,
-      role: role || "attendant",
+      role: userRole,
+      balance: 0,
     };
   }
 }

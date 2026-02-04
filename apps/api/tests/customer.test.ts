@@ -29,7 +29,7 @@ describe("Customer Module CRUD", () => {
         .send(customerData);
 
       if (response.status !== 201) {
-        console.log("Customer Create Failed:", response.body);
+
       }
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty("id");

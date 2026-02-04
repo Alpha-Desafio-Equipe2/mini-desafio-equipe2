@@ -136,7 +136,7 @@ describe("Sales Module", () => {
         });
 
       if (response.status !== 201) {
-        console.log("Test Failed Response Body (Prescription):", response.body);
+
       }
       expect(response.status).toBe(201);
       expect(response.body.total).toBe(50.0);

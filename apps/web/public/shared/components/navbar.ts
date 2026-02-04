@@ -10,7 +10,7 @@ export const Navbar = (): HTMLElement => {
   const user: User = userStr ? JSON.parse(userStr) : ({} as User);
   const isLoggedIn = !!token;
 
-  console.log("Navbar Render - User:", user); 
+
   const isAdmin = user.role === "ADMIN";
 
   const getCartCount = () => {

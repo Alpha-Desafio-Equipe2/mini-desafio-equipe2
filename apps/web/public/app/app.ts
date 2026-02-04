@@ -64,16 +64,14 @@ export class App {
     let PageComponent = routes[pathOnly];
     let pageArgs: any[] = [];
     
-    console.log("[Router] Current Path:", this.currentPath);
-    console.log("[Router] Path Only (Normalized):", pathOnly);
-    console.log("[Router] Found Component:", PageComponent !== undefined ? "Yes" : "No");
+
 
     // Simple Dynamic Route Matching
     if (!PageComponent) {
       if (pathOnly === "/server07/" || pathOnly === "/server07") {
         const params = new URLSearchParams(window.location.search);
         if (params.has("search")) {
-          console.log("[Router] Search detected on landing, redirecting to products");
+
           this.navigateTo("/server07/products" + window.location.search);
           return;
         }
@@ -87,7 +85,7 @@ export class App {
         // Even if route matches landing exactly, check for search
         const params = new URLSearchParams(window.location.search);
         if (params.has("search")) {
-          console.log("[Router] Search detected on landing route, redirecting to products");
+
           this.navigateTo("/server07/products" + window.location.search);
           return;
         }

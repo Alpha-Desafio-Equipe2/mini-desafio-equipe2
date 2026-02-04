@@ -331,13 +331,7 @@ export const CartPage = async (): Promise<HTMLElement> => {
         const total = CartService.getTotal();
         
         // DEBUGGING LOGS
-        console.group("🛒 Checkout Debug");
-        console.log("User ID:", user?.id);
-        console.log("User Role:", user?.role);
-        console.log("Frontend Balance:", balance);
-        console.log("Cart Total:", total);
-        console.log("Is Admin/Attendant:", isAdminOrAttendant);
-        console.groupEnd();
+
 
         if (!isAdminOrAttendant && balance < total) {
              const msg = `Saldo Insuficiente. Saldo: ${balance}, Total: ${total}`;
@@ -369,7 +363,7 @@ export const CartPage = async (): Promise<HTMLElement> => {
                 items: items
             };
 
-            console.log("Sending Sale Data:", saleData); // Debug log
+
 
             if (hasPrescriptionItems) {
                 saleData.doctor_crm = formData.get("doctor_crm") as string;

@@ -49,7 +49,7 @@ export const ProductCard = (product: Product): HTMLElement => {
   if (btn) {
     btn.onclick = (e) => {
       e.stopPropagation(); // Prevent card click if any
-      console.log("[ProductCard] Add to Cart clicked for:", product.id);
+
 
       const token = localStorage.getItem("token");
       if (!token) {
@@ -71,7 +71,7 @@ export const ProductCard = (product: Product): HTMLElement => {
       }
 
       const addToCartAction = () => {
-        console.log("[ProductCard] Adding to cart:", product.id, qty);
+
         try {
             CartService.addToCart(product, qty);
             

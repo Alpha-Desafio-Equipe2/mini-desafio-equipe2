@@ -15,7 +15,7 @@ Este documento descreve as regras de negócio implementadas no código fonte (ve
 - Itens de venda são gravados em `sale_items` com cópia do `unit_price` e `total_price` para preservar histórico.
 
 4) Usuários e permissões
-- Perfis suportados: `admin` / `attendant` (valor default em `users.role` é `'attendant'`).
+- Perfis suportados: `ADMIM` / `USER` / `CLIENT (valor default em `users.role` é `CLIENT`).
 - Rotas sensíveis (`/users`, `/sales`) exigem autenticação (middleware `isAuthenticated`).
 
 5) Integridade e unicidade

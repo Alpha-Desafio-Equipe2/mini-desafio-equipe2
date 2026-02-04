@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS medicines (
   name TEXT NOT NULL,
   manufacturer TEXT,
   active_principle TEXT NOT NULL,
+  category TEXT NOT NULL,
   requires_prescription INTEGER NOT NULL CHECK(requires_prescription IN (0,1)),
   price REAL NOT NULL,
   stock INTEGER NOT NULL CHECK (stock >= 0),
@@ -18,21 +19,6 @@ CREATE TABLE IF NOT EXISTS medicines (
 );
 `);
 
-// =======================
-// CUSTOMERS
-// =======================
-db.exec(`
-CREATE TABLE IF NOT EXISTS customers (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  cpf TEXT UNIQUE NOT NULL,
-  email TEXT,
-  user_id INTEGER,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id)
-);
-`);
 
 // =======================
 // DOCTORS
@@ -54,31 +40,17 @@ CREATE TABLE IF NOT EXISTS doctors (
 db.exec(`
 CREATE TABLE IF NOT EXISTS sales (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  customer_id INTEGER,
-  branch_id INTEGER NOT NULL,
+  user_id INTEGER,
   total_value REAL NOT NULL,
   status TEXT DEFAULT 'pending',
   doctor_crm TEXT,
   prescription_date TEXT,
   payment_method TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, 
-  FOREIGN KEY (customer_id) REFERENCES customers(id)
-);
-`);
-
-// =======================
-// BRANCHES
-// =======================
-db.exec(`
-CREATE TABLE IF NOT EXISTS branches (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  cnpj TEXT UNIQUE NOT NULL,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 `);
+
 
 // =======================
 // SALE ITEMS
@@ -104,7 +76,10 @@ db.exec(`
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
+  cpf TEXT UNIQUE NOT NULL,
   email TEXT UNIQUE NOT NULL,
+  phone TEXT,
+  address TEXT,
   password TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'attendant',
   balance REAL DEFAULT 0,
@@ -119,24 +94,44 @@ CREATE TABLE IF NOT EXISTS users (
 // MIGRATIONS
 // =======================
 try {
-  // Check if balance exists in users
   const userColumns = db.prepare("PRAGMA table_info(users)").all() as any[];
   const hasBalance = userColumns.some(col => col.name === 'balance');
-  
+
   if (!hasBalance) {
-    console.log("Migrating: Adding balance column to users table...");
     db.exec("ALTER TABLE users ADD COLUMN balance REAL DEFAULT 0");
   }
 
-  // Check if image_url exists in medicines
   const medicineColumns = db.prepare("PRAGMA table_info(medicines)").all() as any[];
   const hasImageUrl = medicineColumns.some(col => col.name === 'image_url');
-  
+
   if (!hasImageUrl) {
-    console.log("Migrating: Adding image_url column to medicines table...");
     db.exec("ALTER TABLE medicines ADD COLUMN image_url TEXT");
+  }
+
+  const userCpfColumns = db.prepare("PRAGMA table_info(users)").all() as any[];
+  const hasCpf = userCpfColumns.some(col => col.name === 'cpf');
+
+  if (!hasCpf) {
+    db.exec("ALTER TABLE users ADD COLUMN cpf TEXT");
+  }
+
+  const hasPhone = userColumns.some(col => col.name === 'phone');
+  if (!hasPhone) {
+    db.exec("ALTER TABLE users ADD COLUMN phone TEXT");
+  }
+
+  const hasAddress = userColumns.some(col => col.name === 'address');
+  if (!hasAddress) {
+    db.exec("ALTER TABLE users ADD COLUMN address TEXT");
+  }
+
+  const saleColumns = db.prepare("PRAGMA table_info(sales)").all() as any[];
+  const hasUserId = saleColumns.some(col => col.name === 'user_id');
+  if (!hasUserId) {
+    db.exec("ALTER TABLE sales ADD COLUMN user_id INTEGER");
   }
 
 } catch (error) {
   console.error("Migration error:", error);
 }
+

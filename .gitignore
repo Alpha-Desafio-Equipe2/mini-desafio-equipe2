@@ -34,3 +34,13 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Cache
+.cache/
+.parcel-cache/
+
+# TypeScript
+*.tsbuildinfo
+
+# Test coverage extra
+.nyc_output/

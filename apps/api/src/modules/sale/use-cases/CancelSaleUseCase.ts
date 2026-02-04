@@ -32,12 +32,11 @@ export class CancelSaleUseCase {
 
       // Return balance to customer if sale was confirmed or pending (i.e., balance was deducted)
       if (sale.status === 'confirmed' || sale.status === 'pending') {
-        const customer = SaleRepository.findCustomerBySaleId(id);
-        if (customer && customer.user_id) {
-          const user = UserRepository.findById(customer.user_id);
+        if (sale.user_id) {
+          const user = UserRepository.findById(sale.user_id);
           if (user) {
             const refundedBalance = (user.balance || 0) + Number(sale.total_value);
-            UserRepository.update(customer.user_id, { balance: refundedBalance });
+            UserRepository.update(sale.user_id, { balance: refundedBalance });
           }
         }
       }

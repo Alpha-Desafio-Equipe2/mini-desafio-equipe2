@@ -4,13 +4,12 @@ import { Sale, SaleItem } from "../entities/Sale.js";
 export class SaleRepository {
   static create(data: Omit<Sale, "id" | "created_at" | "updated_at">): number {
     const stmt = db.prepare(`
-      INSERT INTO sales (customer_id, branch_id, total_value, doctor_crm, prescription_date, payment_method, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO sales (user_id, total_value, doctor_crm, prescription_date, payment_method, status)
+      VALUES (?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
-      data.customer_id || null,
-      data.branch_id || 1, // <--- ADICIONAMOS O "|| 1" AQUI
+      data.user_id || null,
       data.total_value,
       data.doctor_crm || null,
       data.prescription_date || null,
@@ -30,9 +29,9 @@ export class SaleRepository {
     stmt.run(data.sale_id, data.medicine_id, data.quantity, data.unit_price, data.total_price);
   }
 
-  static findAll(customerId?: number): Sale[] {
-    if (customerId) {
-      return db.prepare("SELECT * FROM sales WHERE customer_id = ?").all(customerId) as Sale[];
+  static findAll(userId?: number): Sale[] {
+    if (userId) {
+      return db.prepare("SELECT * FROM sales WHERE user_id = ?").all(userId) as Sale[];
     }
     return db.prepare("SELECT * FROM sales").all() as Sale[];
   }
@@ -56,11 +55,7 @@ export class SaleRepository {
     return db.prepare("SELECT * FROM sale_items WHERE sale_id = ?").all(saleId) as SaleItem[];
   }
 
-  static findCustomerBySaleId(saleId: number): any | undefined {
-    const sale = db.prepare("SELECT customer_id FROM sales WHERE id = ?").get(saleId) as { customer_id: number } | undefined;
-    if (!sale || !sale.customer_id) return undefined;
-    return db.prepare("SELECT * FROM customers WHERE id = ?").get(sale.customer_id);
-  }
+
 
   static updateStatus(id: number, status: string): void {
     db.prepare("UPDATE sales SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(status, id);

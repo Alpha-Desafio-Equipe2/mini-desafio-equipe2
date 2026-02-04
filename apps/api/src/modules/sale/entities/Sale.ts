@@ -1,8 +1,7 @@
 export interface Sale {
   id: number;
-  customer_id?: number;
-  branch_id: number;
-  total_value: number;
+  user_id?: number;
+    total_value: number;
   status: 'pending' | 'confirmed' | 'cancelled';
   doctor_crm?: string;
   prescription_date?: string;

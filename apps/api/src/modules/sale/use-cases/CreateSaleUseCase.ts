@@ -7,8 +7,7 @@ import { ErrorCode } from "../../../shared/errors/ErrorCode.js";
 import { HttpStatus } from "../../../shared/errors/httpStatus.js";
 
 interface CreateSaleDTO {
-  customer_id?: number;
-  branch_id: number;
+  user_id?: number;
   items: {
     medicine_id: number;
     quantity: number;
@@ -20,7 +19,7 @@ interface CreateSaleDTO {
 
 export class CreateSaleUseCase {
   async execute(data: CreateSaleDTO) {
-    const { customer_id, branch_id, items, doctor_crm, prescription_date } = data;
+    const { user_id, items, doctor_crm, prescription_date } = data;
 
     const result = db.transaction(() => {
       let totalValue = 0;
@@ -73,15 +72,8 @@ export class CreateSaleUseCase {
       }
 
       // Balance Logic
-      if (customer_id) {
-        // First resolve the user from the customer
-        // Note: We need to use CustomerRepository here. 
-        // Since we didn't import it, we must add the import or use raw query if circular dependency is an issue.
-        // Assuming we can import:
-        const customer = db.prepare("SELECT * FROM customers WHERE id = ?").get(customer_id) as any;
-        
-        if (customer && customer.user_id) {
-           const user = UserRepository.findById(customer.user_id);
+      if (user_id) {
+           const user = UserRepository.findById(user_id);
            
            if (user) {
                // Check balance
@@ -95,20 +87,12 @@ export class CreateSaleUseCase {
     
                // Deduct Balance
                const newBalance = (user.balance || 0) - totalValue;
-               UserRepository.update(customer.user_id, { balance: newBalance });
+               UserRepository.update(user_id, { balance: newBalance });
            }
-        } else {
-             // Fallback: If for some reason customer has no user_id (legacy?), 
-             // check if maybe customer_id IS the user_id (unlikely but user prompted to "add balance to user or customer")
-             // For safety, let's not assume ID reuse. If no user linked, we can't deduct balance from a user.
-             // Maybe we should allow the sale if payment_method is NOT 'balance'?
-             // But the user specifically asked for balance deduction.
-        }
       }
 
       const saleId = SaleRepository.create({
-        customer_id,
-        branch_id,
+        user_id,
         total_value: totalValue,
         doctor_crm,
         prescription_date,

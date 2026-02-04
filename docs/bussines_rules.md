@@ -3,7 +3,7 @@
 Este documento descreve as regras de negócio implementadas no código fonte (ver `apps/api/src/modules`), e orientações para manter consistência entre implementação e documentação.
 
 1) Classificação de medicamentos
-- Medicamentos têm o campo `requires_prescription` (0/1) no banco.
+- Medicamentos têm o campo `requires_prescription` (`BOOLEAN`) no banco.
 - Medicamentos controlados (`requires_prescription = 1`) exigem que seja registrado um número/registro de receita e dados do médico (CRM) para que a venda seja permitida.
 
 2) Validação de estoque

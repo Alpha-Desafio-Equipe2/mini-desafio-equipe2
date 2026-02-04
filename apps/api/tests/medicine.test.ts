@@ -42,7 +42,7 @@ describe("Medicine Module", () => {
         });
 
       if (response.status !== 201) {
-        console.log("Create Medicine Failed:", response.body);
+
       }
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty("id");

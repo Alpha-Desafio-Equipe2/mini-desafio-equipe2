@@ -81,8 +81,10 @@ Médicos também não acessam o sistema diretamente. Seus dados são utilizados 
 
 ## 🔐 Autenticação e Autorização
 
-- A autenticação é realizada por meio de **JWT armazenado em cookie HTTP-only**.
+- A autenticação é realizada por meio de **JWT armazenado em cookie HTTP**.
 - Cada requisição a rotas protegidas valida o token de autenticação.
+
+Nota: no código atual (desenvolvimento) o cookie é criado com `httpOnly: false` e `secure: false` para facilitar testes via frontend. Para ambiente de produção altere o `AuthController` para `httpOnly: true` e `secure: true`.
 - O acesso às funcionalidades é controlado conforme o perfil do usuário.
 - Ações não autorizadas são bloqueadas pelo sistema.
 

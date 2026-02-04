@@ -22,19 +22,21 @@ Responsável pela interação com o usuário e consumo da API REST.
 - Login e autenticação de usuários
 
 ### Tecnologias:
-- TypeScript
-- Fetch API
-- Cookies HTTP para autenticação JWT (Cookies são configurados como HttpOnly e Secure, mitigando riscos de XSS).
+ Cookies HTTP para autenticação JWT (no ambiente de desenvolvimento os cookies são configurados como acessíveis pelo frontend; em produção recomenda-se `httpOnly: true` e `secure: true`).
 
----
-
+ Swagger: as dependências estão no projeto (`swagger-jsdoc`, `swagger-ui-express`) mas o middleware **não está montado por padrão**. Para habilitar, monte o Swagger em `apps/api/src/app.ts` (ex.: `app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs))`).
 ## ⚙️ Backend (Node.js + TypeScript)
 API REST responsável pelas regras de negócio, validações e persistência de dados.
 
 ### Estrutura Arquitetural
 A aplicação segue o padrão **Modular + MVC**, onde cada módulo representa um domínio de negócio:
+ Observação sobre a documentação OpenAPI / Swagger:
+ Este repositório inclui as dependências para gerar uma UI Swagger, porém **a rota de UI não é exposta automaticamente**.
+ Endpoints públicos atualmente expostos pela API (veja `apps/api/src/routes.ts`): `/auth`, `/medicines`, `/users`, `/sales` e `/health`.
+ Se montado, o Swagger UI costuma ser servido em `/api/docs` quando o backend está por trás de um proxy (Nginx com `location /api/`).
 
 medicamento
+ Nota: no código deste desafio o cookie é definido com `httpOnly: false` e `secure: false` para permitir acesso via JavaScript durante testes e avaliação. Para produção altere para `httpOnly: true` e `secure: true` no `AuthController`.
 cliente
 medico
 venda

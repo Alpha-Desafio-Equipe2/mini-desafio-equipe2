@@ -4,6 +4,11 @@
   "description": "Desafio Alpha Edtech - Criação de API RestFul com Front integrado",
   "main": "index.js",
   "scripts": {
+    "backend": "cd backend && npm run dev",
+    "frontend": "cd frontend && npm run watch",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "build": "cd backend && npm run build && cd ../frontend && npm run build",
+    "start": "cd backend && npm start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,6 +16,7 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "concurrently": "^9.1.0",
     "typescript": "^5.9.3"
   }
 }

@@ -1,4 +1,4 @@
-# 🧾 Fluxo de Venda – Sistema Farmácia Popular
+# 🧾 Fluxo de Venda – Sistema FarmaProx
 
 Este documento descreve o fluxo de venda implementado no backend e esperado pelo frontend.
 

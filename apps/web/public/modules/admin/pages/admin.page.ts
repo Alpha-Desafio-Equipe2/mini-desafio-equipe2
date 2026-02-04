@@ -3,7 +3,6 @@ import {
   Product,
   User,
   Order,
-  Customer,
   Medicine,
 } from "../../../shared/types.js";
 
@@ -13,7 +12,7 @@ export const AdminPage = async (): Promise<HTMLElement> => {
   const userStr = localStorage.getItem("user");
   const user: User = userStr ? JSON.parse(userStr) : ({} as User);
 
-  if (user.role !== "admin") {
+  if (user.role !== "ADMIN") {
     div.innerHTML = '<p style="color: var(--error);">Acesso negado.</p>';
     return div;
   }
@@ -25,7 +24,7 @@ export const AdminPage = async (): Promise<HTMLElement> => {
             <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
                 <button class="btn btn-primary" onclick="window.switchTab('products')">Produtos</button>
                 <button class="btn btn-secondary" onclick="window.switchTab('orders')">Pedidos</button>
-                <button class="btn btn-secondary" onclick="window.switchTab('customers')">Clientes</button>
+
                 <button class="btn btn-secondary" onclick="window.switchTab('users')">Usuários</button>
             </div>
             
@@ -194,25 +193,25 @@ export const AdminPage = async (): Promise<HTMLElement> => {
 
   const renderOrders = async () => {
     try {
-      const [orders, customers] = await Promise.all([
+      const [orders, users] = await Promise.all([
         api.get<Order[]>("/sales"),
-        api.get<Customer[]>("/customers"),
+        api.get<User[]>("/users"),
       ]);
 
-      const customerMap = new Map(customers.map((c) => [c.id, c.name]));
+      const userMap = new Map(users.map((u) => [u.id, u.name]));
 
       contentDiv.innerHTML = `
                  <h3>Todos os Pedidos</h3>
                   <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
                     ${orders
                       .map((order) => {
-                        const customerName =
-                          customerMap.get(order.customer_id) ||
-                          `ID ${order.customer_id}`;
+                        const userName =
+                          userMap.get(order.user_id) ||
+                          `ID ${order.user_id}`;
                         return `
                         <div style="border: 1px solid var(--border); padding: 1rem; border-radius: var(--radius-sm);">
                             <div style="display: flex; justify-content: space-between;">
-                                <strong>Pedido #${order.id} - ${customerName}</strong>
+                                <strong>Pedido #${order.id} - ${userName}</strong>
                                 <!-- Status implicitly Active if listed here -->
                             </div>
                             <p style="font-size: 0.9rem; color: var(--text-muted);">Total: R$ ${order.total_value ? order.total_value.toFixed(2) : "0.00"}</p>
@@ -266,53 +265,14 @@ export const AdminPage = async (): Promise<HTMLElement> => {
     }
   };
 
-  const renderCustomers = async () => {
-    try {
-      const customers = await api.get<Customer[]>("/customers");
-      contentDiv.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3>Gerenciar Clientes</h3>
-                    <button class="btn btn-primary" onclick="window.navigate('/customers/new')">Novo Cliente</button>
-                </div>
-                 <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
-                    <thead>
-                        <tr style="text-align: left; border-bottom: 2px solid var(--border);">
-                            <th style="padding: 10px;">ID</th>
-                            <th style="padding: 10px;">Nome</th>
-                            <th style="padding: 10px;">CPF</th>
-                            <th style="padding: 10px;">Email</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${customers
-                          .map(
-                            (c) => `
-                            <tr style="border-bottom: 1px solid var(--border);">
-                                <td style="padding: 10px;">${c.id}</td>
-                                <td style="padding: 10px;">${c.name}</td>
-                                <td style="padding: 10px;">${c.cpf}</td>
-                                <td style="padding: 10px;">${c.email || "-"}</td>
-                            </tr>
-                        `,
-                          )
-                          .join("")}
-                    </tbody>
-                </table>
-                <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.9rem;">
-                    * Certifique-se de que existe um Cliente com ID correspondente ao usuário logado para evitar erros de venda.
-                </p>
-          `;
-    } catch (err: any) {
-      contentDiv.innerHTML = `<p style="color: var(--error);">Erro: ${err.message}</p>`;
-    }
-  };
+
 
   // Helpers globais para o HTML injetado
   window.switchTab = (tab: string) => {
     if (tab === "products") renderProducts();
     if (tab === "orders") renderOrders();
     if (tab === "users") renderUsers();
-    if (tab === "customers") renderCustomers();
+
   };
 
   window.showProductForm = () => {
@@ -489,7 +449,7 @@ export const AdminPage = async (): Promise<HTMLElement> => {
 
       content.innerHTML = `
             <p><strong>ID:</strong> #${order.id}</p>
-            <p><strong>Cliente ID:</strong> ${order.customer_id}</p>
+            <p><strong>Usuário ID:</strong> ${order.user_id}</p>
             <p><strong>Status:</strong> ${order.status || "Pendente"}</p>
             <p><strong>Data:</strong> ${new Date(order.created_at).toLocaleString()}</p>
             

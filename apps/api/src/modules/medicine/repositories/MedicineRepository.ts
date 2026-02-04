@@ -3,26 +3,27 @@ import { Medicine } from "../entities/Medicine.js";
 
 export class MedicineRepository {
   private static findByIdStmt = db.prepare(`
-    SELECT id, name, manufacturer, active_principle, requires_prescription, price, stock, image_url, created_at, updated_at
+    SELECT id, name, manufacturer, active_principle, category, requires_prescription, price, stock, image_url, created_at, updated_at
     FROM medicines
     WHERE id = ?
   `);
 
   private static findAllStmt = db.prepare(`
-    SELECT id, name, manufacturer, active_principle, requires_prescription, price, stock, image_url, created_at, updated_at
+    SELECT id, name, manufacturer, active_principle, category, requires_prescription, price, stock, image_url, created_at, updated_at
     FROM medicines
   `);
 
   static create(medicine: Omit<Medicine, "id" | "created_at" | "updated_at">) {
     const stmt = db.prepare(`
-      INSERT INTO medicines (name, manufacturer, active_principle, requires_prescription, price, stock, image_url)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO medicines (name, manufacturer, active_principle, category, requires_prescription, price, stock, image_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
       medicine.name,
       medicine.manufacturer,
       medicine.active_principle,
+      medicine.category,
       medicine.requires_prescription ? 1 : 0,
       medicine.price,
       medicine.stock,
@@ -41,16 +42,17 @@ export class MedicineRepository {
   }
 
   static update(id: number, data: Partial<Medicine>) {
-    const fields = Object.keys(data)
-      .filter(key => key !== "id")
+    const updateKeys = Object.keys(data).filter(key => key !== "id");
+    
+    if (updateKeys.length === 0) return;
+
+    const fields = updateKeys
       .map(key => `${key} = ?`)
       .join(", ");
-    
-    if (!fields) return;
 
     // Prepare values, coercing some JS types to SQLite-compatible types
-    const rawValues = Object.values(data);
-    const values = rawValues.map((v: any) => {
+    const values = updateKeys.map(key => {
+      const v = (data as any)[key];
       if (typeof v === 'boolean') return v ? 1 : 0;
       if (v === undefined) return null;
       return v;

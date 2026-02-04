@@ -1,5 +1,5 @@
 import { api } from "../../../shared/http/api.js";
-import { CreateSaleDTO, Customer, Order } from "../../../shared/types.js";
+import { CreateSaleDTO, Order } from "../../../shared/types.js";
 
 export class SaleService {
   static async createSale(saleData: CreateSaleDTO): Promise<Order> {
@@ -13,15 +13,7 @@ export class SaleService {
     }
   }
 
-  static async getCustomers(): Promise<Customer[]> {
-    try {
-      const response = await api.get<Customer[]>("/customers");
-      return response;
-    } catch (error) {
-      console.error("Erro ao buscar clientes", error);
-      throw error;
-    }
-  }
+
 
   static async getSalesHistory(): Promise<Order[]> {
     try {

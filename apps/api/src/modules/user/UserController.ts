@@ -5,19 +5,22 @@ import { UserRepository } from "./repositories/UserRepository.js";
 import { AppError } from "../../shared/errors/AppError.js";
 import { ErrorCode } from "../../shared/errors/ErrorCode.js";
 import { HttpStatus } from "../../shared/errors/httpStatus.js";
+import { UserRole } from "./domain/enums/UserRole.js";
+import { UserResponseDTO } from "./dtos/UserResponseDTO.js";
+import { UserUpdateDTO } from "./dtos/UserUpdateDTO.js";
 
 const createUserUseCase = new CreateUserUseCase();
 const findAllUsersUseCase = new FindAllUsersUseCase();
 
 export class UserController {
-  async create(req: Request, res: Response, next: NextFunction) {
+  async create(req: Request, res: Response, next: NextFunction): Promise<Response<UserResponseDTO> | void> {
     try {
-      const { name, email, password, role } = req.body;
+      const { name, cpf, email, password, role, phone, address } = req.body;
 
-      if (!name || !email || !password || role === undefined) {
+      if (!name || !cpf || !email || !password) {
         throw new AppError({
           message: "Missing required fields",
-          code: ErrorCode.MISSING_CUSTOMER_NAME, // Note: Should probably be MISSING_USER_FIELDS 
+          code: ErrorCode.MISSING_CUSTOMER_NAME,
           httpStatus: HttpStatus.BAD_REQUEST,
         });
       }
@@ -36,27 +39,50 @@ export class UserController {
       if (!passwordRegex.test(password)) {
         throw new AppError({
           message: "Password must have at least 8 characters, including uppercase, lowercase, number, and special character (@$!%*?&)",
-          code: ErrorCode.MISSING_CUSTOMER_NAME,
+          code: ErrorCode.WEAK_PASSWORD,
           httpStatus: HttpStatus.BAD_REQUEST,
         });
       }
 
-      const user = await createUserUseCase.execute({
+
+      if (role && !Object.values(UserRole).includes(role)) {
+        throw new AppError({
+          message: "Invalid role",
+          code: ErrorCode.INVALID_USER_ROLE,
+          httpStatus: HttpStatus.BAD_REQUEST,
+        });
+      }
+
+      const userResponse: UserResponseDTO = await createUserUseCase.execute({
         name,
+        cpf,
+        phone,
+        address,
         email,
         password,
         role,
+        balance: 0,
       });
 
-      return res.status(201).json(user);
+      return res.status(201).json({
+        id: userResponse.id,
+        name: userResponse.name,
+        cpf: userResponse.cpf,
+        phone: userResponse.phone,
+        address: userResponse.address,
+        email: userResponse.email,
+        role: userResponse.role,
+        balance: userResponse.balance,
+      } satisfies UserResponseDTO);
     } catch (error) {
       next(error);
     }
   }
 
-  async getAll(req: Request, res: Response, next: NextFunction) {
+  async getAll(req: Request, res: Response, next: NextFunction): Promise<Response<UserResponseDTO[]> | void> {
     try {
-      const users = await findAllUsersUseCase.execute();
+      const users = findAllUsersUseCase.execute();
+
       return res.json(users);
     } catch (error) {
       next(error);
@@ -74,7 +100,7 @@ export class UserController {
           httpStatus: HttpStatus.NOT_FOUND,
         });
       }
-      return res.json(user);
+      return res.json({ id: user.id, name: user.name, cpf: user.cpf, email: user.email, role: user.role, balance: user.balance, phone: user.phone, address: user.address });
     } catch (error) {
       next(error);
     }
@@ -91,7 +117,7 @@ export class UserController {
           httpStatus: HttpStatus.NOT_FOUND,
         });
       }
-      return res.json(user);
+      return res.json({ id: user.id, name: user.name, cpf: user.cpf, email: user.email, role: user.role, balance: user.balance, phone: user.phone, address: user.address });
     } catch (error) {
       next(error);
     }
@@ -100,22 +126,52 @@ export class UserController {
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const { name, email, role } = req.body;
-      
-      const updateData: any = {};
-      if (name !== undefined) updateData.name = name;
-      if (email !== undefined) updateData.email = email;
-      if (role !== undefined && role !== null) updateData.role = role;
+      const { name, email, role, balance, password } = req.body;
 
-      console.log(`[UserController] Updating user ${id} with:`, updateData); // Debug log
+      const updateData: Partial<UserUpdateDTO> = {};
+
+      const user = await UserRepository.findById(parseInt(id));
+      if (!user) {
+        throw new AppError({
+          message: "User not found",
+          code: ErrorCode.USER_NOT_FOUND,
+          httpStatus: HttpStatus.NOT_FOUND,
+        });
+      }
+
+      if (name !== undefined && name !== null) updateData.name = name;
+      if (email !== undefined && email !== null) updateData.email = email;
+      if (role !== undefined && role !== null) {
+        if (!Object.values(UserRole).includes(role as UserRole)) {
+          throw new AppError({
+            message: "Invalid role",
+            code: ErrorCode.INVALID_USER_ROLE,
+            httpStatus: HttpStatus.BAD_REQUEST,
+          });
+        }
+        updateData.role = role as UserRole;
+      }
+      if (balance !== undefined && balance !== null) updateData.balance = balance;
+      if (balance !== undefined && balance !== null) updateData.balance = balance;
+      if (password !== undefined && password !== null) updateData.password = password;
+      if (req.body.phone !== undefined) updateData.phone = req.body.phone;
+      if (req.body.address !== undefined) updateData.address = req.body.address;
+
 
       if (Object.keys(updateData).length > 0) {
         UserRepository.update(parseInt(id), updateData);
       }
-      
-      const user = UserRepository.findById(parseInt(id));
-      
-      return res.json(user);
+
+      return res.json({
+        id: user.id,
+        name: updateData.name ?? user.name ?? "",
+        cpf: updateData.cpf ?? user.cpf ?? "",
+        phone: updateData.phone ?? user.phone ?? "",
+        address: updateData.address ?? user.address ?? "",
+        email: updateData.email ?? user.email ?? "",
+        role: (updateData.role as UserRole) ?? (user.role as UserRole) ?? UserRole.CLIENT,
+        balance: updateData.balance ?? user.balance ?? 0
+      } satisfies UserResponseDTO);
     } catch (error) {
       next(error);
     }
@@ -144,18 +200,19 @@ export class UserController {
     try {
       const { id } = req.params;
       const { amount } = req.body;
-      
+
       const user = UserRepository.findById(parseInt(id));
       if (!user) {
-         throw new AppError({ message: "User not found", code: ErrorCode.USER_NOT_FOUND, httpStatus: 404 });
+        throw new AppError({ message: "User not found", code: ErrorCode.USER_NOT_FOUND, httpStatus: HttpStatus.NOT_FOUND });
       }
 
       const newBalance = (user.balance || 0) + parseFloat(amount);
       UserRepository.update(parseInt(id), { balance: newBalance });
-      
+
       return res.json({ newBalance });
-    } catch(error) {
-       next(error);
+    } catch (error) {
+      next(error);
     }
   }
 }
+

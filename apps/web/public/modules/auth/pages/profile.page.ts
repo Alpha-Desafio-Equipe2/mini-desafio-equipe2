@@ -1,5 +1,5 @@
 import { api } from "../../../shared/http/api.js";
-import { User, Order, Customer } from "../../../shared/types.js";
+import { User, Order } from "../../../shared/types.js";
 import { SuccessModal } from "../../../shared/components/success-modal.js";
 import { ErrorModal } from "../../../shared/components/error-modal.js";
 import { AddBalanceModal } from "../../venda/components/add-balance-modal.js";
@@ -7,10 +7,21 @@ import { AddBalanceModal } from "../../venda/components/add-balance-modal.js";
 /**
  * Página de Perfil do Utilizador
  * Responsável por exibir dados pessoais, saldo, estatísticas e histórico de compras.
+ * Refatorada para novo design system.
  */
 export const ProfilePage = async (): Promise<HTMLElement> => {
-  const div = document.createElement("div");
-  div.innerHTML = `<div style="text-align:center; padding: 50px; font-family: sans-serif;">Carregando perfil...</div>`;
+  const container = document.createElement("div");
+  container.className = "container fade-in";
+  container.style.marginTop = "2rem";
+  container.style.marginBottom = "4rem";
+
+  // Loading State
+  container.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 50vh; color: var(--text-muted);">
+            <span class="material-symbols-outlined" style="font-size: 3rem; margin-bottom: 1rem; animation: spin 1s linear infinite;">progress_activity</span>
+            <p>Carregando seu perfil...</p>
+        </div>
+  `;
 
   try {
     // 1. Recuperação e Atualização do Usuário
@@ -30,34 +41,20 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
         console.warn("Não foi possível atualizar dados via API, usando cache local.");
     }
 
-    // 2. Busca de Pedidos Corrigida
+    // 2. Busca de Pedidos
     let orders: Order[] = [];
     try {
-      // Primeiro buscamos o Customer associado ao User
-      const customers = await api.get<Customer[]>("/customers");
-      const myCustomer = customers.find(c => c.user_id === user.id || c.email === user.email);
-      
       const allSales = await api.get<Order[]>("/sales");
       
-      if (myCustomer) {
-           console.log("Customer encontrado:", myCustomer.id);
-           orders = allSales
-            .filter(sale => String(sale.customer_id) === String(myCustomer.id))
-            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      } else {
-           console.warn("Nenhum cliente associado encontrado. Tentando fallback pelo ID do usuário.");
-           // Fallback legado caso o ID seja igual
-           orders = allSales
-            .filter(sale => String(sale.customer_id) === String(user.id))
-            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      }
+      orders = allSales
+        .filter(sale => String(sale.user_id) === String(user.id))
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-      console.log(`Pedidos encontrados para o usuário ${user.id} (Customer ${myCustomer?.id}):`, orders.length);
     } catch (error) {
       console.error("Erro ao procurar pedidos:", error);
     }
     
-    // Estatísticas (Gasto total apenas de pedidos confirmados)
+    // Estatísticas
     const totalOrders = orders.length;
     const completedOrders = orders.filter(o => o.status === 'confirmed').length;
     const totalSpent = orders
@@ -70,170 +67,226 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
     const balance = Number(user.balance) || 0;
 
     // Dados de Administrador
-    const pharmacyData = user.role === 'admin' ? {
+    const pharmacyData = user.role === 'ADMIN' ? {
       name: "Farmácia Popular Central",
       cnpj: "12.345.678/0001-90",
-      address: "Rua das Flores, 123 - Centro",
-      phone: "(11) 3456-7890",
       totalSales: orders.length,
       totalRevenue: orders.reduce((sum, o) => sum + (Number(o.total_value) || 0), 0)
     } : null;
 
-    // 3. Renderização da Interface
-    div.innerHTML = `
-      <style>
-        .profile-container { display: grid; gap: 2rem; grid-template-columns: 1fr; padding: 1.5rem; max-width: 1200px; margin: 0 auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        @media (min-width: 992px) { .profile-container { grid-template-columns: 380px 1fr; } }
-        
-        .user-card { 
-          background: linear-gradient(135deg, #007bff, #0056b3); 
-          color: white; border-radius: 16px; padding: 2rem; 
-          box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
-        }
-        
-        .user-avatar { width: 90px; height: 90px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; margin: 0 auto 1rem; border: 4px solid rgba(255,255,255,0.3); }
-        
-        .user-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
-        .stat-box { background: rgba(255, 255, 255, 0.15); padding: 1rem; border-radius: 12px; text-align: center; }
-        .stat-value { font-size: 1.1rem; font-weight: 700; display: block; overflow: hidden; text-overflow: ellipsis; }
-        .stat-label { font-size: 0.65rem; text-transform: uppercase; opacity: 0.9; letter-spacing: 0.5px; }
-        
-        .info-section { background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 1.5rem; border: 1px solid #eee; }
-        .section-title { font-size: 1.15rem; font-weight: 700; color: #333; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px; }
-        
-        .order-card { background: white; border: 1px solid #eee; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; transition: transform 0.2s; }
-        .order-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
-        
-        .status-badge { padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
-        .status-confirmed { background: #d4edda; color: #155724; }
-        .status-cancelled { background: #f8d7da; color: #721c24; }
-        .status-pending { background: #fff3cd; color: #856404; }
-        
-        .pharmacy-card { background: linear-gradient(135deg, #28a745, #1e7e34); color: white; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; }
-        .btn-cancel { background: none; border: 1px solid #dc3545; color: #dc3545; padding: 8px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: 600; margin-top: 10px; transition: 0.2s; }
-        .btn-cancel:hover { background: #dc3545; color: white; }
-        
-        .input-field { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-top: 5px; box-sizing: border-box; }
-      </style>
-      
-      <div class="profile-container">
-        <aside>
-          <div class="user-card">
-            <div class="user-avatar">${user.role === 'admin' ? '👨‍💼' : '👤'}</div>
-            <div style="text-align:center;">
-              <h2 style="margin:0; font-size: 1.4rem;">${user.name}</h2>
-              <p style="opacity:0.8; font-size:0.85rem; margin: 5px 0;">${user.email}</p>
-              <span style="background:rgba(255,255,255,0.2); padding:4px 12px; border-radius:20px; font-size:0.75rem;">
-                ${user.role === 'admin' ? '🔑 Administrador' : '👤 Cliente'}
-              </span>
-            </div>
+    // 3. Renderização
+    // Layout Grid Responsivo
+    container.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
             
-            <div class="user-stats">
-              <div class="stat-box">
-                <span class="stat-value" id="user-balance-display">R$ ${balance.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
-                <span class="stat-label">Saldo</span>
-                <button id="add-balance-btn" style="background:white; color:#007bff; border:none; border-radius:4px; padding:4px 8px; font-size:9px; cursor:pointer; margin-top:8px; font-weight:bold;">RECARREGAR</button>
-              </div>
-              <div class="stat-box">
-                <span class="stat-value">${totalOrders}</span>
-                <span class="stat-label">Pedidos</span>
-              </div>
-              <div class="stat-box">
-                <span class="stat-value">${completedOrders}</span>
-                <span class="stat-label">Concluídos</span>
-              </div>
-              <div class="stat-box" title="Total gasto em pedidos confirmados">
-                <span class="stat-value">R$ ${totalSpent.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
-                <span class="stat-label">Total Gasto</span>
-              </div>
-            </div>
-          </div>
-
-          ${pharmacyData ? `
-            <div class="pharmacy-card" style="margin-top: 1.5rem;">
-              <h3 style="margin:0 0 10px 0; font-size:1.1rem;">🏥 Gestão Farmácia</h3>
-              <div style="font-size:0.8rem; opacity:0.9;">
-                <p style="margin:4px 0;"><strong>CNPJ:</strong> ${pharmacyData.cnpj}</p>
-              </div>
-              <div style="margin-top:15px; display:flex; justify-content:space-between; border-top:1px solid rgba(255,255,255,0.2); padding-top:10px;">
-                <div><small>VENDAS</small><br><strong>${pharmacyData.totalSales}</strong></div>
-                <div><small>RECEITA</small><br><strong>R$ ${pharmacyData.totalRevenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</strong></div>
-              </div>
-            </div>
-          ` : ''}
-
-          <div class="info-section" style="margin-top: 1.5rem;">
-            <h3 class="section-title">📝 Dados Cadastrais</h3>
-            <form id="profile-form">
-              <div style="margin-bottom:12px;">
-                <label style="font-size:0.75rem; color:#666; font-weight:700; text-transform: uppercase;">Telefone</label>
-                <input type="text" name="phone" value="${user.phone || ''}" class="input-field" placeholder="(00) 00000-0000">
-              </div>
-              <div style="margin-bottom:12px;">
-                <label style="font-size:0.75rem; color:#666; font-weight:700; text-transform: uppercase;">Endereço</label>
-                <textarea name="address" class="input-field" rows="2" placeholder="Seu endereço completo">${user.address || ''}</textarea>
-              </div>
-              <button type="submit" class="btn btn-primary" style="width:100%; padding:12px; border-radius:8px; font-weight: bold;">SALVAR ALTERAÇÕES</button>
-            </form>
-          </div>
-        </aside>
-        
-        <main>
-          <div class="info-section">
-            <h3 class="section-title">📦 Histórico de Compras</h3>
-            
-            ${orders.length === 0 ? `
-              <div style="text-align:center; padding: 60px 20px; color:#999; background: #fafafa; border-radius: 12px; border: 2px dashed #eee;">
-                <div style="font-size:3.5rem; margin-bottom:15px; opacity: 0.5;">🛒</div>
-                <p style="margin:0; font-weight: 500;">Você ainda não tem pedidos registrados.</p>
-                <p style="font-size: 0.85rem; margin-top: 5px;">Seus pedidos aparecerão aqui automaticamente.</p>
-              </div>
-            ` : orders.map(order => {
-                const statusMap: any = {
-                    'confirmed': { label: 'Confirmado', class: 'status-confirmed' },
-                    'cancelled': { label: 'Cancelado', class: 'status-cancelled' },
-                    'pending': { label: 'Pendente', class: 'status-pending' }
-                };
-                const status = statusMap[order.status || 'pending'] || statusMap['pending'];
-                const date = new Date(order.created_at);
-
-                return `
-                  <div class="order-card" id="order-card-${order.id}">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                      <span style="font-weight:700; color:#333;">Pedido #${order.id}</span>
-                      <span class="status-badge ${status.class}" id="order-status-${order.id}">${status.label}</span>
+            <!-- COLUNA ESQUERDA: Resumo do Usuário -->
+            <aside style="display: flex; flex-direction: column; gap: 1.5rem;">
+                
+                <!-- CARD DE USUÁRIO -->
+                <div class="card" style="background: linear-gradient(135deg, var(--brand-dark), var(--primary)); color: white; border: none;">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                        <div style="
+                            width: 80px; height: 80px; 
+                            background: rgba(255,255,255,0.2); 
+                            border-radius: 50%; 
+                            display: flex; align-items: center; justify-content: center; 
+                            font-size: 2.5rem;
+                            border: 2px solid rgba(255,255,255,0.4);
+                        ">
+                            ${user.role === 'ADMIN' ? '👨‍💼' : '👤'}
+                        </div>
+                        <div>
+                            <h2 style="margin: 0; font-size: 1.5rem;">${user.name}</h2>
+                            <p style="margin: 0; opacity: 0.9; font-size: 0.9rem;">${user.email}</p>
+                            <span style="
+                                display: inline-block;
+                                margin-top: 0.5rem;
+                                padding: 0.25rem 0.75rem;
+                                background: rgba(255,255,255,0.25);
+                                border-radius: 20px;
+                                font-size: 0.75rem;
+                                font-weight: 700;
+                            ">
+                                ${user.role === 'ADMIN' ? 'ADMINISTRADOR' : 'CLIENTE VIP'}
+                            </span>
+                        </div>
                     </div>
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:15px; font-size:0.8rem; color:#666; padding-bottom:12px; border-bottom:1px solid #f9f9f9;">
-                      <div><small style="color: #aaa; font-weight: bold;">DATA</small><br><strong>${date.toLocaleDateString('pt-BR')}</strong></div>
-                      <div><small style="color: #aaa; font-weight: bold;">HORA</small><br><strong>${date.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</strong></div>
-                      ${order.doctor_crm ? `<div><small style="color: #aaa; font-weight: bold;">CRM</small><br><strong>${order.doctor_crm}</strong></div>` : ''}
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: var(--radius-sm); text-align: center;">
+                            <span style="font-size: 0.8rem; text-transform: uppercase; opacity: 0.8;">Seu Saldo</span>
+                            <strong style="display: block; font-size: 1.25rem; margin-top: 0.25rem;" id="user-balance-display">
+                                R$ ${balance.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                            </strong>
+                            <button id="add-balance-btn" style="
+                                margin-top: 0.5rem;
+                                background: white;
+                                color: var(--brand-dark);
+                                border: none;
+                                padding: 4px 12px;
+                                border-radius: 4px;
+                                font-size: 0.7rem;
+                                font-weight: 700;
+                                cursor: pointer;
+                                width: 100%;
+                            ">RECARREGAR</button>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: var(--radius-sm); text-align: center;">
+                            <span style="font-size: 0.8rem; text-transform: uppercase; opacity: 0.8;">Total Gasto</span>
+                            <strong style="display: block; font-size: 1.25rem; margin-top: 0.25rem;">
+                                R$ ${totalSpent.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                            </strong>
+                        </div>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-                      <span style="font-weight:600; color:#555;">Valor Total</span>
-                      <span style="font-size:1.15rem; font-weight:800; color:#007bff;">R$ ${(Number(order.total_value)).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
+                </div>
+
+                <!-- CARD DA FARMÁCIA (ADMIN ONLY) -->
+                ${pharmacyData ? `
+                    <div class="card" style="border-left: 4px solid var(--secondary);">
+                        <h3 style="font-size: 1.1rem; color: var(--secondary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span class="material-symbols-outlined">dataset</span> Gestão da Farmácia
+                        </h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <small style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">VENDAS TOTAIS</small>
+                                <p style="font-size: 1.2rem; font-weight: 700;">${pharmacyData.totalSales}</p>
+                            </div>
+                            <div>
+                                <small style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">RECEITA TOTAL</small>
+                                <p style="font-size: 1.2rem; font-weight: 700;">R$ ${pharmacyData.totalRevenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
+                            </div>
+                        </div>
                     </div>
-                    ${order.status === 'pending' ? `
-                      <button class="btn-cancel" onclick="event.preventDefault(); window.profileCancelOrder(${order.id})">CANCELAR PEDIDO</button>
-                    ` : ''}
-                  </div>
-                `;
-            }).join('')}
-          </div>
-        </main>
-      </div>
+                ` : ''}
+
+                <!-- FORMULÁRIO DE DADOS -->
+                <div class="card">
+                    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined">edit_note</span> Meus Dados
+                    </h3>
+                    <form id="profile-form">
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 600;">Telefone</label>
+                            <input type="text" name="phone" value="${user.phone || ''}" class="input-field" placeholder="(00) 00000-0000">
+                        </div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 600;">Endereço Completo</label>
+                            <textarea name="address" class="input-field" rows="3" placeholder="Rua, Número, Bairro, Cidade...">${user.address || ''}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Salvar Alterações</button>
+                    </form>
+                </div>
+
+            </aside>
+
+            <!-- COLUNA DIREITA: Histórico -->
+            <main>
+                <div class="card">
+                    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined">history</span> Histórico de Pedidos
+                    </h3>
+
+                    ${orders.length === 0 ? `
+                        <div style="text-align: center; padding: 4rem 2rem; color: var(--text-muted); border: 2px dashed var(--border); border-radius: var(--radius-md);">
+                            <span class="material-symbols-outlined" style="font-size: 4rem; opacity: 0.2; margin-bottom: 1rem;">shopping_bag</span>
+                            <p style="font-weight: 600; font-size: 1.1rem;">Nenhum pedido encontrado</p>
+                            <p style="font-size: 0.9rem;">Seus pedidos aparecerão aqui assim que você fizer sua primeira compra.</p>
+                            <button class="btn btn-primary" onclick="window.navigate('/server07/products')" style="margin-top: 1.5rem;">
+                                Ir para Loja
+                            </button>
+                        </div>
+                    ` : `
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            ${orders.map(order => {
+                                const statusColors: any = {
+                                    'confirmed': 'var(--success)',
+                                    'cancelled': 'var(--error)',
+                                    'pending': '#f59e0b'
+                                };
+                                const statusLabels: any = {
+                                    'confirmed': 'Confirmado',
+                                    'cancelled': 'Cancelado',
+                                    'pending': 'Pendente'
+                                };
+                                const statusKey = order.status || 'pending';
+                                const color = statusColors[statusKey] || '#999';
+                                const label = statusLabels[statusKey] || statusKey;
+                                const date = new Date(order.created_at);
+
+                                return `
+                                    <div id="order-card-${order.id}" style="
+                                        border: 1px solid var(--border); 
+                                        border-radius: var(--radius-sm); 
+                                        padding: 1.25rem;
+                                        transition: border-color 0.2s;
+                                    " onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+                                        
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                            <div>
+                                                <span style="font-weight: 700; font-size: 1.1rem;">Pedido #${order.id}</span>
+                                                <div style="font-size: 0.8rem; color: var(--text-muted);">
+                                                    ${date.toLocaleDateString()} às ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                </div>
+                                            </div>
+                                            <span style="
+                                                background: ${color}20; 
+                                                color: ${color}; 
+                                                padding: 0.25rem 0.75rem; 
+                                                border-radius: 99px; 
+                                                font-size: 0.8rem; 
+                                                font-weight: 700;
+                                                border: 1px solid ${color};
+                                            ">${label}</span>
+                                        </div>
+
+                                        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                                            <div>
+                                                ${order.doctor_crm ? `
+                                                    <div style="display: flex; align-items: center; gap: 0.25rem; color: var(--error); font-size: 0.8rem; font-weight: 600; margin-bottom: 0.5rem;">
+                                                        <span class="material-symbols-outlined" style="font-size: 1rem;">prescriptions</span>
+                                                        Receita: ${order.doctor_crm}
+                                                    </div>
+                                                ` : ''}
+                                                <span style="font-size: 0.9rem; color: var(--text-muted);">Total do Pedido</span>
+                                            </div>
+                                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">
+                                                R$ ${(Number(order.total_value)).toLocaleString('pt-BR', {minimumFractionDigits:2})}
+                                            </div>
+                                        </div>
+
+                                        ${statusKey === 'pending' ? `
+                                            <button class="btn" onclick="window.profileCancelOrder(${order.id})" style="
+                                                width: 100%; 
+                                                margin-top: 1rem; 
+                                                border: 1px solid var(--error); 
+                                                color: var(--error); 
+                                                font-size: 0.8rem;
+                                                padding: 0.5rem;
+                                                background: transparent;
+                                            " onmouseover="this.style.background='var(--error)'; this.style.color='white'" onmouseout="this.style.background='transparent'; this.style.color='var(--error)'">
+                                                Cancelar Pedido
+                                            </button>
+                                        ` : ''}
+
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `}
+                </div>
+            </main>
+        </div>
     `;
 
     // 4. Lógica de Eventos
     
-    div.querySelector("#add-balance-btn")?.addEventListener("click", () => {
+    // Add Balance
+    container.querySelector("#add-balance-btn")?.addEventListener("click", () => {
       const modal = AddBalanceModal(() => {
-        // Atualizar saldo no DOM sem recarregar
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
             const parsedUser = JSON.parse(storedUser);
-            // Atualiza a variável local para manter consistência
             user.balance = parsedUser.balance;
-            
             const balanceDisplay = document.getElementById("user-balance-display");
             if (balanceDisplay) {
                 balanceDisplay.textContent = `R$ ${Number(user.balance).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
@@ -243,18 +296,21 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
       document.body.appendChild(modal);
     });
 
-    div.querySelector("#profile-form")?.addEventListener("submit", async (e) => {
+    // Profile Form
+    container.querySelector("#profile-form")?.addEventListener("submit", async (e) => {
       e.preventDefault();
+      const btn = (e.target as HTMLFormElement).querySelector('button[type="submit"]') as HTMLButtonElement;
+      const originalText = btn.textContent;
+      btn.textContent = "Salvando...";
+      btn.disabled = true;
+
       const formData = new FormData(e.target as HTMLFormElement);
       const data = Object.fromEntries(formData.entries());
       
       try {
-        // Correção de rota: Garantir que user.id existe
         if (!user.id) throw new Error("ID do usuário inválido.");
-        
         await api.put(`/users/${user.id}`, data);
         
-        // Atualiza localStorage e objeto local antes de recarregar
         const updatedUser = { ...user, ...data };
         localStorage.setItem("user", JSON.stringify(updatedUser));
         
@@ -263,10 +319,10 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
           message: "Suas informações foram salvas com sucesso." 
         }));
         
-        // Pequeno delay para o usuário ver o sucesso antes de recarregar
         setTimeout(() => window.location.reload(), 1500);
       } catch (err: any) {
-        console.error("Erro na atualização:", err);
+        btn.textContent = originalText;
+        btn.disabled = false;
         document.body.appendChild(ErrorModal({ 
           title: "Erro ao Atualizar", 
           message: err.message || "A API retornou um erro ao tentar salvar os dados." 
@@ -274,57 +330,81 @@ export const ProfilePage = async (): Promise<HTMLElement> => {
       }
     });
 
-    // Função de Cancelamento Global (Renomeada para evitar conflitos)
+    // Função de Cancelamento Global (Anexada ao Window)
     (window as any).profileCancelOrder = async (id: number) => {
       const confirmModal = ErrorModal({
         title: "Confirmar Cancelamento",
         message: "Deseja realmente cancelar este pedido?",
         type: "warning"
       });
-      document.body.appendChild(confirmModal);
       
-      const confirmBtn = document.createElement("button");
-      confirmBtn.className = "btn btn-primary";
-      confirmBtn.style.cssText = "width: 100%; margin-top: 1rem; background: #dc3545; border:none; padding: 10px; border-radius: 8px; font-weight: bold;";
-      confirmBtn.textContent = "SIM, CANCELAR";
-      confirmBtn.onclick = async (e: MouseEvent) => {
-        if(e) {
-             e.preventDefault();
-             e.stopPropagation();
-        }
-        confirmModal.remove();
-        try {
-          await api.post(`/sales/${id}/cancel`, {});
-          document.body.appendChild(SuccessModal({ title: "Pedido Cancelado", message: "O status foi atualizado." }));
-          // Atualizar interface sem recarregar
-          const orderCard = document.getElementById(`order-card-${id}`);
-          if (orderCard) {
-            const statusBadge = document.getElementById(`order-status-${id}`);
-            if (statusBadge) {
-                statusBadge.className = 'status-badge status-cancelled';
-                statusBadge.textContent = 'Cancelado';
-            }
-            
-            // Remover botão de cancelar
-            const cancelBtn = orderCard.querySelector('.btn-cancel');
-            if (cancelBtn) cancelBtn.remove();
-          }
-        } catch (error: any) {
-          document.body.appendChild(ErrorModal({ title: "Erro", message: "Não foi possível cancelar o pedido." }));
-        }
-      };
-      confirmModal.querySelector(".error-modal-content")?.appendChild(confirmBtn);
+      // Customizando o Modal de Erro para ser um Confirm
+      const content = confirmModal.querySelector('.error-modal-content');
+      if(content) {
+          // Remove o botão padrão 'Fechar' se existir e adiciona os nossos
+          const existingBtn = content.querySelector('button');
+          if(existingBtn) existingBtn.remove();
+          
+          const actions = document.createElement('div');
+          actions.style.cssText = "display: flex; gap: 1rem; margin-top: 1.5rem;";
+          
+          const title = content.querySelector('h3');
+          if(title) title.style.color = "var(--text-main)";
+
+          actions.innerHTML = `
+            <button id="confirm-cancel" class="btn" style="flex: 1; background: var(--error); color: white;">Sim, Cancelar</button>
+            <button id="abort-cancel" class="btn" style="flex: 1; border: 1px solid var(--border); color: var(--text-main);">Voltar</button>
+          `;
+          content.appendChild(actions);
+
+          content.querySelector('#abort-cancel')?.addEventListener('click', () => confirmModal.remove());
+          content.querySelector('#confirm-cancel')?.addEventListener('click', async () => {
+             confirmModal.remove();
+             try {
+                await api.post(`/sales/${id}/cancel`, {});
+                
+                // Update UI visually without reload
+                const orderCard = document.getElementById(`order-card-${id}`);
+                if (orderCard) {
+                    // Update Badge
+                    const badge = orderCard.querySelector('span[style*="border-radius"]');
+                    if (badge) {
+                        badge.textContent = "Cancelado";
+                        (badge as HTMLElement).style.color = "var(--error)";
+                        (badge as HTMLElement).style.background = "rgba(239, 68, 68, 0.1)";
+                        (badge as HTMLElement).style.borderColor = "var(--error)";
+                    }
+                    // Remove Cancel Button
+                    const cancelBtn = orderCard.querySelector('button[onclick*="profileCancelOrder"]');
+                    if (cancelBtn) cancelBtn.remove();
+                }
+                
+                document.body.appendChild(SuccessModal({ title: "Cancelado", message: "Pedido cancelado com sucesso." }));
+
+             } catch (error) {
+                document.body.appendChild(ErrorModal({ title: "Erro", message: "Não foi possível cancelar." }));
+             }
+          });
+      }
+      
+      document.body.appendChild(confirmModal);
     };
 
   } catch (error: any) {
-    div.innerHTML = `
-      <div style="padding:40px; text-align:center; color:#721c24; background:#f8d7da; border-radius:12px; margin: 20px;">
-        <h3>⚠️ Erro ao carregar página</h3>
-        <p>${error.message}</p>
-        <button onclick="window.location.reload()" class="btn btn-primary" style="margin-top:10px;">Tentar Novamente</button>
-      </div>
-    `;
+     container.innerHTML = `
+        <div style="
+            text-align: center; 
+            padding: 3rem; 
+            background: #fff; 
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        ">
+            <h3 style="color: var(--error); margin-bottom: 1rem;">Não foi possível carregar seu perfil</h3>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">${error.message}</p>
+            <button onclick="window.location.reload()" class="btn btn-primary">Tentar Novamente</button>
+        </div>
+     `;
   }
 
-  return div;
+  return container;
 };

@@ -1,9 +1,11 @@
 import { db } from "../../../config/database.js";
 import { User } from "../entities/User.js";
+import { UserCreateDTO } from "../dtos/UserCreateDTO.js";
+import { UserResponseDTO } from "../dtos/UserResponseDTO.js";
 
 export class UserRepository {
   private static findByIdStmt = db.prepare(`
-    SELECT id, name, email, role, balance, created_at, updated_at
+    SELECT id, name, cpf, email, phone, address, role, balance, created_at, updated_at 
     FROM users
     WHERE id = ?
   `);
@@ -14,46 +16,59 @@ export class UserRepository {
     WHERE email = ?
   `);
 
+  private static findByCpfStmt = db.prepare(`
+    SELECT *
+    FROM users
+    WHERE cpf = ?
+  `);
+
   private static findAllStmt = db.prepare(`
-    SELECT id, name, email, role, balance, created_at, updated_at
+    SELECT id, name, cpf, email, phone, address, role, balance, created_at, updated_at
     FROM users
   `);
 
-  static create(user: Omit<User, "id" | "created_at" | "updated_at">) {
+  static create(user: Omit<UserCreateDTO, "id" | "created_at" | "updated_at">) {
     const stmt = db.prepare(`
-      INSERT INTO users (name, email, password, role, balance)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO users (name, email, password, cpf, phone, address, role, balance)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
       user.name,
       user.email,
       user.password,
+      user.cpf,
+      user.phone,
+      user.address,
       user.role,
-      user.balance || 0.00
+      user.balance
     );
 
-    return result.lastInsertRowid;
+    return this.findById(Number(result.lastInsertRowid));
   }
 
-  static findById(id: number): User | undefined {
-    return this.findByIdStmt.get(id) as User | undefined;
+  static findById(id: number): UserResponseDTO | undefined {
+    return this.findByIdStmt.get(id) as UserResponseDTO | undefined;
   }
 
   static findByEmail(email: string): User | undefined {
     return this.findByEmailStmt.get(email) as User | undefined;
   }
 
-  static findAll(): User[] {
-    return this.findAllStmt.all() as User[];
+  static findByCpf(cpf: string): User | undefined {
+    return this.findByCpfStmt.get(cpf) as User | undefined;
   }
 
-  static update(id: number, data: Partial<User>) {
+  static findAll(): UserResponseDTO[] {
+    return this.findAllStmt.all() as UserResponseDTO[];
+  }
+
+  static update(id: number, data: Partial<UserResponseDTO>) {
     const fields = Object.keys(data)
       .filter(key => key !== "id")
       .map(key => `${key} = ?`)
       .join(", ");
-    
+
     if (!fields) return;
 
     const values = Object.values(data);
@@ -70,3 +85,4 @@ export class UserRepository {
     return db.prepare("DELETE FROM users WHERE id = ?").run(id);
   }
 }
+

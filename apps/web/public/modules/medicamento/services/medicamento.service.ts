@@ -2,10 +2,10 @@ import { api } from "../../../shared/http/api.js";
 import { Medicine } from "../../../shared/types.js";
 
 export class MedicineService {
-  static async getAll(): Promise<Medicine[]> {
+  static async getAll(category?: string): Promise<Medicine[]> {
     try {
-      // O guide menciona /medicines, vou assumir que é isso.
-      const response = await api.get<Medicine[]>("/medicines");
+      const url = category ? `/medicines?category=${encodeURIComponent(category)}` : "/medicines";
+      const response = await api.get<Medicine[]>(url);
       return response;
     } catch (error) {
       console.error("Erro ao buscar medicamentos", error);

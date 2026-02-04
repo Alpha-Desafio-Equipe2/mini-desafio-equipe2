@@ -10,6 +10,7 @@ interface UpdateMedicineDTO {
   requires_prescription?: boolean;
   price?: number;
   stock?: number;
+  category?: string;
   image_url?: string;
 }
 

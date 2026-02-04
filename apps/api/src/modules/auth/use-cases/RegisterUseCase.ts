@@ -1,7 +1,8 @@
 import bcrypt from "bcryptjs";
 import { db } from "../../../config/database.js";
 import { UserRepository } from "../../user/repositories/UserRepository.js";
-import { CustomerRepository } from "../../customer/repositories/CustomerRepository.js";
+import { UserRole } from "../../user/domain/enums/UserRole.js";
+
 import { AppError } from "../../../shared/errors/AppError.js";
 import { ErrorCode } from "../../../shared/errors/ErrorCode.js";
 import { HttpStatus } from "../../../shared/errors/httpStatus.js";
@@ -19,8 +20,8 @@ export class RegisterUseCase {
       });
     }
 
-    const existingCustomer = CustomerRepository.findByCpf(cpf);
-    if (existingCustomer) {
+    const existingUserCpf = UserRepository.findByCpf(cpf);
+    if (existingUserCpf) {
       throw new AppError({
         message: "CPF already registered",
         code: ErrorCode.CPF_ALREADY_EXISTS,
@@ -30,22 +31,19 @@ export class RegisterUseCase {
 
     const hashedPassword = await bcrypt.hash(password, 8);
 
+
     const result = db.transaction(() => {
-      const userId = UserRepository.create({
+      const user = UserRepository.create({
         name,
         email,
         password: hashedPassword,
-        role: "client" as any,
-      });
-
-      CustomerRepository.create({
-        name,
+        role: UserRole.CLIENT,
         cpf,
-        user_id: Number(userId),
-        email,
+        phone: data.phone || "",
+        address: data.address || "",
       });
 
-      return { message: "User created successfully", id: userId };
+      return { message: "User created successfully", id: user?.id };
     })();
 
     return result;

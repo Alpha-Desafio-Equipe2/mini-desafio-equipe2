@@ -4,5 +4,6 @@ export interface UpdateMedicineDTO {
   active_principle?: string;
   requires_prescription?: boolean;
   price?: number;
+  category?: string;
   stock?: number;
 }

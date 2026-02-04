@@ -1,4 +1,4 @@
-# 💊 Códigos de Erro (sincronizado com o código fonte)
+# 💊 Lista de Códigos Internos de Erro – Sistema FarmáciaProx
 
 Lista de códigos internos usados pela API. Valores e mensagens extraídos de `apps/api/src/shared/errors/ErrorCode.ts` e `ErrorMessage.ts`.
 

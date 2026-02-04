@@ -35,7 +35,7 @@ export const api = {
     }
 
     try {
-      console.log(`[API] Requesting: ${API_URL}${endpoint}`); // Debug Log
+
       const response = await fetch(`${API_URL}${endpoint}`, config);
 
       // Handle 401 Unauthorized

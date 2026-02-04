@@ -14,9 +14,9 @@ if (!fs.existsSync(DATABASE_DIR)) {
     fs.mkdirSync(DATABASE_DIR, { recursive: true });
 }
 
-export const db = new Database(DATABASE_PATH, { 
-    verbose: console.log 
-});
+export const db = new Database(DATABASE_PATH, 
+    // verbose: console.log 
+);
 
 // Otimizações Sênior recomendadas pelo Arquiteto
 db.pragma('journal_mode = WAL');

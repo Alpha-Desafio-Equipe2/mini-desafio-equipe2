@@ -61,7 +61,7 @@ export const initLanding = async (config?: Partial<LandingConfig>): Promise<void
     // Inicializar listeners globais
     initGlobalListeners();
 
-    console.log("[Landing] Módulo inicializado com sucesso");
+
   } catch (error) {
     console.error("[Landing] Erro ao inicializar:", error);
     landingState.error = (error as Error).message;
@@ -141,7 +141,7 @@ const initGlobalListeners = (): void => {
       const productCard = target.closest(".product-card");
       if (productCard) {
         const productName = productCard.querySelector(".product-name")?.textContent || "Produto";
-        console.log("[Landing] Favorito clicado:", productName);
+
       }
     }
 
@@ -151,7 +151,7 @@ const initGlobalListeners = (): void => {
       if (productCard) {
         const productName = productCard.querySelector(".product-name")?.textContent || "Produto";
         const priceText = productCard.querySelector(".price-current")?.textContent || "R$ 0,00";
-        console.log("[Landing] Adicionar ao carrinho:", productName, priceText);
+
       }
     }
   });
@@ -164,7 +164,7 @@ export const addToFavorites = (productId: string): void => {
   if (!landingState.favorites.includes(productId)) {
     landingState.favorites.push(productId);
     saveFavorites();
-    console.log("[Landing] Produto adicionado aos favoritos:", productId);
+
   }
 };
 
@@ -174,7 +174,7 @@ export const addToFavorites = (productId: string): void => {
 export const removeFromFavorites = (productId: string): void => {
   landingState.favorites = landingState.favorites.filter((id) => id !== productId);
   saveFavorites();
-  console.log("[Landing] Produto removido dos favoritos:", productId);
+
 };
 
 /**
@@ -234,7 +234,7 @@ export const logEvent = (
     isAuthenticated: landingState.user.isAuthenticated,
   };
 
-  console.log("[Landing Event]", event);
+
 
   // Enviar para analytics se disponível
   if (window.gtag) {
@@ -246,7 +246,7 @@ export const logEvent = (
  * Cleanup - Limpar recursos do módulo
  */
 export const cleanupLanding = (): void => {
-  console.log("[Landing] Limpando recursos");
+
   // Aqui você pode adicionar lógica de cleanup
 };
 
@@ -255,7 +255,7 @@ export const cleanupLanding = (): void => {
  */
 export const reloadConfig = (newConfig: Partial<LandingConfig>): void => {
   landingState.config = { ...landingState.config, ...newConfig };
-  console.log("[Landing] Configuração recarregada:", landingState.config);
+
 };
 
 /**
@@ -296,7 +296,7 @@ export const getCartValue = (): number => {
 export const clearCart = (): void => {
   landingState.cart = [];
   localStorage.removeItem("cart");
-  console.log("[Landing] Carrinho limpo");
+
 };
 
 /**

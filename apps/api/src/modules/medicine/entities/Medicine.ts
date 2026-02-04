@@ -2,6 +2,7 @@ export interface Medicine {
   id: number;
   name: string;
   manufacturer?: string;
+  category: string;
   active_principle: string;
   requires_prescription: boolean;
   price: number;

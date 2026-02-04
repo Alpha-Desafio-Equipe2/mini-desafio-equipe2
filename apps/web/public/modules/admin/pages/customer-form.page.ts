@@ -1,12 +1,13 @@
 import { CustomerService } from "../services/customer.service.js";
 
+// Client
 export const CustomerFormPage = async (id?: string): Promise<HTMLElement> => {
   const isEdit = !!id;
   const div = document.createElement("div");
   div.className = "container fade-in";
   div.style.maxWidth = "600px";
 
-  div.innerHTML = `
+  div.innerHTML                       = `
         <h2 style="color: var(--primary); margin-bottom: 2rem;">${isEdit ? "Editar Cliente" : "Novo Cliente"}</h2>
         
         <form id="customer-form" class="card">

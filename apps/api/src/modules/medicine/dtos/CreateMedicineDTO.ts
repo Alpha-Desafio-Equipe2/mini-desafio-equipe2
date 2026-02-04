@@ -1,6 +1,7 @@
 export interface CreateMedicineDTO {
   name: string;
   manufacturer?: string;
+  category: string;
   active_principle: string;
   requires_prescription: boolean;
   price: number;

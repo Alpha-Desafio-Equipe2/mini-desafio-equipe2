@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS medicines (
   name TEXT NOT NULL,
   manufacturer TEXT,
   active_principle TEXT NOT NULL,
+  category TEXT NOT NULL,
   requires_prescription INTEGER NOT NULL CHECK(requires_prescription IN (0,1)),
   price REAL NOT NULL,
   stock INTEGER NOT NULL CHECK (stock >= 0),

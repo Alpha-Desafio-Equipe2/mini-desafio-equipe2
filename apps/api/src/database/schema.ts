@@ -1,6 +1,20 @@
 import { db } from "../config/database.js";
 
 // =======================
+// CATEGORIES
+// =======================
+db.exec(`
+CREATE TABLE IF NOT EXISTS categories (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  description TEXT,
+  icon TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+`);
+
+// =======================
 // MEDICINES
 // =======================
 db.exec(`
@@ -13,8 +27,10 @@ CREATE TABLE IF NOT EXISTS medicines (
   price REAL NOT NULL,
   stock INTEGER NOT NULL CHECK (stock >= 0),
   image_url TEXT,
+  category_id INTEGER,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (category_id) REFERENCES categories(id)
 );
 `);
 
@@ -113,8 +129,6 @@ CREATE TABLE IF NOT EXISTS users (
 );
 `);
 
-
-
 // =======================
 // MIGRATIONS
 // =======================
@@ -137,6 +151,13 @@ try {
     db.exec("ALTER TABLE medicines ADD COLUMN image_url TEXT");
   }
 
+  // Check if category_id exists in medicines
+  const hasCategoryId = medicineColumns.some(col => col.name === 'category_id');
+  
+  if (!hasCategoryId) {
+    console.log("Migrating: Adding category_id column to medicines table...");
+    db.exec("ALTER TABLE medicines ADD COLUMN category_id INTEGER REFERENCES categories(id)");
+  }
 } catch (error) {
   console.error("Migration error:", error);
 }

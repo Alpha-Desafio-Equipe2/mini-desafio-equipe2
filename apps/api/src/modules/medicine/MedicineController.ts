@@ -25,7 +25,30 @@ export class MedicineController {
 
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const medicines = await findAllMedicinesUseCase.execute();
+      // Extrair filtros da query string
+      const filters: any = {};
+
+      if (req.query.category_id) {
+        filters.category_id = Number(req.query.category_id);
+      }
+
+      if (req.query.requires_prescription !== undefined) {
+        filters.requires_prescription = req.query.requires_prescription === 'true';
+      }
+
+      if (req.query.search) {
+        filters.search = String(req.query.search);
+      }
+
+      if (req.query.min_price) {
+        filters.min_price = Number(req.query.min_price);
+      }
+
+      if (req.query.max_price) {
+        filters.max_price = Number(req.query.max_price);
+      }
+
+      const medicines = await findAllMedicinesUseCase.execute(filters);
       return res.status(200).json(medicines);
     } catch (error) {
       next(error);
@@ -36,6 +59,7 @@ export class MedicineController {
     try {
       const { id } = req.params;
       const medicine = MedicineRepository.findById(parseInt(id));
+      
       if (!medicine) {
         throw new AppError({
           message: "Medicine not found",
@@ -43,6 +67,7 @@ export class MedicineController {
           httpStatus: HttpStatus.NOT_FOUND,
         });
       }
+
       return res.status(200).json(medicine);
     } catch (error) {
       next(error);

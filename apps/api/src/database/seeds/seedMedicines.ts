@@ -21,7 +21,7 @@ export function seedMedicine() {
     { name: 'Ibuprofeno', manufacturer: 'Farmacêutica GHI', active_principle: 'Ibuprofeno', requires_prescription: 0, price: 15.99, stock: 15 }
   ];
 
-  const insertMany = db.transaction((docs) => {
+  const insertMany = db.transaction((docs: any[]) => {
     for (const d of docs) {
       insert.run(d.name, d.manufacturer, d.active_principle, d.requires_prescription, d.price, d.stock);
     }

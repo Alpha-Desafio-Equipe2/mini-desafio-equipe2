@@ -6,6 +6,7 @@ import { HttpStatus } from "../../../shared/errors/httpStatus.js";
 interface UpdateMedicineDTO {
   name?: string;
   manufacturer?: string;
+  category?: string;
   active_principle?: string;
   requires_prescription?: boolean;
   price?: number;

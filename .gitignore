@@ -10,15 +10,17 @@ out/
 # --- Variáveis de Ambiente e Segredos (SEGURANÇA) ---
 .env
 .env.*
+*.sh
+
 
 # --- Banco de Dados e Dados Persistentes ---
-data/
-*.sqlite
-*.sqlite-shm
-*.sqlite-wal
-*.sqlite-journal
-*.db
-*.sqlite3
+/data/*
+/data/*.sqlite
+/data/*.sqlite-shm
+/data/*.sqlite-wal
+/data/*.sqlite-journal
+/data/*.db
+data/*.sqlite3
 
 # --- Logs e Debug ---
 npm-debug.log*
@@ -34,3 +36,7 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# --- Outros ---
+.turbo/
+.agent/

@@ -11,7 +11,7 @@ Campos principais:
 - `manufacturer` TEXT
 - `active_principle` TEXT NOT NULL
 - `category` TEXT NOT NULL
-- `requires_prescription` INTEGER NOT NULL CHECK(requires_prescription IN (0,1))
+- `requires_prescription` INTEGER NOT NULL CHECK(requires_prescription IN (`BOOLEAN`))
 - `price` REAL NOT NULL
 - `stock` INTEGER NOT NULL CHECK (stock >= 0)
 - `image_url` TEXT
@@ -19,15 +19,6 @@ Campos principais:
 - `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 
 Índices sugeridos: `name`, `active_principle` para buscas.
-
-### `doctors`
-Campos principais:
-- `id` INTEGER PRIMARY KEY AUTOINCREMENT
-- `name` TEXT NOT NULL
-- `crm` TEXT UNIQUE NOT NULL
-- `specialty` TEXT
-- `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-- `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 
 ### `sales`
 Campos principais:
@@ -76,7 +67,7 @@ Campos principais:
 - `sale_items.medicine_id → medicines.id`
 
 Regras de negócio relacionadas a banco de dados:
-1. Medicamentos controlados (`requires_prescription = 1`) só podem ser vendidos se houver registro de receita (fluxo implementado no serviço de vendas).
+1. Medicamentos controlados (`requires_prescription = TRUE`) só podem ser vendidos se houver registro de receita (fluxo implementado no serviço de vendas).
 2. Atualizações de estoque são feitas durante o processo de finalização de venda e em operações de transferência entre filiais.
 3. Operações críticas devem ser registradas em logs/auditoria (implementação opcional).
 

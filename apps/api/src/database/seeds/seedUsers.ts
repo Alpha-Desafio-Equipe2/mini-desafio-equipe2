@@ -8,6 +8,8 @@ dotenv.config();
 interface User {
   name: string;
   cpf: string;
+  phone: string;
+  address: string;
   email: string;
   password: string;
   role: UserRole;
@@ -39,23 +41,23 @@ export function seedUsers() {
 
 
   const insertUser = db.prepare(
-    "INSERT INTO users (name, cpf, email, password, role, balance) VALUES (?, ?, ?, ?, ?, ?)",
+    "INSERT INTO users (name, cpf, email, password, role, balance, phone, address ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
   );
 
   const users = [
     {
-      name: 'Ana', cpf: '123.456.789-00', email: 'ana.paula@example.com', password: clientPassword, role: UserRole.CLIENT, balance: 100.00
+      name: 'Ana', cpf: '123.456.789-00', email: 'ana.paula@example.com', password: clientPassword, role: UserRole.CLIENT, balance: 100.00, phone: '123456789', address: 'Rua 1'
     },
     {
-      name: 'Admin', cpf: '123.456.888-00', email: 'admin@email.com', password: adminPassword, role: UserRole.ADMIN, balance: 70.00
+      name: 'Admin', cpf: '123.456.888-00', email: 'admin@email.com', password: adminPassword, role: UserRole.ADMIN, balance: 70.00, phone: '123456789', address: 'Rua 2'
     },
-    { name: 'João', cpf: '987.654.321-00', email: 'joao.silva@example.com', password: clientPassword, role: UserRole.CLIENT, balance: 10.00 },
-    { name: 'Mariana', cpf: '456.789.123-00', email: 'mariana.costa@example.com', password: clientPassword, role: UserRole.USER, balance: 50.00 }
+    { name: 'João', cpf: '987.654.321-00', email: 'joao.silva@example.com', password: clientPassword, role: UserRole.CLIENT, balance: 10.00, phone: '123456789', address: 'Rua 3' },
+    { name: 'Mariana', cpf: '456.789.123-00', email: 'mariana.costa@example.com', password: clientPassword, role: UserRole.USER, balance: 50.00, phone: '123456789', address: 'Rua 4' }
   ];
 
   const insertMany = db.transaction((users: User[]) => {
     for (const user of users) {
-      insertUser.run(user.name, user.cpf, user.email, user.password, user.role, user.balance);
+      insertUser.run(user.name, user.cpf, user.email, user.password, user.phone, user.address, user.role, user.balance);
     }
   });
 

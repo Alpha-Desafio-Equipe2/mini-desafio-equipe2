@@ -18,21 +18,6 @@ CREATE TABLE IF NOT EXISTS medicines (
 );
 `);
 
-
-// =======================
-// DOCTORS
-// =======================
-db.exec(`
-CREATE TABLE IF NOT EXISTS doctors (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  crm TEXT UNIQUE NOT NULL,
-  specialty TEXT, 
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-`);
-
 // =======================
 // SALES
 // =======================
@@ -80,7 +65,9 @@ CREATE TABLE IF NOT EXISTS users (
   cpf TEXT UNIQUE NOT NULL,
   email TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
-  role TEXT NOT NULL DEFAULT 'attendant',
+  role TEXT NOT NULL DEFAULT 'CLIENT',
+  phone TEXT,
+  address TEXT,
   balance REAL DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP

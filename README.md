@@ -1,4 +1,4 @@
-# FarmaPro — visão rápida
+# FarmaProx — visão rápida
 
 FarmaPro é um sistema simples para gestão de farmácia popular: cadastro de medicamentos, controle de estoque, registro de vendas e cadastro de clientes e médicos.
 
@@ -10,6 +10,20 @@ O repositório está organizado como um monorepo com duas aplicações principai
 Objetivo deste README: mostrar como começar localmente e onde encontrar a documentação.
 
 ## Começando (modo rápido)
+
+### ⚙️ Configuração de ambiente
+
+Antes de rodar o sistema, crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+
+``` .env
+NODE_ENV=production
+PORT=3000
+DATABASE_PATH=/var/www/mini-desafio/data/database.sqlite
+JWT_SECRET="seu_segredo"
+ADMIN_PASSWORD="senha1"
+CLIENT_PASSWORD="senha2"
+```
+Depois disso, inicie o sistema conforme orientações abaixo
 
 1. Backend (desenvolvimento)
 
@@ -64,12 +78,5 @@ Existem scripts e um arquivo `ecosystem.config.cjs` para execução com PM2 e ex
 - Esquema do banco: `apps/api/src/database/schema.ts`
 - Documentação de alto nível: `docs/`
 
-## Preciso de ajuda
-
-Se quiser, eu posso:
-
-- Ativar e montar o Swagger UI (`/api/docs`) no backend.
-- Deixar o `README.md` com instruções de deploy completas e menos técnicas.
-- Sincronizar `docs/ERROR_CODES.md` com os códigos do código-fonte.
 
 Consulte a documentação em `docs/` para mais detalhes.

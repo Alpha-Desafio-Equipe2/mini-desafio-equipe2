@@ -15,12 +15,12 @@ const findAllUsersUseCase = new FindAllUsersUseCase();
 export class UserController {
   async create(req: Request, res: Response, next: NextFunction): Promise<Response<UserResponseDTO>> {
     try {
-      const { name, cpf, email, password, role } = req.body;
+      const { name, cpf, email, password, role, phone, address } = req.body;
 
       if (!name || !cpf || !email || !password) {
         throw new AppError({
           message: "Missing required fields",
-          code: ErrorCode.MISSING_CUSTOMER_NAME, // Note: Should probably be MISSING_USER_FIELDS 
+          code: ErrorCode.MISSING_CUSTOMER_NAME,
           httpStatus: HttpStatus.BAD_REQUEST,
         });
       }
@@ -56,6 +56,8 @@ export class UserController {
       const userResponse: UserResponseDTO = await createUserUseCase.execute({
         name,
         cpf,
+        phone,
+        address,
         email,
         password,
         role,
@@ -65,6 +67,8 @@ export class UserController {
       return res.status(201).json({
         name: userResponse.name,
         cpf: userResponse.cpf,
+        phone: userResponse.phone,
+        address: userResponse.address,
         email: userResponse.email,
         role: userResponse.role,
         balance: userResponse.balance,
@@ -74,7 +78,7 @@ export class UserController {
     }
   }
 
-  async getAll(req: Request, res: Response, next: NextFunction) {
+  async getAll(req: Request, res: Response, next: NextFunction): Promise<Response<UserResponseDTO[]>> {
     try {
       const users = findAllUsersUseCase.execute();
 
@@ -95,7 +99,7 @@ export class UserController {
           httpStatus: HttpStatus.NOT_FOUND,
         });
       }
-      return res.json(user.name, user.cpf, user.email, user.role, user.balance);
+      return res.json(user.name, user.cpf, user.email, user.role, user.balance, user.phone, user.address);
     } catch (error) {
       next(error);
     }
@@ -157,6 +161,8 @@ export class UserController {
       return res.json({
         name: updateData.name ?? user.name ?? "",
         cpf: updateData.cpf ?? user.cpf ?? "",
+        phone: updateData.phone ?? user.phone ?? "",
+        address: updateData.address ?? user.address ?? "",
         email: updateData.email ?? user.email ?? "",
         role: (updateData.role as UserRole) ?? (user.role as UserRole) ?? UserRole.CLIENT,
         balance: updateData.balance ?? user.balance ?? 0

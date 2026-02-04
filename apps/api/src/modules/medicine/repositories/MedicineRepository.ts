@@ -23,6 +23,7 @@ export class MedicineRepository {
       medicine.name,
       medicine.manufacturer,
       medicine.active_principle,
+      medicine.category,
       medicine.requires_prescription ? 1 : 0,
       medicine.price,
       medicine.stock,
@@ -45,7 +46,7 @@ export class MedicineRepository {
       .filter(key => key !== "id")
       .map(key => `${key} = ?`)
       .join(", ");
-    
+
     if (!fields) return;
 
     // Prepare values, coercing some JS types to SQLite-compatible types

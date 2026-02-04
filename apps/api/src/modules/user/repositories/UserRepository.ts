@@ -4,7 +4,7 @@ import { UserResponseDTO } from "../dtos/UserResponseDTO.js";
 
 export class UserRepository {
   private static findByIdStmt = db.prepare(`
-    SELECT id, name, cpf, email, role, balance, created_at, updated_at 
+    SELECT id, name, cpf, email, phone, address, role, balance, created_at, updated_at 
     FROM users
     WHERE id = ?
   `);
@@ -16,14 +16,14 @@ export class UserRepository {
   `);
 
   private static findAllStmt = db.prepare(`
-    SELECT id, name, cpf, email, role, balance, created_at, updated_at
+    SELECT id, name, cpf, email, phone, address, role, balance, created_at, updated_at
     FROM users
   `);
 
   static create(user: Omit<UserCreateDTO, "id" | "created_at" | "updated_at">) {
     const stmt = db.prepare(`
-      INSERT INTO users (name, email, password, cpf, role, balance)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO users (name, email, password, cpf, phone, address, role, balance)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -31,6 +31,8 @@ export class UserRepository {
       user.email,
       user.password,
       user.cpf,
+      user.phone,
+      user.address,
       user.role,
       user.balance
     );

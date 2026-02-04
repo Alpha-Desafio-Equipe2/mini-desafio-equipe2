@@ -4,6 +4,8 @@ export interface UserUpdateDTO {
   name?: string;
   cpf?: string;
   email?: string;
+  phone?: string;
+  address?: string;
   password?: string;
   role?: UserRole;
   balance?: number;

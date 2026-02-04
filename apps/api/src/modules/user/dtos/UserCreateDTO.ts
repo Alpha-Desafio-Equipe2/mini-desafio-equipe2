@@ -5,6 +5,8 @@ export interface UserCreateDTO {
   cpf: string;
   email: string;
   password: string;
+  phone: string;
+  address: string;
   role: UserRole;
   balance?: number;
 }

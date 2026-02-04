@@ -1,7 +1,7 @@
 import { SaleRepository } from "../repositories/SaleRepository.js";
 
 export class FindAllSalesUseCase {
-  async execute(customerId?: number) {
-    return SaleRepository.findAll(customerId);
+  async execute(userId?: number) {
+    return SaleRepository.findAll(userId);
   }
 }

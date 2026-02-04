@@ -5,3 +5,4 @@ export class FindAllUsersUseCase {
     return UserRepository.findAll();
   }
 }
+

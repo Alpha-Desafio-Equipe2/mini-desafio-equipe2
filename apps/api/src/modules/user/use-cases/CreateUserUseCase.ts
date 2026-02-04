@@ -1,13 +1,15 @@
 import bcrypt from "bcryptjs";
 import { UserRepository } from "../repositories/UserRepository.js";
-import { CreateUserDTO } from "../dtos/CreateUserDTO.js";
+import { UserCreateDTO } from "../dtos/UserCreateDTO.js";
 import { AppError } from "../../../shared/errors/AppError.js";
 import { ErrorCode } from "../../../shared/errors/ErrorCode.js";
 import { HttpStatus } from "../../../shared/errors/httpStatus.js";
+import { UserRole } from "../domain/enums/UserRole.js";
+import { UserResponseDTO } from "../dtos/UserResponseDTO.js";
 
 export class CreateUserUseCase {
-  async execute(data: CreateUserDTO) {
-    const { name, email, password, role } = data;
+  async execute(data: UserCreateDTO): Promise<UserResponseDTO> {
+    const { name, email, password, role, balance, cpf, phone, address } = data;
 
     // Validate email format
     if (!email.includes('@') || !email.includes('.') || email.length < 5) {
@@ -23,7 +25,7 @@ export class CreateUserUseCase {
     if (!passwordRegex.test(password)) {
       throw new AppError({
         message: "Password must have at least 8 characters, including uppercase, lowercase, number, and special character (@$!%*?&)",
-        code: ErrorCode.USER_ALREADY_EXISTS,
+        code: ErrorCode.WEAK_PASSWORD,
         httpStatus: HttpStatus.BAD_REQUEST,
       });
     }
@@ -37,20 +39,39 @@ export class CreateUserUseCase {
       });
     }
 
+    const userRole = data.role ?? UserRole.CLIENT;
+
     const hashedPassword = await bcrypt.hash(password, 8);
 
-    const userId = UserRepository.create({
+    const userResponse = UserRepository.create({
       name,
       email,
+      cpf,
       password: hashedPassword,
-      role: role || "attendant" as any,
+      phone,
+      address,
+      role: userRole,
+      balance: 0,
     });
 
+    if (!userResponse) {
+      throw new AppError({
+        message: "Failed to create user",
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        httpStatus: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
+    }
+
     return {
-      id: userId,
-      name,
-      email,
-      role: role || "attendant",
-    };
+      id: userResponse.id,
+      name: userResponse.name,
+      email: userResponse.email,
+      phone: userResponse.phone,
+      address: userResponse.address,
+      cpf: userResponse.cpf,
+      role: userResponse.role,
+      balance: userResponse.balance,
+    } satisfies UserResponseDTO;
   }
 }
+

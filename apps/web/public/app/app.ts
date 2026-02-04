@@ -1,25 +1,26 @@
 import { Navbar } from "../shared/components/navbar.js";
 
 // Definição de rotas com Lazy Loading (opcional) ou import direto
-import { HomePage } from "../modules/medicamento/pages/home.page.js";
+import { ProductsPage } from "../modules/medicamento/pages/products.page.js";
+import { LandingPage } from "../modules/landing/pages/landing.page.js";
 import { LoginPage } from "../modules/auth/pages/login.page.js";
 import { RegisterPage } from "../modules/auth/pages/register.page.js";
 import { AdminPage } from "../modules/admin/pages/admin.v2.page.js";
 import { CartPage } from "../modules/venda/pages/cart.page.js";
 import { ProfilePage } from "../modules/auth/pages/profile.page.js";
-import { CustomerListPage } from "../modules/admin/pages/customer-list.page.js";
-import { CustomerFormPage } from "../modules/admin/pages/customer-form.page.js";
+
 
 export const routes: Record<string, () => Promise<HTMLElement> | HTMLElement> =
   {
-    "/server07/": HomePage,
+    "/server07/landing": LandingPage,
+    "/server07/": LandingPage,
+    "/server07/products": ProductsPage,
     "/server07/login": LoginPage,
     "/server07/register": RegisterPage,
     "/server07/admin": AdminPage,
     "/server07/cart": CartPage,
     "/server07/profile": ProfilePage,
-    "/server07/customers": CustomerListPage,
-    "/server07/customers/new": () => CustomerFormPage(),
+
   };
 
 export class App {
@@ -28,7 +29,8 @@ export class App {
 
   constructor() {
     this.appElement = document.getElementById("app") as HTMLElement;
-    this.currentPath = window.location.pathname;
+    // Use pathname + search to preserve query parameters on initial load
+    this.currentPath = window.location.pathname + window.location.search;
 
     window.addEventListener("popstate", () => {
       this.currentPath = window.location.pathname;
@@ -51,23 +53,44 @@ export class App {
     this.appElement.innerHTML = "";
     this.appElement.appendChild(Navbar());
 
-    let PageComponent = routes[this.currentPath];
+    // Extract base path without query parameters for routing
+    let pathOnly = this.currentPath.split("?")[0];
+    
+    // Normalize path by removing trailing slash (unless it's just the root or subpath root)
+    if (pathOnly.length > 1 && pathOnly.endsWith("/") && pathOnly !== "/server07/") {
+      pathOnly = pathOnly.slice(0, -1);
+    }
+    
+    let PageComponent = routes[pathOnly];
     let pageArgs: any[] = [];
+    
+    console.log("[Router] Current Path:", this.currentPath);
+    console.log("[Router] Path Only (Normalized):", pathOnly);
+    console.log("[Router] Found Component:", PageComponent !== undefined ? "Yes" : "No");
 
     // Simple Dynamic Route Matching
     if (!PageComponent) {
-      if (this.currentPath.startsWith("/server07/customers/edit/")) {
-        const id = this.currentPath.split("/").pop();
-        PageComponent = CustomerFormPage as any;
-        pageArgs = [id];
-      } else if (this.currentPath === "/server07/" || this.currentPath === "/server07") {
-        PageComponent = HomePage;
+      if (pathOnly === "/server07/" || pathOnly === "/server07") {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has("search")) {
+          console.log("[Router] Search detected on landing, redirecting to products");
+          this.navigateTo("/server07/products" + window.location.search);
+          return;
+        }
+        PageComponent = LandingPage;
       } else {
-        // Simple fallback
-        PageComponent = HomePage;
-        // Optional: Update URL to canonical home if completely unmatched?
-        // window.history.replaceState({}, "", "/server07/"); 
+        console.warn("[Router] No route found for:", pathOnly, "- Falling back to LandingPage");
+        // Fallback to landing page for unmatched routes
+        PageComponent = LandingPage;
       }
+    } else if (PageComponent === LandingPage) {
+        // Even if route matches landing exactly, check for search
+        const params = new URLSearchParams(window.location.search);
+        if (params.has("search")) {
+          console.log("[Router] Search detected on landing route, redirecting to products");
+          this.navigateTo("/server07/products" + window.location.search);
+          return;
+        }
     }
 
     const pageContent = await (PageComponent as any)(...pageArgs);

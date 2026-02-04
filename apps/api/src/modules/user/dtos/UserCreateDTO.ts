@@ -1,8 +1,13 @@
 import { UserRole } from "../domain/enums/UserRole.js";
 
-export interface CreateUserDTO {
+export interface UserCreateDTO {
   name: string;
+  cpf: string;
   email: string;
   password: string;
+  phone: string;
+  address: string;
   role: UserRole;
+  balance?: number;
 }
+

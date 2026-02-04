@@ -6,9 +6,9 @@ import { HttpStatus } from "../../../shared/errors/httpStatus.js";
 
 export class CreateMedicineUseCase {
   async execute(data: CreateMedicineDTO) {
-    const { name, active_principle, price, stock } = data;
+    const { name, active_principle, price, stock, category } = data;
 
-    if (!name || !active_principle || price === undefined || stock === undefined) {
+    if (!name || !active_principle || !category || price === undefined || stock === undefined) {
       throw new AppError({
         message: "Missing required fields",
         code: ErrorCode.MISSING_MEDICINE_NAME,

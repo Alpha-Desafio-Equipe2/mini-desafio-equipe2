@@ -1,31 +1,28 @@
 import express from "express";
 import cors from "cors";
 import path from "path";
+import { fileURLToPath } from "url";
 import routes from "./routes.js";
 import { errorHandler } from "./shared/middlewares/errorHandler.js";
-import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 app.use(cors());
 
-// Healthcheck endpoint for monitoring
+// 🔹 arquivos estáticos (HTML, CSS, JS)
+app.use(express.static(path.join(__dirname, "public")));
+
+// Healthcheck
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// Main API routes - the /api prefix is handled by Nginx proxy
+// Rotas da API
 app.use("/", routes);
 
-// Serve static files (if needed for assets or anything else)
-app.use(express.static(path.join(__dirname, "public")));
-
-// The "catch-all" handler for SPA: any request not handled by above routes
-// returns the index.html so the frontend router can handle it
 app.get("*", (req, res) => {
   // Return a 404 for API-like requests that don't exist
   if (req.path.startsWith("/api/") || req.path.startsWith("/health")) {
@@ -36,7 +33,7 @@ app.get("*", (req, res) => {
   }
 });
 
-// Error handler (must come after routes)
+// Error handler por último
 app.use(errorHandler);
 
 export default app;

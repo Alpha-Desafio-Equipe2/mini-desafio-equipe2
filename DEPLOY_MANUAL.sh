@@ -20,6 +20,7 @@ echo "------------------------------"
 echo "cd /Users/diegogil/miniDesafio/mini-desafio-equipe2"
 echo "npm run build --workspace=apps/api"
 echo "npm run build --workspace=apps/web"
+echo "cd apps/web sudo npm run build" *
 echo ""
 
 # Step 2
@@ -110,6 +111,7 @@ echo "-----------------"
 echo "# If PM2 fails:"
 echo "pm2 logs farma-api --lines 50"
 echo "pm2 restart farma-api"
+echo "pm2 restart all" *
 echo ""
 echo "# If Nginx fails:"
 echo "sudo nginx -t"

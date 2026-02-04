@@ -8,7 +8,7 @@ const saleController = new SaleController();
 
 // Middleware para verificar se é admin
 const isAdmin = (req: any, res: any, next: any) => {
-  if (req.user && (req.user.role === 'admin' || req.user.role === 'manager')) {
+  if (req.user && (req.user.role === 'ADMIN' || req.user.role === 'MANAGER')) {
     next();
   } else {
     res.status(403).json({ error: "Only admins can confirm sales" });
@@ -24,23 +24,10 @@ const canCancelSale = (req: any, res: any, next: any) => {
     return res.status(404).json({ error: "Sale not found" });
   }
 
-  const isAdminUser = req.user && (req.user.role === 'admin' || req.user.role === 'manager');
+  const isAdminUser = req.user && (req.user.role === 'ADMIN' || req.user.role === 'MANAGER');
 
-  // If sale.customer_id references a customer row, try to resolve its user_id
-  let saleBelongsToUser = false;
-  try {
-    const customer = SaleRepository.findCustomerBySaleId(Number(id));
-    if (customer && customer.user_id && req.user) {
-      saleBelongsToUser = Number(customer.user_id) === Number(req.user.id);
-    }
-  } catch (err) {
-    // ignore lookup errors
-  }
-
-  // Fallback: sometimes customer_id may directly equal user id in legacy data
-  if (!saleBelongsToUser && req.user) {
-    saleBelongsToUser = Number(sale.customer_id) === Number(req.user.id);
-  }
+  // Check if sale belongs to user
+  const saleBelongsToUser = sale.user_id === req.user?.id;
 
   if (isAdminUser || saleBelongsToUser) {
     next();

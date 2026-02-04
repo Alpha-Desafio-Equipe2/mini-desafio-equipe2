@@ -1,188 +1,73 @@
 # 🗄️ Banco de Dados – Sistema Farmácia Popular
 
----
+Este projeto utiliza SQLite e o esquema atual está definido em `apps/api/src/database/schema.ts`.
 
-## 1️⃣ Tabelas Principais
+## Tabelas principais (conforme schema.ts)
 
-### **users**
-Armazena usuários do sistema (farmacêuticos, atendentes, administradores).
+### `medicines`
+Campos principais:
+- `id` INTEGER PRIMARY KEY AUTOINCREMENT
+- `name` TEXT NOT NULL
+- `manufacturer` TEXT
+- `active_principle` TEXT NOT NULL
+- `category` TEXT NOT NULL
+- `requires_prescription` INTEGER NOT NULL CHECK(requires_prescription IN (`BOOLEAN`))
+- `price` REAL NOT NULL
+- `stock` INTEGER NOT NULL CHECK (stock >= 0)
+- `image_url` TEXT
+- `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+- `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 
-| Campo        | Tipo       | Descrição                                   | Observações                   |
-| ------------ | ---------- | ------------------------------------------ | ----------------------------- |
-| id           | INTEGER PK | Identificador único                         | Auto incremento               |
-| nome         | TEXT       | Nome completo do usuário                     | Obrigatório                   |
-| email        | TEXT       | Email de login                              | Único, obrigatório            |
-| role         | TEXT       | Perfil do usuário                            | ENUM: ADMIN, FARMACEUTICO, ATENDENTE |
-| password_hash| TEXT       | Senha criptografada                          | Obrigatório                   |
-| created_at   | DATETIME   | Data de criação do registro                  | Default CURRENT_TIMESTAMP     |
-| updated_at   | DATETIME   | Data de atualização do registro             | Atualizado via trigger        |
+Índices sugeridos: `name`, `active_principle` para buscas.
 
----
+### `sales`
+Campos principais:
+- `id` INTEGER PRIMARY KEY AUTOINCREMENT
+- `user_id` INTEGER
+- `total_value` REAL NOT NULL
+- `status` TEXT DEFAULT 'pending'
+- `doctor_crm` TEXT
+- `prescription_date` TEXT
+- `payment_method` TEXT
+- `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+- `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 
-### **medicines**
-Armazena medicamentos disponíveis na farmácia.
+### `sale_items`
+Campos principais:
+- `id` INTEGER PRIMARY KEY AUTOINCREMENT
+- `sale_id` INTEGER NOT NULL (FK → `sales.id`)
+- `medicine_id` INTEGER NOT NULL (FK → `medicines.id`)
+- `quantity` INTEGER NOT NULL
+- `unit_price` REAL NOT NULL
+- `total_price` REAL NOT NULL
+- `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 
-| Campo         | Tipo       | Descrição                                   | Observações                   |
-| ------------- | ---------- | ------------------------------------------ | ----------------------------- |
-| id            | INTEGER PK | Identificador único                         | Auto incremento               |
-| nome          | TEXT       | Nome do medicamento                          | Obrigatório                   |
-| fabricante    | TEXT       | Fabricante do medicamento                    | Opcional                      |
-| principio_ativo| TEXT      | Princípio ativo do medicamento               | Opcional                      |
-| exige_receita | BOOLEAN    | Se o medicamento exige receita médica       | Default FALSE                 |
-| preco         | REAL       | Preço unitário                               | Não negativo                  |
-| estoque       | INTEGER    | Quantidade disponível                        | Não negativo                  |
-| created_at    | DATETIME   | Data de criação do registro                  | Default CURRENT_TIMESTAMP     |
-| updated_at    | DATETIME   | Data de atualização do registro             | Atualizado via trigger        |
+### `users`
+Campos principais:
+- `id` INTEGER PRIMARY KEY AUTOINCREMENT
+- `name` TEXT NOT NULL
+- `cpf` TEXT UNIQUE NOT NULL
+- `email` TEXT UNIQUE NOT NULL
+- `phone` TEXT
+- `address` TEXT
+- `password` TEXT NOT NULL
+- `role` TEXT NOT NULL DEFAULT 'attendant'
+- `balance` REAL DEFAULT 0
+- `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+- `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 
-**Índices sugeridos:**
-```sql
-CREATE INDEX idx_medicines_nome ON medicines(nome);
-CREATE INDEX idx_medicines_principio_ativo ON medicines(principio_ativo);
-```
-----------------
+## Migrações e observações
+- O arquivo `schema.ts` contém verificações (PRAGMA table_info) que aplicam alterações incrementais (ALTER TABLE) quando necessário: adição de colunas `balance`, `image_url`, `cpf`, `phone`, `address`, `user_id` em `sales`, etc.
+- Use `PRAGMA table_info(<table>)` para inspecionar colunas em runtime.
+- Triggers podem ser adicionadas para manter `updated_at` atualizados automaticamente;
+	o arquivo atual já define `DEFAULT CURRENT_TIMESTAMP` para `created_at` e `updated_at`.
 
-## **customers**
-Armazena dados de clientes.
+## Regras de integridade
+- `sale_items.sale_id → sales.id`
+- `sale_items.medicine_id → medicines.id`
 
-| Campo           | Tipo       | Descrição                      | Observações                  |
-| --------------- | ---------- | ------------------------------ | ---------------------------- |
-| id              | INTEGER PK | Identificador único             | Auto incremento              |
-| nome            | TEXT       | Nome completo                   | Obrigatório                  |
-| cpf             | TEXT       | CPF do cliente                  | Único, obrigatório           |
-| data_nascimento | DATE       | Data de nascimento              | Opcional                     |
-| created_at      | DATETIME   | Data de criação                 | Default CURRENT_TIMESTAMP    |
-| updated_at      | DATETIME   | Data de atualização             | Atualizado via trigger       |
+Regras de negócio relacionadas a banco de dados:
+1. Medicamentos controlados (`requires_prescription = TRUE`) só podem ser vendidos se houver registro de receita (fluxo implementado no serviço de vendas).
+2. Atualizações de estoque são feitas durante o processo de finalização de venda e em operações de transferência entre filiais.
+3. Operações críticas devem ser registradas em logs/auditoria (implementação opcional).
 
----
-
-## **doctors**
-Armazena médicos que podem prescrever receitas.
-
-| Campo        | Tipo       | Descrição                         | Observações                   |
-| ------------ | ---------- | -------------------------------- | ----------------------------- |
-| id           | INTEGER PK | Identificador único               | Auto incremento               |
-| nome         | TEXT       | Nome completo                     | Obrigatório                   |
-| crm          | TEXT       | CRM                               | Único, obrigatório            |
-| especialidade| TEXT       | Especialidade do médico           | Opcional                      |
-| created_at   | DATETIME   | Data de criação                   | Default CURRENT_TIMESTAMP     |
-| updated_at   | DATETIME   | Data de atualização               | Atualizado via trigger        |
-
----
-
-## **sales**
-Armazena vendas realizadas.
-
-| Campo       | Tipo       | Descrição                             | Observações                   |
-| ----------- | ---------- | ------------------------------------ | ----------------------------- |
-| id          | INTEGER PK | Identificador único                   | Auto incremento               |
-| customer_id | INTEGER FK | Cliente que realizou a compra         | FK → customers(id)            |
-| branch_id   | INTEGER FK | Filial onde a venda ocorreu           | FK → branches(id)             |
-| data_venda  | DATETIME   | Data da venda                         | Default CURRENT_TIMESTAMP     |
-| valor_total | REAL       | Soma dos itens vendidos               | Calculado automaticamente     |
-| created_at  | DATETIME   | Data de criação do registro           | Default CURRENT_TIMESTAMP     |
-| updated_at  | DATETIME   | Data de atualização                   | Atualizado via trigger        |
-
----
-
-## **sale_items**
-Itens de cada venda.
-
-| Campo         | Tipo       | Descrição                          | Observações                   |
-| ------------- | ---------- | --------------------------------- | ----------------------------- |
-| id            | INTEGER PK | Identificador único                | Auto incremento               |
-| sale_id       | INTEGER FK | Venda relacionada                  | FK → sales(id)                |
-| medicine_id   | INTEGER FK | Medicamento vendido                | FK → medicines(id)            |
-| quantidade    | INTEGER    | Quantidade vendida                 | Não negativo                  |
-| preco_unitario| REAL       | Preço unitário no momento da venda | Copiado de medicines.preco    |
-
----
-
-## **prescriptions**
-Receitas médicas para medicamentos controlados.
-
-| Campo        | Tipo       | Descrição                            | Observações                   |
-| ------------ | ---------- | ----------------------------------- | ----------------------------- |
-| id           | INTEGER PK | Identificador único                  | Auto incremento               |
-| doctor_id    | INTEGER FK | Médico prescritor                     | FK → doctors(id)              |
-| sale_id      | INTEGER FK | Venda associada                       | FK → sales(id)                |
-| numero       | TEXT       | Número da receita                     | Obrigatório                   |
-| data_emissao | DATETIME   | Data de emissão                       | Default CURRENT_TIMESTAMP     |
-
----
-
-## **branches**
-Filiais da farmácia.
-
-| Campo       | Tipo       | Descrição                            | Observações                   |
-| ----------- | ---------- | ----------------------------------- | ----------------------------- |
-| id          | INTEGER PK | Identificador único                  | Auto incremento               |
-| nome        | TEXT       | Nome da filial                        | Obrigatório                   |
-| endereco_id | INTEGER FK | Endereço da filial                     | FK → addresses(id)            |
-| created_at  | DATETIME   | Data de criação                       | Default CURRENT_TIMESTAMP     |
-| updated_at  | DATETIME   | Data de atualização                   | Atualizado via trigger        |
-
----
-
-## **addresses**
-Endereços de filiais, clientes ou médicos.
-
-| Campo       | Tipo       | Descrição                             | Observações                   |
-| ----------- | ---------- | ------------------------------------ | ----------------------------- |
-| id          | INTEGER PK | Identificador único                   | Auto incremento               |
-| logradouro  | TEXT       | Rua / Avenida                         | Obrigatório                   |
-| numero      | TEXT       | Número do endereço                     | Obrigatório                   |
-| complemento | TEXT       | Complemento                           | Opcional                      |
-| bairro      | TEXT       | Bairro                                 | Opcional                      |
-| cidade      | TEXT       | Cidade                                 | Opcional se usar API CEP      |
-| estado      | TEXT       | Estado                                 | Opcional se usar API CEP      |
-| cep         | TEXT       | CEP                                     | Obrigatório                   |
-| created_at  | DATETIME   | Data de criação                        | Default CURRENT_TIMESTAMP     |
-| updated_at  | DATETIME   | Data de atualização                    | Atualizado via trigger        |
-
-O endereço foi modelado como uma entidade independente para evitar duplicação de dados e permitir reutilização por diferentes entidades do sistema, mantendo o banco normalizado.
-* Campos atômicos (cada informação no seu lugar)
-* Facilita busca, filtro e validação
-* Evita campo genérico tipo endereco_completo
-
-A API de CEP é usada apenas como apoio ao cadastro. Cidade e estado são dados essenciais para consultas, relatórios e integridade histórica, por isso são persistidos no banco de dados
-
----
-
-## **audit_log**
-Registro de alterações críticas (opcional, recomendado).
-
-| Campo       | Tipo       | Descrição                             |
-| ----------- | ---------- | ------------------------------------ |
-| id          | INTEGER PK | Identificador único                  |
-| table_name  | TEXT       | Tabela afetada                       |
-| record_id   | INTEGER    | ID do registro alterado              |
-| action      | TEXT       | Tipo de ação: INSERT, UPDATE, DELETE |
-| changed_by  | INTEGER FK | Usuário que realizou a ação           |
-| changed_at  | DATETIME   | Data da ação                           |
-
----
-
-## **Relacionamentos e Regras**
-
-- `sale_items.sale_id → sales.id`  
-- `sale_items.medicine_id → medicines.id`  
-- `prescriptions.doctor_id → doctors.id`  
-- `sales.customer_id → customers.id`  
-- `sales.branch_id → branches.id`  
-- `branches.endereco_id → addresses.id`  
-
-**Regras de negócio importantes:**
-1. Medicamento controlado só pode ser vendido com receita válida.  
-2. Estoque deve ser atualizado automaticamente após venda ou transferência.  
-3. Venda não é concluída sem estoque suficiente.  
-4. Transferência de estoque entre filiais gera registro no `audit_log`.  
-
----
-
-## **Observações**
-
-- Use **triggers** para atualizar `updated_at` automaticamente.  
-- Índices em campos de busca frequente (`nome`, `cpf`, `crm`) aumentam performance.  
-- Enum para roles (`users.role`) garante consistência.  
-- Campos de data (`created_at`, `updated_at`) permitem auditoria detalhada.  
-- Para integração com API de CEP, `cidade` e `estado` podem ser preenchidos automaticamente, mas ainda podem ser armazenados para consulta rápida.  

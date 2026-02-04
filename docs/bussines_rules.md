@@ -36,5 +36,3 @@ Este documento descreve as regras de negócio implementadas no código fonte (ve
 
 10) Exceções e tratamento de erro
 - O projeto usa um handler centralizado para mapear erros com códigos e HTTP statuses (ver `apps/api/src/shared/errors`).
-
-Manter estas regras sincronizadas com o código: altere este documento sempre que adicionar/alterar validações em `use-cases` ou `controllers`.

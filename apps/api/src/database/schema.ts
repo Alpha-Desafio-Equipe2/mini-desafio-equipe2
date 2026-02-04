@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS medicines (
   requires_prescription INTEGER NOT NULL CHECK(requires_prescription IN (0,1)),
   price REAL NOT NULL,
   stock INTEGER NOT NULL CHECK (stock >= 0),
+  category TEXT,
   image_url TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -33,7 +34,7 @@ CREATE TABLE IF NOT EXISTS sales (
   payment_method TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, 
-  FOREIGN KEY (customer_id) REFERENCES customers(id)
+  FOREIGN KEY (customer_id) REFERENCES users(id)
 );
 `);
 
@@ -92,6 +93,12 @@ try {
 
   if (!hasImageUrl) {
     db.exec("ALTER TABLE medicines ADD COLUMN image_url TEXT");
+  }
+
+  const hasCategory = medicineColumns.some(col => col.name === 'category');
+
+  if (!hasCategory) {
+    db.exec("ALTER TABLE medicines ADD COLUMN category TEXT");
   }
 
   const userCpfColumns = db.prepare("PRAGMA table_info(users)").all() as any[];

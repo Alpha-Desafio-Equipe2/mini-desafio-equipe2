@@ -54,14 +54,6 @@ export class CreateUserUseCase {
       balance: 0,
     });
 
-    if (!userResponse) {
-      throw new AppError({
-        message: "Failed to create user",
-        code: ErrorCode.INTERNAL_SERVER_ERROR,
-        httpStatus: HttpStatus.INTERNAL_SERVER_ERROR,
-      });
-    }
-
     return {
       name: userResponse.name,
       email: userResponse.email,
